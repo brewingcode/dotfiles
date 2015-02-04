@@ -1,0 +1,29 @@
+#!/usr/bin/env php
+<?php
+
+// read stdin, and then either transform it:
+//   -u/--unserialize (default) - from PHP's array serialization to json, or
+//   -s/--serialize - from json to PHP's array serialization
+// result is printed to stdout
+
+$stdin = fopen('php://stdin', 'r');
+$s = '';
+while ($line = fgets($stdin)) {
+    $s .= $line;
+}
+fclose($stdin);
+
+if (count($argv) <= 1) {
+    $argv[] = "--unserialize";
+}
+
+if (preg_match('/^(-s|--serialize)$/', $argv[1])) {
+    print serialize(json_decode($s));
+}
+else if (preg_match('/^(-u|--unserialize)$/', $argv[1])) {
+    print json_encode(unserialize($s));
+}
+else {
+    die("unknown argument: ".$argv[1]);
+}
+

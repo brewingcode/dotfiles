@@ -1,0 +1,50 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+# hcap - historical captures of stdout
+
+# (no args): tee stdin to a random file
+# <n>      : cat out the n-th most recent stdout we tee'd
+# show     : print out a few lines from each stored stdout 
+# clear    : wipe files
+
+my $store = "/tmp/hcap.e36334119390fbfa";
+system "mkdir -p $store 2>/dev/null";
+chdir $store;
+
+if (@ARGV) {
+  if ($ARGV[0] eq 'show') {
+    my $i = 0;
+    for (`ls -1t | head -n 5`) {
+      chomp;
+      chomp( my $c = `wc -l $_ | awk '{print \$1}'` );
+      my $out;
+      if ($c > 10) {
+        $out = `head -n 5 $_; echo ...; tail -n 5 $_`;
+      }
+      else {
+        $out = `cat $_`;
+      }
+      chomp($out);
+      $out =~ s/^/  /gm;
+      print "#####\n# $i #\n#####\n$out\n($c lines)\n";
+      $i++;
+    }
+  }
+  elsif ($ARGV[0] eq 'clear') {
+    system "rm -rf $store";
+  }
+  elsif ($ARGV[0] =~ /^\d+$/) {
+    my @files = `ls -1t`;
+    my $file = $files[$ARGV[0]] || die "$ARGV[0] is an invalid index";
+    system "cat $file";
+  }
+  else {
+    die "wtf?";
+  }
+}
+else {
+  chomp ( my $file = `dd if=/dev/random bs=8 count=1 2>/dev/null | xxd -ps` );
+  exec "tee $file";
+}

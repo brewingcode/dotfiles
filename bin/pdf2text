@@ -1,0 +1,40 @@
+#!/usr/bin/python
+
+# pdf2text: uses OSX built-in pdf extraction
+# todo: this is NOT the same as Automator's PDF extract to text
+
+__version__ = "0.1 beta"
+
+import sys
+import optparse
+import re
+import codecs
+
+try:
+    from Foundation import *
+    from Quartz import *
+
+except ImportError:
+    print "Cannot find pyobjc library files.  Are you sure it is installed?"
+    sys.exit()
+
+def main():
+
+    # parse the command line
+    usage = """%prog [options] FILE
+"""
+    cmdparser = optparse.OptionParser(usage,version=(__version__))
+    cmdparser.add_option("-z", "--nothing", type="string", help="nothing")
+    (options, args) = cmdparser.parse_args()
+
+    if len(args) == 0:
+        cmdparser.print_usage()
+        return
+      
+    for filename in args:
+        url = NSURL.fileURLWithPath_(filename)
+        doc = PDFDocument.alloc().initWithURL_(url)
+        txt = codecs.open(re.sub(r'pdf$', 'txt', filename), 'w', encoding='utf8')
+        txt.write(doc.string())
+
+if __name__ == '__main__' : main()

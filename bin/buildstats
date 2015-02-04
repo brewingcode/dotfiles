@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# build awstats static pages for $host
+
+[ $# -eq 0 ] && { echo "pass in the short name of a configured awstats host" >&2; exit 1; }
+host=$1
+
+as=/opt/local/www/awstats
+outdir=/tmp/$(openssl rand -hex 4)
+
+[ -d "$as" ] || { echo "no awstats found at '$as'"; exit 1; }
+cd "$as/cgi-bin"
+./awstats.pl -config=$host -update
+
+mkdir -p "$outdir"
+cd "$outdir"
+"$as/tools/awstats_buildstaticpages.pl" \
+  -config=$host \
+  -dir="$outdir" \
+  -month=all \
+  -awstatsprog="$as/cgi-bin/awstats.pl"
+
+echo "html is in '$outdir'"
+open "$outdir/awstats.$host.html"

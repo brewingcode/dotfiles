@@ -1,0 +1,76 @@
+#!/usr/bin/env perl
+
+# Fixes trailing whitespace in the filenames that are passed in. If stdin is
+# present, it will also be fixed.
+#
+# --quiet will not print fixed lines to stderr
+# --check will not change files in place
+# --git will fixspace on all modified files (NOT any untracked files)
+
+use strict;
+use warnings;
+use Term::ANSIColor;
+use File::Basename;
+use File::Copy;
+
+my $f = 'stdin';
+my $loud = 1;
+my $check = 0;
+my $tmp = '/tmp/fixspace';
+
+sub line {
+    if ($_[0] =~ s/(\s+)\n// and $loud) {
+        warn "$f:$.: $_[0]", colored(' ' x length($1), 'red on_red'), "\n";
+        $_[0] .= "\n";
+    }
+    return $_[0];
+}
+
+if (not -t STDIN) {
+    while (<STDIN>) {
+        print line($_) if not $check;
+    }
+}
+
+sub git_status {
+    
+}
+
+my @files;
+while ($_ = shift @ARGV) {
+    if ($_ eq '-q' or $_ eq '--quiet') {
+        $loud = 0;
+    }
+    elsif ($_ eq '-c' or $_ eq '--check') {
+        $check = 1;
+    }
+    elsif ($_ eq '-g' or $_ eq '--git') {
+        @files = git_status();
+    }
+    else {
+        push @files, $_;
+    }
+}
+
+while ($f = shift @files) {
+    my $b = basename($f);
+    system "mkdir -p '$tmp'";
+
+    open my $out, '>', "$tmp/$b.tmp" or die "couldn't write temp file: '$tmp/$b.tmp': $!";
+    open my $fh, '<', $f or die "couldn't read file '$f': $!";
+
+    my $mode = (stat($f))[2] & 07777;
+    chmod $mode, "$tmp/$b.tmp";
+
+    while (<$fh>) {
+        print $out line($_);
+    }
+
+    close $out;
+    close $fh;
+
+    if (not $check) {
+        move($f, "$tmp/$b.bak") or die "couldn't move '$f' to '$tmp/$b.bak'";
+        move("$tmp/$b.tmp", $f) or die "couldn't move '$tmp/$b.tmp' to '$f'";
+    }
+}

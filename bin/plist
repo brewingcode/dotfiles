@@ -1,0 +1,10 @@
+#!/usr/bin/env perl
+
+use Mac::PropertyList qw/:all/;
+
+if (@ARGV) {
+  print plist_as_string(parse_plist_file($_)), "\n" for @ARGV;
+}
+else {
+  print plist_as_string(parse_plist_fh(STDIN)), "\n";
+}

@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# remove exif data from a file or all files in a directory (non-recursive)
+
+# to dump exif data: identify -format %[exif:*]
+
+function strip() {
+    convert -strip "$1" "/tmp/$(basename "$1").bak" && mv "/tmp/$(basename "$1").bak" "$1"
+}
+
+function dump() {
+    identify -format %[exif:*] "$1"
+}
+
+[ -z "$1" ] && { echo "command required: try 'dump', 'strip'" >&2; exit 1; }
+cmd=$1
+shift
+
+for x in "$@"; do
+    if [ -d "$x" ]; then
+        for f in "$x"/*; do $cmd "$f"; done
+    else
+        $cmd "$x"
+    fi
+done

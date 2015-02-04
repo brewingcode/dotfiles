@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# ssh with password, no pubkey attempt
+ssh -o PubkeyAuthentication=no -o PreferredAuthentications=keyboard-interactive,password $*
+

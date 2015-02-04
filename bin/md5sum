@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# this will print more interactively
+#for f in "$@"; do
+#    md5 "$f" | perl -lne '/^MD5 \((.*)\) ?= ?(.*)/; $s = -s $1; print "$2 $s $1"'
+#done
+
+# this is slightly more resource-efficient (VERY slightly)
+md5 "$@" | perl -lne '/^MD5 \((.*)\) ?= ?(.*)/; $s = -s $1; print "$2 $s $1"'

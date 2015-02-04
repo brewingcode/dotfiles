@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# start/stop Starcraft II
+
+function starting() {
+    echo "closing down stuff before running SC2"
+    fkeys
+    killall Dropbox
+    killall 'BitTorrent Sync'
+    open -a 'Starcraft II'
+}
+
+function finishing() {
+    echo "re-opening stuff after quitting SC2"
+    killall -v SC2
+    killall -v 'Blizzard Launcher'
+    fkeys
+    open -a Dropbox
+    open -a 'BitTorrent Sync'
+}
+
+if [[ -n "$1" ]]; then
+    if [[ "$1" == "start" ]]; then
+        starting
+    else
+        finishing
+    fi
+else
+    ps ux > /tmp/$$
+    if grep -oE '/.+' /tmp/$$ | grep -qE 'StarCraft II|Blizzard Launcher'; then
+        finishing
+    else
+        starting
+    fi
+    rm /tmp/$$
+fi
+

@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# launchd       1           root   26u  IPv4 0xb03488366e7965c1      0t0    TCP *:5900 (LISTEN)
+# launchd       1           root   31u  IPv6 0xb03488366e795631      0t0    TCP [::1]:631 (LISTEN)
+# launchd       1           root   32u  IPv4 0xb03488366e7a4d11      0t0    TCP 127.0.0.1:631 (LISTEN)
+# launchd       1           root   21u  IPv4 0x6b41c2ec4c348905      0t0    UDP *:138
+
+lsof -P -i -n |  perl -ne '
+  next unless /^(\S+)\s*(\d+)\s*(\S+).*?(TCP|UDP) (\S+):(\d+)( \(LISTEN\))?/;
+  my ($name, $pid, $user, $proto, $ifc, $port) = ($1, $2, $3, $4, $5, $6);
+  next if $proto eq "TCP" and not $7;
+
+  $h{$proto} //= {};
+  $h{$proto}{$port} //= {};
+  $h{$proto}{$port}{"$name:$pid:$user"} //= [];
+  push @{$h{$proto}{$port}{"$name:$pid:$user"}}, $ifc;
+
+  END {
+    for $proto (sort {$a cmp $b} keys %h) {
+      for $port (sort {$a <=> $b} keys %{$h{$proto}}) {
+        for $proc (keys %{$h{$proto}{$port}}) {
+          $ifcs = join(",", @{$h{$proto}{$port}{$proc}});
+          $proc =~ s/:([^:]+)$//;
+          @cells = ($port, $proc, $1, $ifcs);
+          @widths = (6, 16, 8, '');
+          for ($i = 0; $i < @widths; $i++) {
+            $w = $widths[$i];
+            $cells[$i] = sprintf("%$w.${w}s", $cells[$i]);
+          }
+          print join("  ", @cells), "\n";
+        }
+      }
+    }
+  }'

@@ -1,0 +1,12 @@
+#!/usr/bin/env python
+
+# parse files as yaml, either via stdin or filenames passed as args
+
+import yaml
+import sys
+
+if sys.argv > 1:
+  for arg in sys.argv[1:]:
+    print yaml.load(open(arg).read())
+else:
+  print yaml.load(sys.stdin.read())

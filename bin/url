@@ -1,0 +1,28 @@
+#!/usr/bin/env perl
+
+# url encode/decode
+#
+use strict;
+use warnings;
+use URI::Escape;
+
+sub get_input {
+  if (@ARGV) {
+    return @ARGV;
+  }
+  else {
+    return <STDIN>;
+  }
+}
+
+my $direction = shift @ARGV;
+if ($direction =~ /^--?d/) {
+  print uri_unescape($_) for get_input();
+}
+elsif ($direction =~ /^--?e/) {
+  print uri_escape($_) for get_input();
+}
+else {
+  die "supply either --encode or --decode\n";
+}
+

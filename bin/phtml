@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# pretty-print html either from stdin or the named file(s)
+
+function pretty {
+    export PYTHONIOENCODING=utf-8 
+    python -c 'import sys,bs4; print bs4.BeautifulSoup(sys.stdin).prettify()' | pygmentize -g
+}
+
+if [[ -n "$@" ]]; then
+    cat "$@" | pretty
+else
+    pretty
+fi

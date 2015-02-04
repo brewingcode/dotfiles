@@ -1,0 +1,340 @@
+#!/usr/bin/env perl
+
+# Searches php files specified in @ARGV. If no @ARGV, searches the current
+# directory.
+#
+# Usage:
+#
+#   ./php_functions.pl [files] [dirs] [options]
+#
+# Options:
+#
+# --function <regex> looks for a particular function whose name matches
+#   <regex>, and then prints the entire function (might include trailing
+#   php junk). If more than one function match is found, a list of 0-indexed
+#   hits is printed, and you should call this script again with
+#   "--pick <index>".
+#
+# --grep <regex> finds where a function is called, which matches <regex>. A
+#   list of files and line numbers with matches is printed.
+#
+# --known only prints functions that we know about (ie, that the script sees
+#   getting declared).
+#
+# --all will consider all function, including WordPress and built-ins
+#
+# --rebuild will rebuild the stored index
+
+use strict;
+use warnings;
+use Getopt::Long;
+use File::Temp qw/ :POSIX /;
+use Text::VimColor;
+use Data::Dumper;
+use JSON::XS;
+
+my @decl;           # function declarations
+my %call;           # function calls (hashed by function name)
+my %o;              # options
+
+GetOptions(\%o, 'function=s', 'pick=i', 'grep=s', 'known', 'help', 'all', 'rebuild')
+    or die "invalid options";
+
+if ($o{grep} and $o{function}) {
+    die "--grep and --function at the same time aren't supported yet";
+}
+
+help() if $o{help};
+
+my $store = '/tmp/php_functions.json.gz';
+my @files = build_file_list();
+my $common_dir = longest_common_prefix(@files);
+
+if (1) {
+    search($_) for @files;
+}
+else {
+    open my $fh, '-|', "gzip -dc $store" or die "couldn't read file $store: $!";
+    local $/;
+    my $json = decode_json(<$fh>);
+    @decl = @{$json->{decl}};
+    %call = %{$json->{call}};
+}
+
+if ($o{grep}) {
+    print_grep_matches();
+}
+elsif ($o{function}) {
+    print_function_matches();
+}
+else {
+    print_default_output();
+}
+
+if ($o{rebuild} or not -f $store) {
+    open my $fh, '|-', "gzip > $store" or die "couldn't write file $store: $!";
+    foreach my $func (keys %call) {
+        foreach my $x (@{$call{$func}}) {
+            eval {
+                my $y = encode_json($x);
+            };
+            warn "$func in $x->{file}:$x->{line}: $@" if $@;
+        }
+    }
+    print $fh encode_json({decl => \@decl, call => \%call});
+}
+
+sub php_files {
+    open my $ps, '-|', "find '$_[0]' -iname '*.php' -print0";
+    return split /\0/, <$ps>;
+}
+
+sub search {
+    my ($file) = @_;
+    open my $fh, '<', $file or die "couldn't read $file: $!";
+    if (grep { $file =~ /\Q$_/ } (
+            'database/db-functions.php',
+            'wp-includes/Text/Diff/Engine/string.php',
+            'wp-includes/js/tinymce/plugins/spellchecker',
+            'payments/recurly/simpletest/test/acceptance_test.php',
+            'payments/recurly/simpletest/test/parser_test.php',
+            'payments/recurly/simpletest/test/url_test.php',
+        )) {
+        # certain files are latin1/iso-8859-1 encoded, how obnoxious
+        binmode($fh, ':encoding(latin1)');
+    }
+
+    my $in_function = 0;
+    my $in_class = '';
+
+    local $SIG{__WARN__} = sub {
+        warn "$file: @_";
+    };
+
+    while (<$fh>) {
+        $file =~ s/^\Q$common_dir// if $common_dir and $common_dir ne $file;
+        chomp;
+
+        if (/^\s*class (\w+)/) {
+            $in_class = $1;
+        }
+
+        if (/function (\w+?)\s*\(/) {
+            $in_function = 0;
+
+            my $f = $1;
+            next if skip($f);
+
+            if ($o{function}) {
+                if ($f !~ /$o{function}/) {
+                    next;
+                }
+            }
+
+            if ($in_class and $f eq '__construct') {
+                $f = $in_class;
+            }
+
+            $in_function = 1;
+            push @decl, {
+                file => $file,
+                line => $.,
+                name => $f,
+                proto => $_,
+                body => "$_\n",
+            };
+            $call{$f} //= [];
+        }
+        else {
+            if ($in_function) {
+                $decl[-1]{body} .= "$_\n";
+            }
+
+            if  (/(\w+)\s*\(/) {
+                my $f = $1;
+                next if skip($f);
+
+                my $data = {
+                    file => $file,
+                    line => $.,
+                    context => $_,
+                };
+
+                if ($in_function) {
+                    $data->{inside} = $decl[-1];
+                }
+                else {
+                    $data->{inside} = { file => $file, name => '(global)', line => 0 };
+                }
+
+                $call{$f} //= [];
+                push @{$call{$f}}, $data;
+            }
+
+            if (/^\}\s*$/) {
+                $in_function = 0;
+                $in_class = '';
+            }
+        }
+    }
+}
+
+sub print_grep_matches {
+    while (my ($name, $calls) = each %call) {
+        next unless $name =~ /$o{grep}/;
+        next if $o{known} and not grep {$_->{name} eq $name} @decl;
+
+        my %h;
+        foreach my $file (grep { $h{$_}++ < 1 } map { $_->{file} } @$calls) {
+            print "$file\n";
+            %h = ();
+            foreach my $func (grep { $_->{inside}{file} eq $file and $h{$_->{inside}{name}}++ < 1 } @$calls) {
+                print "  $func->{inside}{name} ($func->{inside}{line})\n";
+                foreach my $hit (
+                    sort {$a->{line} <=> $b->{line}}
+                    grep {$_->{file} eq $file and $_->{inside}{name} eq $func->{inside}{name}}
+                    @$calls)
+                {
+                    print "    $hit->{line}: $hit->{context}\n";
+                }
+            }
+            print "---\n";
+        }
+    }
+}
+
+sub print_function_matches {
+    if (@decl == 1) {
+        print "$decl[0]{file}:$decl[0]{line}\n";
+        color_print(0);
+    }
+    else {
+        if (defined $o{pick}) {
+            print "$decl[$o{pick}]{file}:$decl[$o{pick}]{line}\n";
+            color_print($o{pick});
+        }
+        elsif (defined $o{diff}) {
+            my ($left, $right) = split /\s*,\s*/, $o{diff};
+            system sprintf("colordiff '%s' '%s'", to_temp($left), to_temp($right));
+        }
+        else {
+            for (my $i = 0; $i < @decl; $i++) {
+                $_ = $decl[$i];
+                printf "%2d: $_->{file}:$_->{line}: $_->{proto}\n", $i;
+            }
+        }
+    }
+}
+
+sub print_default_output {
+    while (my ($name, $calls) = each %call) {
+        next unless @$calls;
+        next if $o{known} and not grep {$_->{name} eq $name} @decl;
+
+        # look for this function declaration
+        if (my @func = grep {$_->{name} eq $name and $_->{file} and $_->{line}} @decl) {
+            print "$name ($_->{file}:$_->{line})\n" foreach @func;
+        }
+        else {
+            print "$name\n";
+        }
+
+        my %h;
+        foreach my $file (grep { $h{$_}++ < 1 } map { $_->{file} } @{$call{$name}}) {
+            print "  $file\n";
+            foreach my $x (grep { $_->{file} eq $file } @{$call{$name}}) {
+                print "    $x->{line}:$x->{context}\n";
+            }
+        }
+        print "---\n";
+    }
+}
+
+sub to_temp {
+    my ($index) = @_;
+    my ($fh, $file) = tmpnam();
+    print $fh "<?php\n";
+    my $func = $decl[$index]{body};
+    $func =~ s/\r//g;
+    print $fh $func;
+    return $file;
+}
+
+sub color_print {
+    my $syntax = Text::VimColor->new(
+        file => to_temp($_[0]),
+        filetype => 'php',
+    );
+
+    print $syntax->ansi;
+}
+
+sub longest_common_prefix {
+    my $prefix = shift;
+    for (@_) {
+        chop $prefix while (! /^\Q$prefix/);
+    }
+    return $prefix;
+}
+
+sub skip {
+    my ($f) = @_;
+    if (exists $call{$f} or $o{all}) {
+        # short circuit
+        return 0;
+    }
+
+    my %builtins = map {$_ => 1} qw/
+        for foreach array list urlencode
+    /;
+    if (exists $builtins{$f}) {
+        return 1;
+    }
+
+    foreach (
+        qr/^array_/,
+        qr/^(require|include)(_once)?$/,
+        qr/^(im|ex)plode$/,
+        qr/^wp_/,
+    ) {
+        if ($f =~ /$_/) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+sub help {
+    open my $fh, '<', $0 or die "couldn't read $0: $!";
+    <$fh>; <$fh>;
+    while (<$fh>) {
+        if (s/^# ?//) {
+            print;
+        }
+        else {
+            exit;
+        }
+    }
+}
+
+sub build_file_list {
+    my @files;
+    if (@ARGV) {
+        foreach (@ARGV) {
+            if (-d $_) {
+                push @files, php_files($_);
+            }
+            elsif (-f $_) {
+                push @files, $_;
+            }
+            else {
+                die "unknown argument: $_";
+            }
+        }
+    }
+    else {
+        @files = php_files('.');
+    }
+    return @files;
+}

@@ -1,0 +1,114 @@
+#!/usr/bin/env python
+
+# calculate apoapsis/periapsis speed and orbital period for small body
+# orbiting a large body in an elliptical orbit (not para/hyperbolic)
+
+import argparse, math
+
+# standard gravitational params (in km^3 s^-2 )
+# http://en.wikipedia.org/wiki/Standard_gravitational_parameter
+sgp = {
+  'sun': 132712440018,
+  'earth': 398600.4418,
+  'moon': 4902.8000,
+  'mars': 42828,
+  'kerbin': float("3.5316e3"),
+  'c7p': 0.000000209438,
+  'jupiter': 126686534,
+  'saturn': 37931187,
+  'vesta': 17.28,
+  'ceres': 63.1
+}
+
+# body radius (in km)
+radii = {
+  'sun': 695000,
+  'earth': 6371,
+  'moon': 1737,
+  'mars': 3390,
+  'kerbin': 600,
+  'c7p': 2,
+  'jupiter': 69911,
+  'saturn': 57316,    # equitorial radius is 60268, polar radius is 54364
+  'vesta': 525.4/2,
+  'ceres': 471
+}
+
+parser = argparse.ArgumentParser(usage="""orb --body <b> --ap <x> [--pe <y>] [--units au]
+
+Calculate velocities, period, and eccentricity of an elliptical orbit
+around <b> with apoapsis <x> and periapsis <y>.
+
+By default, --units is "km", which takes into account the radius of
+the central body. In other words, --ap and --pe are assumed to be
+low-orbit altitudes. Changing --units to "au" will change --ap and
+--pe to astronomical units.
+
+If one of the apoapsis and periapsis values are given but not the
+other, the missing value will be taken from the given value (so a
+circular orbit just needs one of --ap or --pe).
+""")
+
+parser.add_argument('--body', help="central body: "+",".join(["'"+k+"'" for k in sgp]))
+parser.add_argument('--ap', help="apoapsis")
+parser.add_argument('--pe', help="periapsis")
+parser.add_argument('--units', help="units for --ap/--pe: 'km','au'", default="km")
+args = parser.parse_args()
+
+if args.ap and not args.pe:
+  args.pe = args.ap
+elif args.pe and not args.ap:
+  args.ap = args.pe
+
+# given a string representing a distance, return a numeric orbital radius
+def to_radius(s):
+  n = float(s)
+  if args.units == 'au':
+    return n * 149597871
+  elif args.units == 'km':
+    return n + radii[args.body]
+
+# given a semi-major axis and an orbital radius, return the velocity
+def vel(sma, r):
+  # http://en.wikipedia.org/wiki/Elliptic_orbit#Velocity
+  v = math.sqrt( sgp[args.body] * ( 2/r - 1/sma ) )
+  if v < 1:
+    return "{:.4f} m/s".format(1000*v)
+  else:
+    return "{:.4f} km/s".format(v)
+
+# given a sma, return the orbital period
+def period(sma):
+  # http://en.wikipedia.org/wiki/Elliptic_orbit#Orbital_period
+  return 2 * math.pi * math.sqrt( sma**3 / sgp[args.body] )
+
+# given an apoapsis and periapsis, return the eccentricity
+def eccentricity(a,p):
+  return 1 - 2 / ( a/p + 1 )
+
+# given a numeric time (in seconds), return an abbreviated string
+def sec_to_string(t):
+  if t < 60:
+    return "{:.2f} seconds".format(t)
+  else:
+    m = t / 60;
+    if m < 60:
+      return "{:.2f} minutes".format(m)
+    else:
+      h = m / 60;
+      if h < 24:
+        return "{:.2f} hours".format(h)
+      else:
+        d = h/24
+        if d < 365:
+          return "{:.2f} days".format(d)
+        else:
+          return "{:.2f} years".format(d/365)
+
+# semi-major axis
+sma = ( to_radius(args.ap) + to_radius(args.pe) ) / 2
+
+print "ap speed: {}".format(vel(sma, to_radius(args.ap)))
+print "pe speed: {}".format(vel(sma, to_radius(args.pe)))
+print "period:   {}".format(sec_to_string(period(sma)))
+print "eccentr:  {:.4f}".format(eccentricity(to_radius(args.ap), to_radius(args.pe)))

@@ -1,0 +1,240 @@
+#!/usr/bin/perl -w
+use strict;
+
+# Use less and shell (but mostly grep) together.
+#
+# The general idea is that you start with less, and then pipe the contents of
+# less into some shell command (like grep, or perl) and immediately re-less
+# the output of that program.
+#
+# This script maintains the entire stack of commands as you successively
+# run the output of each command through more commands. At each level of the
+# stack, you can use less to browse the output.
+#
+# --config <file> will use <file> to load/save the command stack (default:
+#   $ENV{HOME}/.gless
+#
+# --noload will inhibit loading the contents of the config file at the start
+#
+# --nosave will inhibit writing the config file at the end
+
+use File::Temp;
+use Term::ReadKey;
+use Term::ReadLine;
+use Getopt::Long;
+use Cwd;
+
+my %o = (
+    config => $ENV{HOME}.'/.gless',
+);
+GetOptions(\%o, 'noload', 'nosave', 'config=s');
+
+# magic slurp input to temp file
+my $stdin = File::Temp->new;
+while (<>) {
+    print $stdin $_;
+}
+
+# save a copy of STDOUT
+open my $stdout, '>&', STDOUT or die "couldn't dup stdout: $!";
+
+# the stack we push/pop shell commands on
+my @cmds;
+
+my $term = Term::ReadLine->new('gless');
+
+# need this file for setting up our own keybinds for less
+my $lesskeyfile = less_keybinds();
+
+# this holds the stack between calls to gless
+my $config = $o{config};
+if (not defined $ENV{NO_GLESS_HISTORY} and not $o{noload}) {
+    if (open my $fh, $config) {
+        while (<$fh>) {
+            chomp;
+            print "gless initial command: $_\n";
+            add_cmd($_);
+        }
+    }
+    sleep 1; # leave commands on screen briefly
+}
+
+# first thing we do is invoke less
+to_less();
+
+# teh loopz0r
+while () {
+    if ($?>>8 == 101) { # e
+        # shortcut to just add a command
+        add_cmd();
+    }
+    else {
+        $| = 1;
+        count_lines();
+        print 'gless ['.scalar(@cmds).']: ';
+        ReadMode(3);
+        my $key = ReadKey(0);
+        ReadMode(0);
+        $key = '' if $key =~ /^\s*$/;
+        print "$key\n";
+
+        if (lc($key) eq 'e') {
+            add_cmd();
+        }
+        elsif (lc($key) eq 'q') {
+            last;
+        }
+        elsif (lc($key) eq 'p') {
+            if (@cmds) {
+                print 'popped: '.pop(@cmds)->[0]."\n";
+                to_less();
+            }
+            else {
+                print "nothing to pop\n";
+            }
+        }
+        elsif (lc($key) eq 'c') {
+            @cmds = ();
+        }
+        elsif (lc($key) eq 's') {
+            if (@cmds) {
+                for (my $i = 0; $i < @cmds; $i++) {
+                    printf "%2d: $cmds[$i][0]\n", $i;
+                }
+            }
+            else {
+                print "no commands in the stack\n";
+            }
+        }
+        elsif (lc($key) eq 'l') {
+            to_less();
+        }
+        elsif (lc($key) eq 'w') {
+            write_file('>');
+        }
+        elsif (lc($key) eq 'a') {
+            write_file('>>');
+        }
+        else {
+            print <<HELP
+unknown key: $key
+a   Append the current content of less to a file.
+c   Clear the whole command stack.
+e   Evaluate another command.
+l   Back to less.
+p   Pop the last used command off the stack.
+q   Quit gless altogether.
+s   Show the stack of commands.
+w   Write the current content of less to a file.
+
+Inside less:
+e   Evaluate another command and immediately re-less.
+q   Quit to gless command line.
+
+HELP
+        } # pick a letter
+    } # if we didn't shortcut exit out of less
+}
+
+# dump the stack to file
+if (not defined $ENV{NO_GLESS_HISTORY} and not $o{nosave}) {
+    open my $fh, '>', $config or die $!;
+    print $fh "$_->[0]\n" foreach @cmds;
+}
+
+sub less_keybinds {
+    # setup less to have a keybind for l (lowercase L)
+    my $tmp = File::Temp->new;
+    my $lesskeyfile = $tmp->filename;
+    open my $fh, "|lesskey -o $lesskeyfile -" or die $!;
+    print $fh "e quit e\n"; # 'e' == dec 101 return code
+    close $fh;
+    return ($lesskeyfile, $tmp);
+}
+
+sub to_less {
+    # grab our most recent filehandle (either STDIN or the top of the stack)
+    my $fh = @cmds? $cmds[-1][1] : $stdin;
+    seek($fh, 0, 0);
+
+    # invoke less
+    open(STDIN, '<', $fh) or die $!;
+    open(STDOUT, '>&', $stdout) or die $!;
+    my $rc = system "less -k$lesskeyfile -";
+
+    restore_std();
+}
+
+sub add_cmd {
+    # our command expr could be passed in
+    my ($expr) = @_;
+    if (not defined $expr) {
+        # or come from STDIN
+		$expr = $term->readline('command: ');
+		$term->addhistory($expr);
+    }
+
+    # get our filehandle which we're going to STDIN to <command>
+    my $fh = @cmds ? $cmds[-1][1] : $stdin;
+    seek($fh, 0, 0);
+    open(STDIN, '<', $fh) or die $!;
+
+    # get a filehandle for <command>'s STDOUT
+    my $new = File::Temp->new;
+    open(STDOUT, '>', $new) or die $!;
+
+    # invoke the command
+    my $rc = system $expr;
+    restore_std();
+
+    # successful command dumps us back into less, otherwise we say what happened
+    if ($rc>>8 == 0) {
+        push @cmds, [$expr, $new];
+        if (@_ == 0) {
+            to_less();
+        }
+    }
+    else {
+        print "command failed, ignoring this expression\n";
+    }
+}
+
+sub write_file {
+    my ($access) = @_;
+
+    print "current directory: " . getcwd() . "\n";
+    my $out = $term->readline('filename: ');
+    $term->addhistory($out);
+    
+    if (not $out =~ /^\s*\//) {
+        $out = getcwd() . "/$out";
+    }
+    
+    if (open my $fh, $access, $out) {
+        my $i = 0;
+        my $cur = @cmds ? $cmds[-1][1] : $stdin;
+        seek($cur, 0, 0);
+        while (<$cur>) {
+            print $fh $_;
+            $i++;
+        }
+        print "wrote $i lines to $out\n";
+    }
+    else {
+        print "couldn't write/append to file $out: $!\n";
+    }
+}
+
+sub restore_std {
+    # hook STDIN back up to keyboard and STDOUT to what we started with
+    open(STDIN, '<', '/dev/tty') or die $!;
+    open(STDOUT, '>&', $stdout) or die $!;
+}
+
+sub count_lines {
+    # print out linecount of the most recent handle
+    my $fh = @cmds ? $cmds[-1][1] : $stdin;
+    seek($fh, 0, 0);
+    my @lines = <$fh>;
+    print "(".@lines." lines)\n";
+}

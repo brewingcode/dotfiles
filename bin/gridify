@@ -1,0 +1,75 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+# Takes tab-sep data and turns it into a grid, just like mysql can do.
+# --ex <x,y,z> excludes columns with indicies x, y, and z (0-based)
+# --plain outputs lines, just tab-sep data
+# --truncate <n> will chop all columns to n letters
+# --file <name> read <name> instead of stdin
+
+use Getopt::Long;
+
+my %o = ( ex => '', plain => 0, truncate => 0, file => '' );
+GetOptions(\%o, 'ex=s', 'plain', 'truncate=i', 'file=s') or die "invalid options";
+
+my @rows;
+my @widths;
+
+my $fh;
+if ($o{file}) {
+  open $fh, '<', $o{file} or die "couldn't open file '$o{file}': $!";
+}
+else {
+  open $fh, '< -' or die "couldn't open stdin: $!";
+}
+
+$o{ex} = split /\s*,\s*/, $o{ex};
+$o{ex} = () unless $o{ex};
+
+while (<$fh>) {
+    chomp;
+    my @cols = split /\t/;
+    my @row;
+
+    for my $i (0 .. (@cols - 1)) {
+        if (grep {$i == $_} @{$o{ex}}) {
+            # skip this column
+        }
+        else {
+            push @row, $cols[$i];
+        }
+    }
+
+    for my $i (0 .. (@row - 1)) {
+        push @widths, 0 unless @widths >= $i + 1;
+        $row[$i] = ' ' unless defined $row[$i];
+        my $w = length($row[$i]);
+
+        $widths[$i] = $w if $w > $widths[$i];
+        if ($o{truncate} and $w > $o{truncate}) {
+            $widths[$i] = $o{truncate};
+        }
+    }
+    push @rows, \@row;
+}
+
+my $hr = '+';
+for (@widths) {
+    $hr .= '-' x ($_ + 2);
+    $hr .= '+';
+}
+
+print "$hr\n" unless $o{plain};
+
+for my $row (@rows) {
+    if (@widths > @$row) {
+       push @$row, '' for 1 .. (@widths - @$row);
+    }
+    print "| " unless $o{plain};
+    print join($o{plain} ? "\t" : " | ", map { sprintf "\%$widths[$_].$widths[$_]s", $row->[$_] } 0 .. (@$row - 1));
+    print " |" unless $o{plain};
+    print "\n";
+}
+
+print "$hr\n" unless $o{plain};

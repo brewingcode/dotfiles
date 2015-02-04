@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# manually trigger the screensaver in OSX
+
+P=$(pidof ScreenSaverEngine)
+if [ -n "$P" ]; then
+    kill $P
+else
+    nohup /System/Library/Frameworks/ScreenSaver.framework/Resources/ScreenSaverEngine.app/Contents/MacOS/ScreenSaverEngine -background &
+fi

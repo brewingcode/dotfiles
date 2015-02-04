@@ -1,0 +1,212 @@
+#!/usr/bin/env perl
+# nfu: Command-line numeric fu | Spencer Tipping
+# Licensed under the terms of the MIT source code license
+
+use v5.10;
+use strict;
+use warnings;
+use POSIX qw(dup2);
+
+$|++;
+
+my %explosions = (
+  a => '--average',
+  v => '--variance',
+  c => '--count',
+  d => '--delta',
+  e => '--eval',
+  f => '--fields',
+  g => '--group',
+  G => '--rgroup',
+  l => '--log',
+  L => '--exp',
+  o => '--order',
+  O => '--rorder',
+  s => '--sum',
+  S => '--slice',
+  q => '--quant',
+  p => '--plot',
+  P => '--poll',
+);
+
+my %arity = (
+  average  => 1,
+  variance => 1,
+  count    => 0,
+  delta    => 0,
+  eval     => 1,
+  fields   => 1,
+  group    => 0,
+  rgroup   => 0,
+  log      => 0,
+  exp      => 0,
+  order    => 0,
+  rorder   => 0,
+  plot     => 1,
+  poll     => 2,
+  sum      => 0,
+  slice    => 2,
+  quant    => 1,
+);
+
+my %functions = (
+  count  => sub {exec 'uniq', '-c'  or die 'failed to exec "uniq -c"'},
+  group  => sub {exec 'sort'        or die 'failed to exec "sort"'},
+  rgroup => sub {exec 'sort', '-r'  or die 'failed to exec "sort -r"'},
+  order  => sub {exec 'sort', '-n'  or die 'failed to exec "sort -n"'},
+  rorder => sub {exec 'sort', '-rn' or die 'failed to exec "sort -rn"'},
+
+  average => sub {
+    my $size = $_[0];
+    my ($n, $total) = (0, 0);
+    my @window = ();
+    while (<STDIN>) {
+      chomp;
+      my ($x, @xs) = split;
+      print join("\t", ($total += $x) /
+                       (++$n > $size && $size ? $size : $n), @xs), "\n";
+      $total -= shift @window if $size and push(@window, $x) >= $size;
+    }
+  },
+
+  slice => sub {
+    my ($chop_head, $chop_tail) = @_;
+    die "usage: --slice head tail, or -Shead,tail"
+      unless defined $chop_head and defined $chop_tail
+         and $chop_head =~ /^\d+$/ and $chop_tail =~ /^\d+$/;
+    my @window;
+    my $n = 0;
+    while (<STDIN>) {
+      push @window, $_ if ++$n > $chop_head;
+      print shift @window if @window > $chop_tail;
+    }
+  },
+
+  log => sub {
+    while (<STDIN>) {
+      chomp;
+      my ($x, @xs) = split;
+      print join("\t", log($x), @xs), "\n";
+    }
+  },
+
+  exp => sub {
+    while (<STDIN>) {
+      chomp;
+      my ($x, @xs) = split;
+      print join("\t", exp($x), @xs), "\n";
+    }
+  },
+
+  plot => sub {
+    exec "gnuplot -e \'plot \"-\" @_\' -persist"
+      or die 'failed to exec "gnuplot -persist"';
+  },
+
+  poll => sub {
+    my ($sleep, $command) = @_;
+    die "usage: --poll sleep-amount 'command ...'"
+      unless defined $sleep and defined $command;
+    system($command), sleep $sleep while 1;
+  },
+
+  delta => sub {
+    my $last = 0;
+    while (<STDIN>) {
+      chomp;
+      my ($x, @xs) = split;
+      print join("\t", $x - $last, @xs), "\n";
+      $last = $x;
+    }
+  },
+
+  sum => sub {
+    my $total = 0;
+    while (<STDIN>) {
+      chomp;
+      my ($x, @xs) = split;
+      print join("\t", $total += $x, @xs), "\n";
+    }
+  },
+
+  quant => sub {
+    my $quantum = $_[0] || 1.0;
+    while (<STDIN>) {
+      chomp;
+      my ($x, @xs) = split;
+      my $sign = $x < 0 ? -1 : 1;
+      print join("\t", int(abs($x) / $quantum + 0.5) * $quantum * $sign, @xs),
+            "\n";
+    }
+  },
+
+  eval => sub {
+    (my $code = $_[0]) =~ s/%(\d+)/\$_[$1]/g;
+    my $f = eval "sub {\n" . $code . "\n}" or
+            die "failed to compile eval function: $@\n  (code was $code)";
+    while (<STDIN>) {
+      chomp;
+      my @xs = split;
+      my @ys = $f->(@xs);
+      print @ys > 1 ? join("\t", @ys)
+                    : join("\t", $ys[0], @xs[1 .. $#xs]), "\n" if @ys;
+    }
+  },
+
+  fields => sub {
+    my @fs = split //, $_[0];
+    chomp, print join("\t", (split)[@fs]), "\n" while <STDIN>;
+  },
+);
+
+sub explode {
+  return $_ unless s/^-([^-])/$1/;
+  map {$explosions{$_} // $_} grep length, split /([.\d]*),?/;
+}
+
+$SIG{CHLD} = 'IGNORE';
+
+my $reader   = undef;
+my @exploded = map explode, @ARGV;
+
+# Note: the loop below uses pipe/fork/dup2 instead of a more idiomatic Open2
+# call. I don't have a good reason for this other than to figure out how the
+# low-level stuff worked.
+while (@exploded) {
+  (my $command = shift @exploded) =~ s/^--//;
+  my  $arity   = $arity{$command} // die "undefined command: $command";
+  my  @args    = splice @exploded, 0, $arity;
+
+  # Here's where things get fun. The question right now is, "do we need to
+  # fork, or can we run in-process?" -- i.e. are we in the middle, or at the
+  # end? When we're in the middle, we want to redirect STDOUT to the pipe's
+  # writer and fork; otherwise we run in-process and write directly to the
+  # existing STDOUT.
+  if (@exploded) {
+    # We're in the middle, so allocate a pipe and fork.
+    pipe my($new_reader), my($writer);
+    unless (fork) {
+      # We're the child, so do STDOUT redirection.
+      close $new_reader or die "failed to close pipe reader: $!";
+      dup2(fileno($reader), 0) or die "failed to dup input: $!"
+        if defined $reader;
+      dup2(fileno($writer), 1) or die "failed to dup stdout: $!";
+
+      close $reader or die "failed to close reader: $!" if defined $reader;
+      close $writer or die "failed to close writer: $!";
+
+      # The function here may never return.
+      $functions{$command}->(@args);
+      exit;
+    } else {
+      close $writer or die "failed to close pipe writer: $!";
+      $reader = $new_reader;
+    }
+  } else {
+    # We've hit the end of the chain. Preserve stdout, redirect stdin from
+    # current reader.
+    dup2(fileno($reader), 0) or die "failed to dup input: $!"
+      if defined $reader;
+    $functions{$command}->(@args);
+  }
+}

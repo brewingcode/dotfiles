@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# manage magnet urls
+
+if [[ "$1" == "-r" ]]; then
+  ssh -t ec2 screen -r
+else
+  cat <(pbpaste) <(echo) | while read -r x; do [ -z "$x" ] || ssh ec2 'maguri '"'$x'"; done
+fi

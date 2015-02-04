@@ -1,0 +1,29 @@
+#!/usr/bin/env node
+
+process.stdin.setEncoding('utf8');
+
+var s = '';
+
+process.stdin.on('readable', function() {
+  var chunk = process.stdin.read();
+  if (chunk !== null) {
+    s += chunk;
+  }
+});
+
+process.stdin.on('end', function() {
+  var decl = 'var ev ';
+  var replaced = s.replace(/^\s*var\s+(\w+)/, decl);
+  if (replaced == s) {
+    replaced = decl + ' = ' + s;
+  }
+
+  try {
+    eval(replaced);
+    var j = JSON.stringify(ev, null, '  ');
+    process.stdout.write(j);
+  }
+  catch (e) {
+    process.stderr.write("error: " + e.stack);
+  }
+});

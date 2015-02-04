@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+
+from bs4 import BeautifulSoup
+from sys import stdin, stderr, exit, stdout
+from optparse import OptionParser
+from codecs import getwriter, open
+
+stdout = getwriter('utf-8')(stdout)
+
+cmdparser = OptionParser("""soup [options] [ <method> [<argument>] ]
+
+Makes a BeautifulSoup object out of stdin, and prints it to stdout.
+If <method> is given, soup.<method>() is called, along with <argument>
+if it is given.
+
+ex: curl -sL google.com | soup select 'div[id="guser"]'""")
+
+cmdparser.add_option("--html", "-t", action="store_true",
+    help="print html rather than using stripped_strings")
+cmdparser.add_option("--infile", "-i",
+    help="specify file rather than stdin")
+(opts, args) = cmdparser.parse_args()
+
+soup = BeautifulSoup(open(opts.infile, 'r', 'utf-8') if opts.infile else stdin)
+
+def out(s):
+    stdout.write(s)
+    stdout.write('\n')
+
+if len(args) == 0:
+    if opts.html:
+        out(soup.prettify())
+    else:
+        for x in soup.stripped_strings: out(x)
+else:
+    if len(args) == 1: args.append(None)
+    if len(args) > 2: raise Exception('only two args allowed')
+
+    f = getattr(soup, args[0])
+
+    if soup and f:
+        for x in f(args[1]):
+            if opts.html:
+                out(x.prettify())
+            else:
+                for y in x.stripped_strings: out(y)
+    else:
+        stderr.write('no soup for you, or %s is not in your soup\n' % args[0])
+        exit(1)

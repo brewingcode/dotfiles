@@ -1,0 +1,23 @@
+#!/usr/bin/python
+
+# pyobjc example for calling NSWorkspace.typeOfFile:error:, like so:
+#   NSWorkspace *ws = [NSWorkspace sharedWorkspace];
+#   NSString *description = [ws localizedDescriptionForType:[ws typeOfFile:@"/full/path/to/file" error:nil]];
+
+import AppKit
+import sys
+
+def main():
+
+    ws = AppKit.NSWorkspace.sharedWorkspace()
+
+    for arg in sys.argv[1:]:
+        (filetype,err) = ws.typeOfFile_error_(arg, None)
+        if err:
+            sys.stderr.write(u"error: {}".format(err))
+        else:
+            desc = ws.localizedDescriptionForType_(filetype)
+            print filetype, "\n", desc
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,10 @@
+#!/bin/bash
+# takes HAR data on stdin, print CSV to stdout of:
+# <response size (KB)>, <request time (s)>, <rx rate (KB/s)>
+jq -r '
+    .log.entries[] 
+    | select(.response.content.mimeType == "video/mp2t") 
+    | "\(.response.content.size) \(.time)"
+' | perl -ane '
+    printf "%03d,%0.3f,%0.1f\n", $F[0]/1000, $F[1]/1000, $F[0]/$F[1]
+'

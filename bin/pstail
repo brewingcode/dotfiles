@@ -1,0 +1,160 @@
+#!/usr/bin/env perl
+
+# similar to 'watch ps uxf', but instead shows coming/going procs
+
+use strict;
+use warnings;
+use Getopt::Long;
+
+$\ = "\n";
+
+my %known;              # processes we know about
+my %added;              # processes we have seen show up
+my %deleted;            # processes we have seen go away
+my $ps_interval = 1;    # interval between ps checks, in seconds
+my $counter = 0;
+
+my %o = (
+    wide => 0,          # print wide lines if true
+    repaint => 0,       # clear term screen before every display
+    timestamps => 0,    # print a timestamp with each display
+);
+GetOptions(\%o, , 'interval=i', 'pscommand=s', keys %o) or die "invalid options";
+
+my $display_wait = $o{interval} // 2;   # number of $ps_intervals between displays
+my $ps_command = $o{pscommand};         # the way we invoke ps
+my $pid_index;                          # which column in ps output has the PID
+
+verify_ps_command();
+
+while (1) {
+    calculate_diff();
+    if (0 == $counter % $display_wait) {
+        show_diff();
+    }
+
+    $counter++;
+    sleep $ps_interval;
+}
+
+# returns a list of items in the first list that are NOT in the second list
+sub missing {
+    my ($l, $r) = @_;
+    my @missing;
+    for my $x (@$l) {
+        push @missing, $x if not grep {$x == $_} @$r;
+    }
+    return @missing;
+}
+
+sub calculate_diff {
+#    printf "%s\n", (caller(0))[3];
+
+    my %cur = get_ps();
+
+#    print "known: ".join(',', sort {$a<=>$b} keys %known);
+#    print "cur:   ".join(',', sort {$a<=>$b} keys %cur);
+
+    my @added = missing([keys %cur], [keys %known]);
+    my @deleted = missing([keys %known], [keys %cur]);
+
+#    print "added: ".join(',', sort {$a<=>$b} @added);
+#    print "delet: ".join(',', sort {$a<=>$b} @deleted);
+
+    for (@added) {
+        $added{$_} = $cur{$_};
+        $known{$_} = $cur{$_};
+    }
+    for (@deleted) {
+        $deleted{$_} = $known{$_};
+    }
+    for (keys %cur) {
+        $known{$_} = $cur{$_};
+    }
+}
+
+sub show_diff {
+#    printf "%s\n", (caller(0))[3];
+
+    my %show;
+
+    for (keys %added) {
+        if (exists $deleted{$_}) {
+            $show{$_} = "@ $deleted{$_}";
+        }
+        else {
+            $show{$_} = "+ $added{$_}";
+        }
+    }
+
+    for (keys %deleted) {
+        if (not exists $added{$_}) {
+            $show{$_} = "- $deleted{$_}";
+        }
+        delete $known{$_};
+    }
+
+    %added = %deleted = ();
+
+    system "clear" if $o{repaint};
+    chomp( my $width = `tput cols` );
+    print scalar(localtime) if $o{timestamps};
+    for (sort {$a<=>$b} keys %show) {
+        print $o{wide} ? $show{$_} : substr($show{$_}, 0, $width);
+    }
+}
+
+sub get_ps {
+#    printf "%s\n", (caller(0))[3];
+
+    my ($pid, @lines) = pidqx($ps_command);
+    shift @lines;
+
+    my %h;
+    for (@lines) {
+        chomp;
+        my @f = split /\s+/;
+        $h{$f[$pid_index]} = $_ if $f[$pid_index] != $pid;
+    }
+
+    return %h;
+}
+
+# http://www.perlmonks.org/?node_id=603176
+sub pidqx { # returns pid + the usual backtick result
+    my $pid = open my $ph, "$_[0] |" or die "$!: $_[0]";
+    my @lines = <$ph>;
+    close $ph;
+    waitpid $pid, 0;
+    return ( $pid, @lines );
+}
+
+sub verify_ps_command {
+    if (not $ps_command) {
+        system 'ps --version >/dev/null 2>&1';
+        if ($? >> 8 == 0) {
+            $ps_command = 'ps uxf';
+        }
+        else {
+            $ps_command = 'ps ux';
+        }
+    }
+
+    open my $ps, '-|', $ps_command or die "couldn't pipe: $!";
+    chomp( my $first = <$ps> );
+#    print $first;
+    die "invalid ps command: $ps_command" unless $first;
+    close $ps;
+
+    my $i = 0;
+    for (grep { $_ } split /\s+/, $first) {
+        if ($_ eq 'PID') {
+            $pid_index = $i;
+            last;
+        }
+        $i++;
+    }
+
+    die "'$ps_command' doesn't have PID as any column header" unless defined $pid_index;
+#    print "\$pid_index: $pid_index, \$i: $i";
+}

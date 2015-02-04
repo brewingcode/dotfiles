@@ -1,0 +1,22 @@
+#!/bin/sh
+pattern=$1
+shift
+
+for file in $@;
+do
+  svn log -q "$file" 2>/dev/null | perl -ne 'print "$1\n" if /^r(\d+)/' |
+  while read r
+  do
+    match=`svn cat -r $r "$file" | grep "$pattern"`
+    result=$?
+    if [ $result -eq 0 ]
+    then
+      /bin/echo -n "$file @r$r: "
+      /bin/echo $match;
+    elif [ $result -ne 1 ]
+    then
+      exit 2
+    fi
+  done
+done;
+

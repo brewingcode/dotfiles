@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# ssh with a specific identity file
+
+die() { echo $*; exit 1; }
+test -f $1 || die "first argument must be a filename (an RSA private key)"
+IDENT=$1
+shift
+ssh -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes -o IdentityFile=$IDENT -o StrictHostKeyChecking=no $*

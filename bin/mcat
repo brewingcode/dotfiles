@@ -1,0 +1,19 @@
+#!/usr/bin/perl -w
+
+# Multicat: bzcat/zcat/cat each line of stdin (assumed to be a list of files).
+# By default, only the first and last 3 lines are cat'd, pass in -f if you want
+# the full file to be catted.
+
+while (<STDIN>) {
+  chomp;
+  $catter = /\.gz$/i ? 'gzcat' : /\.bz2?$/i ? 'bzcat' : 'cat';
+  print "==== $_ ====\n";
+  if (grep {/^-f$/} @ARGV) {
+    system "$catter $_";
+  }
+  else {
+    system "$catter $_ | head -3";
+    system "$catter $_ | tail -3";
+  }
+}
+

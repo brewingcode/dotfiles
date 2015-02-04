@@ -1,0 +1,569 @@
+#!/usr/bin/perl -w
+#
+# $Id: parsepath,v 2.9 2007/03/24 03:05:43 jmates Exp $
+#
+# The author disclaims all copyrights and releases this script into the
+# public domain.
+#
+# Prints information about file paths, or checks for permissions
+# problems.
+#
+# Run perldoc(1) on this script for additional documentation.
+
+use strict;
+use Cwd qw(realpath);
+use File::Spec ();
+
+# NOTE may need alteration per site policy on usernames
+my $USERNAME_MATCH = qr/[\w-]{1,32}/;
+
+# limit on symlink recursion
+my $LINK_FOLLOW_MAX = 15;
+
+# Unix file type mappings
+# TODO use "use Fcntl ':mode';" instead?
+my %filetype = (
+  '0010000' => 'p',
+  '0020000' => 'c',
+  '0040000' => 'd',
+  '0060000' => 'b',
+  '0100000' => 'f',
+  '0120000' => 'l',
+  '0140000' => 's',
+  '0160000' => 'w',
+);
+my %modemap = (
+  userr  => 256,
+  userw  => 128,
+  userx  => 64,
+  groupr => 32,
+  groupw => 16,
+  groupx => 8,
+  otherr => 4,
+  otherw => 2,
+  otherx => 1
+);
+
+my @paths       = ();
+my $output      = q{};
+my $exit_status = 0;
+
+my %opts = ();
+for (
+  map { $_->[0] }
+  sort { $a->[1] <=> $b->[1] } map { [ $_, /^[+-]/ ? 0 : 1 ] } @ARGV
+  ) {
+
+  if (/^\+([rwx]+)$/) {
+    my $perms = $1;
+    for ( $perms =~ /(.)/g ) { $opts{perms}->{$_} = 1 }
+    $opts{constraint} = 1;
+    next;
+  }
+
+  if (/^-([\w]+)$/) {
+    my $opts = $1;
+    for ( $opts =~ /(.)/g ) { $opts{options}->{$_} = 1 }
+    next;
+  }
+
+  if (/^\s*(user|group)=($USERNAME_MATCH)\s*$/) {
+
+    if ( exists $opts{role} ) {
+      warn "notice: ignoring additional role: $1=$2\n";
+      next;
+    }
+
+    my $what = $1;
+    my $who  = $2;
+
+    $opts{role} = determine_role( $what, $who );
+    $opts{constraint} = 1;
+    next;
+  }
+
+  if (/^\s*file=(.+)$/) {
+    push @paths, resolve_path($1);
+    next;
+  }
+
+  push @paths, resolve_path($_);
+}
+
+if ( exists $opts{options}->{h} ) {
+  print_help();
+}
+
+# try for current directory, or fail
+if ( !@paths ) {
+  push @paths, resolve_path('.');
+}
+if ( !@paths ) {
+  warn "error: no path supplied\n";
+  exit 101;
+}
+
+$opts{constraint} = 1
+  if exists $opts{options}->{u}
+  or exists $opts{options}->{g}
+  or exists $opts{options}->{R};
+
+# verbose list by default unless checking something specific
+if ( !exists $opts{constraint} ) {
+  $opts{options}->{v} = 1;
+}
+
+# use current user if constrained and no user set
+if ( exists $opts{constraint} and not exists $opts{role} ) {
+  if ( exists $opts{options}->{g} ) {
+    $opts{role} =
+      determine_role( 'group', split / /,
+      exists $opts{options}->{R} ? $( : $) );
+  } else {
+    $opts{role} =
+      determine_role( 'user', exists $opts{options}->{R} ? $< : $> );
+  }
+}
+if ( exists $opts{constraint} and not exists $opts{perms} ) {
+  $opts{perms}->{r} = 1;
+}
+
+# fix perms hash to use array for easier subsequent work
+$opts{perms} = [ sort keys %{ $opts{perms} } ];
+
+my $text_block = 1;
+
+PATH: for ( my $pnum = 0; $pnum <= $#paths; $pnum++ ) {
+  my $path           = $paths[$pnum];
+  my @pathbits       = File::Spec->splitdir($path);
+  my $links_followed = 0;
+
+  $output = q{};
+
+  #$output = "\n" unless $pnum == 0;
+  unless ( $text_block == 1 ) {
+    print "\n";
+    $text_block = 1;
+  }
+
+  if ( !@pathbits ) {
+    warn "error: unable to split path: path=$path";
+    next PATH;
+  }
+
+  $output .= "% $path\n" if exists $opts{options}->{v};
+
+  my $current  = q{};
+  my $previous = q{};
+  for ( my $i = 0; $i <= $#pathbits; $i++ ) {
+    $previous = $current;
+    $current = File::Spec->catdir( $current, $pathbits[$i] );
+    my $filedata = getfileinfo($current);
+
+    if ( !$filedata ) {
+      warn "error: no permission data: file=$pathbits[$i], path=$current\n";
+      next PATH;
+    }
+
+    # TODO means of supplying output fields and their order?
+    if ( exists $opts{options}->{v} ) {
+      $output .= render_filedata($filedata) . "\n";
+    }
+
+    if ( exists $opts{constraint} ) {
+      check_access( $filedata, $i != $#pathbits ? [qw(r x)] : $opts{perms} );
+    }
+
+    if (  $i == $#pathbits
+      and $filedata->{type} eq 'l'
+      and exists $opts{options}->{l} ) {
+
+      $links_followed++;
+      if ( $links_followed > $LINK_FOLLOW_MAX ) {
+        warn
+          "error: symlink recursion exceeded: limit=$LINK_FOLLOW_MAX, path=$path\n";
+        next PATH;
+      }
+      $current = $previous;
+      push @pathbits,
+        resolve_path( File::Spec->catfile( $previous, $filedata->{link} ) );
+    }
+  }
+
+  if ( $output !~ /^\s*$/ ) {
+    print $output;
+    $text_block = 0;
+  }
+}
+
+exit $exit_status;
+
+sub resolve_path {
+  my $potential = shift;
+  if ( exists $opts{options}->{r} ) {
+    my $tmp = realpath($potential);
+    defined $tmp
+      ? return $tmp
+      : warn "warning: could not convert with realpath: path=$potential\n";
+  }
+  File::Spec->rel2abs($potential);
+}
+
+# accepts user|group, and a username/groupname/uid/gid and figures out
+# name, id, and type details.  Returns array of hashrefs.
+sub determine_role {
+  my $what = shift;
+  my @who  = @_;
+
+  my ( @userdata, $type, %seen );
+
+  my $function = 'get';
+  if ( $what eq 'group' ) {
+    $function .= 'gr';
+    $type = 'group';
+  } else {
+    $function .= 'pw';
+    $type = 'user';
+  }
+
+  for my $who (@who) {
+    my %userdata;
+    if ( $who =~ /^\d+$/ ) {
+      $function .= $type eq 'group' ? 'g' : 'u';
+      $function .= 'id';
+
+      next if exists $seen{"$type.$who"};
+
+      $userdata{name} = eval qq{$function("$who")};
+
+      if ( !defined $userdata{name} ) {
+
+        # TODO figure out how Unix deals with [gu]id that does not exist..
+        # treat in "other" category??
+        warn "warning: no data returned: function=$function, $type=$who\n";
+        $userdata{name} = $who;
+      }
+
+      $userdata{id}       = $who;
+      $userdata{type}     = $type;
+      $seen{"$type.$who"} = 1;
+
+    } else {
+      $function .= 'nam';
+      $userdata{id} = eval qq{$function("$who")};
+
+      if ( !defined $userdata{id} ) {
+        warn
+          "error: could not determine id: function=$function, $type=$who\n";
+        exit 102;
+      }
+
+      next if exists $seen{"$type.$userdata{id}"};
+
+      $userdata{name}              = $who;
+      $userdata{type}              = $type;
+      $seen{"$type.$userdata{id}"} = 1;
+
+    }
+
+    push @userdata, \%userdata;
+  }
+
+  if ( $type eq 'user' ) {
+
+    my $id = ( getpwuid $userdata[0]->{id} )[3];
+
+    if ( !defined $id ) {
+      warn "warning: user id not found, ignoring: id=", $userdata[0]->{id},
+        "\n";
+    } else {
+
+      if ( !exists $seen{"group.$id"} ) {
+
+        my $name = getgrgid $id;
+        push @userdata,
+          {
+          type => 'group',
+          id   => $id,
+          name => $name
+          };
+        $seen{"group.$id"} = 1;
+      }
+
+      # TODO iterate groups for which user has membership in...
+      while ( my ( $name, $pw, $gid, $members ) = getgrent ) {
+        if ( grep { $_ eq $userdata[0]->{name} } split ' ', $members ) {
+          if ( !exists $seen{"group.$gid"} ) {
+            push @userdata,
+              {
+              type => 'group',
+              id   => $gid,
+              name => $name
+              };
+            $seen{"group.$gid"} = 1;
+          }
+        }
+      }
+    }
+  }
+
+  return \@userdata;
+}
+
+# returns various information about specified file in hash reference
+sub getfileinfo {
+  my $file = shift;
+
+  my %filedata;
+  $filedata{name} = $file;
+  @filedata{qw(unix_mode unix_uid unix_gid)} = ( lstat $file )[ 2, 4, 5 ];
+
+  if ( !defined $filedata{unix_mode} ) {
+    return;
+  }
+
+  # TODO means of converting unix mode to drwx------ format?
+
+  $filedata{unix_mode_octal} = sprintf "%04o", $filedata{unix_mode} & 07777;
+
+  $filedata{type} =
+    $filetype{ sprintf "%07o", $filedata{unix_mode} & 0170000 };
+  $filedata{link} = readlink $file if $filedata{type} eq 'l';
+
+  $filedata{unix_user} = getpwuid $filedata{unix_uid}
+    || $filedata{unix_uid};
+  $filedata{unix_group} = getgrgid $filedata{unix_gid}
+    || $filedata{unix_gid};
+
+  return \%filedata;
+}
+
+# TODO $filedata has lstat value, not the info for the target... ergh.
+sub check_access {
+  my $filedata = shift;
+  my $perms    = shift;
+
+  for my $role ( @{ $opts{role} } ) {
+    if ( $role->{name} eq $filedata->{ "unix_" . $role->{type} } ) {
+
+      my @fails;
+      for my $bit (@$perms) {
+        unless ( $filedata->{unix_mode} & $modemap{ $role->{type} . $bit } ) {
+          push @fails, $bit;
+          $exit_status = 10;
+        }
+      }
+
+      if (@fails) {
+        $output .= '! '
+          . $role->{type} . '='
+          . $role->{name} . ' +'
+          . join( q{}, sort @fails )
+          . ' fails: '
+          . render_filedata($filedata) . "\n";
+      }
+
+      # Unix, once gets match on user or group, stops looking at subsequent
+      return;
+    }
+  }
+
+  # if drop off to here without being restricted, need to check "other"
+  my @fails;
+  for my $bit (@$perms) {
+    unless ( $filedata->{unix_mode} & $modemap{ 'other' . $bit } ) {
+      push @fails, $bit;
+      $exit_status = 10;
+    }
+  }
+
+  if (@fails) {
+    $output .=
+        '! unix-other +'
+      . join( q{}, sort @fails )
+      . ' fails: '
+      . render_filedata($filedata) . "\n";
+  }
+}
+
+sub render_filedata {
+  my $filedata = shift;
+
+  return
+    "$filedata->{type} $filedata->{unix_mode_octal} $filedata->{unix_user}:$filedata->{unix_group} $filedata->{name}"
+    . ( exists $filedata->{link} ? ' -> ' . $filedata->{link} : q{} );
+}
+
+# usage notes
+sub print_help {
+  print <<"HELP";
+$0 takes the following arguments in any order:
+
+  filepath - path(es) to parse (default current directory).
+    -r  Attempt to use realpath() to file.
+
+  Use file=path if the path name conflicts with an option.
+
+  Constraints (uses current user/group if (user|group)= is missing):
+
+  +r|+w|+x  - check whether read, write, or execute access possible.
+  user=???  - specify user to limit to (default: current user).
+  group=??? - specify group to limit to (default: current group).
+
+  -u    Use current user if constraining.
+  -g    Use currrent group(s) if constraining.
+  -R    Use real user/group instead of effective.
+
+  -h    Print these notes and exit script.
+  -v    Verbose list of path to file (default if nothing else).
+
+  -l    Chase tail symlink targets.
+
+HELP
+  exit 100;
+}
+
+=head1 NAME
+
+parsepath - Unix file path checker
+
+=head1 SYNOPSIS
+
+List permissions for the current working directory:
+
+  $ parsepath
+
+Check whether the current user has write access to C</var/tmp>:
+
+  $ parsepath +w /var/tmp
+
+See if the www group can read and execute a script:
+
+  $ parsepath +rx /var/www/cgi-bin/printenv group=www
+
+=head1 DESCRIPTION
+
+=head2 Overview
+
+A utility to display file path permissions and ownerships, or check
+whether the specified user or group has particular access rights to a
+file. Currently, only Unix users, groups, and file permissions are
+supported.
+
+=head2 Normal Usage
+
+Options may be specified in any order:
+
+  filepath - path(es) to parse (default current directory).
+    -r  Attempt to use realpath() to file.
+
+  Use file=path if the path name conflicts with an option.
+
+  Constraints (uses current user/group if (user|group)= is missing):
+
+  +r|+w|+x  - check whether read, write, or execute access possible.
+  user=???  - specify user to limit to (default: current user).
+  group=??? - specify group to limit to (default: current group).
+
+  -u    Use current user if constraining.
+  -g    Use currrent group(s) if constraining.
+  -R    Use real user/group instead of effective.
+
+  -h    Print these notes and exit script.
+  -v    Verbose list of path to file (default if nothing else).
+
+  -l    Chase tail symlink targets.
+
+Multiple permission checks are combined, so +rwx checks that the final
+file can be read, written, and executed. Parent directories leading up
+to the final file are checked for read and execute permission,
+regardless of the permissions specified on the command line.
+
+The verbose list output will go to standard out. Permission problems and
+other errors go to standard error, and a non-zero exit status used to
+indicate there was a problem. See L<"DIAGNOSTICS"> for more information
+on the exit codes.
+
+When checking for permission problems, no news is good news.
+
+=head1 DIAGNOSTICS
+
+On error, the script will exit with a non-zero exit status.
+
+=over 4
+
+=item B<10>
+
+The specified user or group did not have access to the file in question
+as requested. Parent directories and files will be listed to stardard
+error prior to the script exiting.
+
+=item B<100>
+
+Usage notes were printed.
+
+=item B<101>
+
+Path problem: no path specified to work with found, or there was a
+problem rendering the path into parts for processing.
+
+=item B<102>
+
+User or group problem: errors were encountered when attempting to lookup
+all required information about the user or group in question. Check
+whether the user or group in question exists in the system databases.
+
+=item B<103>
+
+File access problem. Returned when the script is unable to read the
+required file data about a particular file. Usually this indicates the
+user running the script does not have permission to read information
+about the file in question; rerun the script in list mode to see where
+the reporting stops.
+
+=back
+
+=head1 BUGS
+
+=head2 Reporting Bugs
+
+Newer versions of this script may be available from:
+
+http://sial.org/code/perl/
+
+If the bug is in the latest version, send a report to the author.
+Patches that fix problems or add new features are welcome.
+
+=head2 Known Issues
+
+No known issues.
+
+=head1 TODO
+
+Confirm permission checks properly emulate Unix.
+
+Support for other ACL systems (AFS, for example) or permissions on other
+operating systems?
+
+See source for other TODO.
+
+=head1 SEE ALSO
+
+chmod(2), perl(1), stat(2)
+
+=head1 AUTHOR
+
+Jeremy Mates, http://sial.org/contact/
+
+=head1 COPYRIGHT
+
+The author disclaims all copyrights and releases this script into the
+public domain.
+
+=head1 VERSION
+
+  $Id: parsepath,v 2.9 2007/03/24 03:05:43 jmates Exp $
+
+=head1 SCRIPT CATEGORIES
+
+UNIX/System_administration
