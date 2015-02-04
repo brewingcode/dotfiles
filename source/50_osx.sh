@@ -3,6 +3,15 @@ is_osx || return 1
 
 # APPLE, Y U PUT /usr/bin B4 /usr/local/bin?!
 PATH="/usr/local/bin:$(path_remove /usr/local/bin)"
+
+PATH=`paste -d ":" -s - << EOF
+/opt/local/bin
+/opt/local/sbin
+$PATH
+/opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin
+/opt/local/lib/mysql56/bin
+/opt/local/libexec/perl5.16
+EOF`
 export PATH
 
 # Trim new lines and copy to clipboard
