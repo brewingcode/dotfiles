@@ -1,5 +1,5 @@
 [user]
-  name = Ben Alman
+  name = Alex
   email = EMAIL
 [core]
   autocrlf = input
@@ -19,6 +19,18 @@
   rv = review
   st = status
   ksdiff = difftool -y -t Kaleidoscope
+
+  # "pretty log"
+  plog = log --pretty=format:'%C(yellow)%h %Cred%ai%Creset %s%Cgreen%d%Creset --%C(cyan)%an %Creset'
+  plog2 = log --pretty=format:'%C(yellow)%h %Cred%ai%Creset %s%Cgreen%d%Creset --%C(cyan)%an %Creset%n%-b%-n'
+
+  # "clean log"
+  clog = log --pretty=format:'%h %ai %s --%an'
+
+  # "fancy log"
+  flog = log --color --graph --pretty=format:'%h %ai%Cgreen%d%Creset %s --%an'
+
+  fsl = ! gitsync && git plog | head
 [branch "master"]
   remote = origin
   merge = refs/heads/master
@@ -57,3 +69,12 @@
   insteadOf = "gist:"
 [url "git@heroku.com:"]
   insteadOf = "heroku:"
+
+# from my original .gitconfig
+[credential]
+  helper = osxkeychain
+  useHttpPath = true
+[help]
+  autocorrect = 1
+[rebase]
+  autosquash = true
