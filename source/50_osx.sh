@@ -77,3 +77,19 @@ function txt_sub_restore() {
   )
   for cmd in "${cmds[@]}"; do /usr/libexec/PlistBuddy -c "$cmd" "$prefs"; done
 }
+
+. ~/pri/github/git/contrib/completion/git-completion.bash
+
+# restart wifi
+alias rswifi="networksetup -setairportpower en0 off ; networksetup -setairportpower en0 on"
+
+# restart a Macports daemon
+function portre {
+  sudo port unload $1
+  sudo port load $1
+}
+
+# list all launchd's
+function launchds {
+  find /Library/Launch* /System/Library/Launch* $HOME/Library/Launch* -ls | perl -lpe 's/^\d+\s+\d+\s+//'
+}

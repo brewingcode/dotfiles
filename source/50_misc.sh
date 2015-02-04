@@ -22,3 +22,27 @@ fi
 
 # Disable ansible cows }:]
 export ANSIBLE_NOCOWS=1
+
+# find, and then sum the size of everything in KB
+function finds {
+  find "$@" -ls | awk '{X+=$7} END {print X/1000}'
+}
+
+# truncate stdin exactly to term width
+alias trunc="cut -c -$(tput cols)"
+
+# grep -C<x> does stupid things in its output, fix them
+#   * the same line might be printed twice
+#   * "--" twice in a row is dumb
+function cgrep {
+  grep -n "$@" | perl -lne '
+    $x{$1} = $3 if /^(\d+)(:|-)(.*)/;
+    END {
+      for (sort {$a <=> $b} keys %x ) {
+        print "--" if $p and $_ - $p > 1;
+        print $x{$_};
+        $p = $_
+      }
+    }
+  '
+}
