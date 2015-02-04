@@ -1,3 +1,6 @@
+# `sudo -s` can't go invoking all this dotfiles stuff
+[ $UID -eq 0 ] && return 1
+
 # Where the magic happens.
 export DOTFILES=~/.dotfiles
 
