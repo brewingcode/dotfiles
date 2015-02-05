@@ -113,3 +113,52 @@ if is_osx; then
     fi
   }
 fi
+
+# print a nice view of all branch tips
+#   githeads [remote_name]
+# remote_name can be the bit after "refs/remotes/", or "." for the local repo, or
+# blank to show all remotes plus the local repo
+function githeads {
+  if [[ "$1" == "" ]]; then
+    git remote | while read -r remote; do
+      githeads "$remote"
+    done
+    githeads "."
+  else
+    if [[ "$1" == "." ]]; then
+      refspec=refs/heads
+    else
+      refspec=refs/remotes/$1
+    fi
+
+    echo "refspec: $refspec"
+    git for-each-ref --sort=-committerdate \
+      --format='%(committerdate)%09%(refname)%09%(objectname:short)%09%(committername)%09%(contents:subject)' \
+      "$refspec" | perl -pe 's,refs/\S+/(\S+)\t,$1\t,' | gridify -t 50
+  fi
+}
+
+# given the name of a git remote, fetch it and look for A..B rev ranges
+# in the output so that we can print them nicely. If no remote is given,
+# call `git remote` and run against each one.
+function gitsync {
+  if [[ "$1" == "" ]]; then
+    git remote | while read -r remote; do
+      echo "fetching $remote"
+      gitsync "$remote"
+    done
+  else
+    git fetch -p $1 2>&1 \
+      | perl -ne '
+        next unless /\S/;
+        print "###\n### $_###\n";
+        if (/^\s+(\w{7}\.\.\w{7})\s/) {
+          print "\n";
+          $fmt = q/'\''%C(yellow)%h %Cred%ai%Creset %s%Cgreen%d%Creset --%Cblue%an %Creset%n%b'\''/;
+          $log = `git log --graph --pretty=format:$fmt $1 2>&1`;
+          $log =~ s/\s*$//s;
+          print "$log\n\n" unless $log =~ /fatal: ambiguous argument/;
+          print `git diff --stat $1`, "\n";
+        }'
+  fi
+}

@@ -46,3 +46,14 @@ function cgrep {
     }
   '
 }
+
+function hex2bin {
+  perl -e '
+    for $arg (@ARGV) {
+      $hexlen = length $arg;
+      $binlen = $hexlen * 4;
+      print unpack "B$binlen", pack "H$hexlen", $arg;
+      print "\n";
+    }
+  ' "$@"
+}
