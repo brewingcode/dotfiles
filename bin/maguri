@@ -5,5 +5,10 @@
 if [[ "$1" == "-r" ]]; then
   ssh -t ec2 screen -r
 else
-  cat <(pbpaste) <(echo) | while read -r x; do [ -z "$x" ] || ssh ec2 'maguri '"'$x'"; done
+  if [[ "$OSTYPE" =~ ^darwin ]]; then
+    cat <(pbpaste) <(echo) | while read -r x; do [ -z "$x" ] || ssh ec2 'maguri '"'$x'"; done
+  else
+    [[ "$1" =~ xt=urn:btih:([^&/]+) ]] || return 1;
+    echo "d10:magnet-uri${#1}:${1}e" > "$HOME/torrents/watch/meta-${BASH_REMATCH[1]}.torrent"
+  fi
 fi
