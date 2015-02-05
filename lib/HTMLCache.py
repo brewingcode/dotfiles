@@ -97,7 +97,7 @@ def _get_url(url, headers, stream=False):
     import requests
 
     jar = _load_jar()
-    response = requests.get(url, headers=headers, cookies=jar, stream=stream)
+    response = requests.get(url, headers=headers, cookies=jar, stream=stream, verify=False)
     if cookie_file:
         for cookie in response.cookies:
             jar.set_cookie(cookie)
@@ -158,7 +158,7 @@ the return value is the filepath of the fetched file."""
     if bypass or not url in index:
         if headers == None:
             headers = {}
-        headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.95 Safari/537.36'
+        headers['User-Agent'] = 'curl/7.30.0'
 
         if bin_file:
             response = _get_url(url, headers, True)
