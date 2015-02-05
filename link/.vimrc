@@ -289,3 +289,5 @@ let g:pymode_lint_message = 1
 let g:pymode_lint_ignore = "E501,E302,E401"
 
 let g:pymode_rope = 0
+
+au BufEnter /private/tmp/crontab.* setl backupcopy=yes
