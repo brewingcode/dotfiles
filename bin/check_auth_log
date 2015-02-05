@@ -1,0 +1,26 @@
+#!/usr/bin/perl -w
+use strict;
+
+my @ignores = qw/inetnum admin-c tech-c status mnt-by mnt-lower changed source nic-hdl remarks descr/;
+my %h;
+
+while (<>) {
+    next if /user alex|cron:session/;
+    /from (\d+\.\d+\.\d+\.\d+)/ or next;
+    $h{$1}++;
+}
+
+for my $ip (sort {$h{$b} <=> $h{$a}} keys %h) {
+    if ($h{$ip} > 200) {
+        my @y;
+        for (`whois $ip`) {
+            /^(\S+):\s/ or next;
+            chomp;
+            if (grep {$1 eq $_} @ignores) {
+                next;
+            }
+            push @y, $_;
+        }
+        print "$ip\t$h{$ip}\n", join("\n",@y), "\n\n##########\n\n";
+    }
+}

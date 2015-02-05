@@ -1,0 +1,5 @@
+#!/bin/bash
+
+dumpfile=/home/alex/tcpdump-$(date -u +%Y%m%d-%H%M).bin
+sudo tcpdump -w $dumpfile -ni eth0 '(port not 22) and (not (src net 10 and dst net 10)) and ip' 2>/dev/null &
+sudo chown alex $dumpfile

@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+
+import HTMLCache
+import re
+import sys
+import bs4
+
+html = HTMLCache.fetch('http://aws.amazon.com/ec2/instance-types/')
+m = re.search(r'for each Amazon EC2 Instance Type.*(<table.*?</table>)', html, re.DOTALL)
+if not m:
+    sys.stderr.write('regex did not match html')
+    sys.exit(1)
+table = re.sub(r'<thead.*</thead>', '', m.group(1), flags=re.DOTALL)
+soup = bs4.BeautifulSoup(table)
+
+for row in soup.select('tr'):
+    cells = [x for x in row.stripped_strings]
+    print ",".join(cells)
+
+# http://aws.amazon.com/ec2/pricing/pricing-on-demand-instances.json
+# http://aws.amazon.com/ec2/pricing/pricing-reserved-instances.json
+# http://aws.amazon.com/ec2/pricing/pricing-data-transfer.json
+

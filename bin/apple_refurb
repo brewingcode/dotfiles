@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+
+import urllib2, bs4, os, re, codecs
+from subprocess import Popen, PIPE
+
+url = 'http://store.apple.com/us/browse/home/specialdeals/mac/'
+
+pages = {
+        'air': ['macbook_air/11', 'macbook_air/13'],
+        'pro': ['macbook_pro/13', 'macbook_pro/15'],
+        'mini': ['mac_mini']
+        }
+
+def main():
+    prev = '/tmp/apple_refurb_prev_run'
+    text = ''
+
+    for p in pages['pro']:
+        html = urllib2.urlopen(url + p).read()
+        text += textify(html)
+
+    if not os.path.exists(prev) or text != codecs.open(prev, 'r', 'utf-8').read():
+        if len(text) > 0:
+            print text
+        store(text, prev)
+
+def store(s, filename):
+    f = codecs.open(filename, 'w', 'utf-8')
+    f.write(s)
+    f.close()
+
+def i_care(text):
+    m = re.search(r'released \w+ (\d+)', text)
+    if m and int(m.group(1)) >= 2013:
+        m = re.search(r'with Retina Display', text)
+        if m:
+            m = re.search('GeForce', text)
+            if not m:
+                m = re.search('15.4', text)
+                if m:
+                    return True
+    return False
+
+def textify(html):
+    soup = bs4.BeautifulSoup(html)
+    text = ''
+
+    for prod in soup.select('tr.product'):
+        pricing = []
+        href = ''
+        for x in prod.select('td.purchase-info'):
+            pricing += x.stripped_strings
+            if not href:
+                href = x.find('a').get('href')
+        pricing.pop(-1)
+
+        cur = 'http://store.apple.com' + href + '\n'
+        for x in prod.select('td.specs'):
+            cur += '\n'.join(x.stripped_strings) + '\n'
+        cur += ' '.join(pricing) + '\n\n'
+        cur = re.sub(r'\n1\n', '', cur)
+
+        if i_care(cur):
+            text += cur
+
+    return text
+
+main()

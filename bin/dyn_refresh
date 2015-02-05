@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+
+import mechanize, os
+
+mech = mechanize.Browser()
+mech.open('https://account.dyn.com')
+
+mech.select_form(nr=1)
+mech['username'] = os.environ['DYN_USERNAME']
+mech['password'] = os.environ['DYN_PASSWORD']
+
+resp = mech.submit()
+if resp.code != 200:
+    print "expected response code 200 not found: %d instead" % resp.code
+    print resp.info()
