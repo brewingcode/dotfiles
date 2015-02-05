@@ -162,3 +162,5 @@ function gitsync {
         }'
   fi
 }
+
+source $DOTFILES/vendor/git_completion.bash
