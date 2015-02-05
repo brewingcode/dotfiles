@@ -18,6 +18,10 @@ function src() {
       source "$file"
     done
   fi
+
+  if [ -f ~/.private_env ]; then
+    source ~/.private_env
+  fi
 }
 
 # Run dotfiles script, then source.
