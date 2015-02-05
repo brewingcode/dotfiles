@@ -29,7 +29,9 @@ function finds {
 }
 
 # truncate stdin exactly to term width
-alias trunc="cut -c -$(tput cols)"
+function trunc {
+  cut -c -$(tput cols)
+}
 
 # grep -C<x> does stupid things in its output, fix them
 #   * the same line might be printed twice
