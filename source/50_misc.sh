@@ -23,6 +23,8 @@ fi
 # Disable ansible cows }:]
 export ANSIBLE_NOCOWS=1
 
+export PYTHONPATH=$DOTFILES/lib
+
 # find, and then sum the size of everything in KB
 function finds {
   find "$@" -ls | awk '{X+=$7} END {print X/1000}'
