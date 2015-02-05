@@ -78,7 +78,7 @@ function txt_sub_restore() {
   for cmd in "${cmds[@]}"; do /usr/libexec/PlistBuddy -c "$cmd" "$prefs"; done
 }
 
-. ~/pri/github/git/contrib/completion/git-completion.bash
+. ~/var/github/git/contrib/completion/git-completion.bash
 
 # restart wifi
 alias rswifi="networksetup -setairportpower en0 off ; networksetup -setairportpower en0 on"
