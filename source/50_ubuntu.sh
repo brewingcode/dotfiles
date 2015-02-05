@@ -31,3 +31,5 @@ function node_ver() {
     echo "Error, $(node --version) installed."
   )
 }
+
+eval $(perl -I${HOME}/perl5/lib/perl5 -Mlocal::lib)
