@@ -3,6 +3,7 @@
 import json
 import sys
 import re
+import os
 
 opts = False
 
@@ -25,7 +26,7 @@ def api_call(path, data):
     if opts.fetch:
         HTMLCache.bypass = True
 
-    data['key'] = 'AIzaSyBWRLORaHM0zr1ml43AoDdGYBHQRxkEFlc'
+    data['key'] = os.environ['YOUTUBE_API_KEY']
 
     query_string = urllib.urlencode(data)
     url = 'https://www.googleapis.com/youtube/v3/{}?{}'.format(path, query_string)
