@@ -4,6 +4,8 @@ import json
 import sys
 import re
 
+opts = False
+
 def dump_json(data, prepend):
     import re
     s = json.dumps(data, indent=2, separators=(', ', ': '))
@@ -12,6 +14,8 @@ def dump_json(data, prepend):
 def api_call(path, data):
     import urllib
     import HTMLCache
+
+    init_opts()
 
     if opts.verbose:
         HTMLCache.trace = sys.stderr
@@ -104,11 +108,8 @@ def get_channel(channel_id):
 
     return get_playlist(channel['items'][0]['contentDetails']['relatedPlaylists']['uploads'])
 
-def main():
+def init_opts():
     import optparse
-
-    reload(sys)
-    sys.setdefaultencoding('utf-8')
 
     parser = optparse.OptionParser("""
 Print a tab-separated list to stdout of all videos in a youtube
@@ -129,8 +130,16 @@ Shortcuts:
         help="include headers in first line of output")
     parser.add_option('--fetch', '-f', action="store_true",
         help="fetch pages (bypass the html cache)")
+
     global opts
-    (opts, args) = parser.parse_args()
+    if not opts:
+        (opts, _) = parser.parse_args()
+
+def main():
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+
+    init_opts()
 
     if opts.playlist:
         m = re.search(r'list=([\w\-]+)', opts.playlist)
