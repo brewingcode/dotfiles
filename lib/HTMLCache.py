@@ -37,6 +37,9 @@ import json
 import codecs
 import shutil
 import tempfile
+import urllib3
+
+urllib3.disable_warnings()
 
 data_root = os.path.join(os.environ['HOME'], '.htmlcache')
 sleep = 0
