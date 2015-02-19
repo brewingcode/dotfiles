@@ -61,3 +61,7 @@ function hex2bin {
     }
   ' "$@"
 }
+
+function vimm {
+  vim -u /dev/null $*
+}
