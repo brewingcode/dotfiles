@@ -106,6 +106,17 @@ function prompt_svn() {
 prompt_stack=()
 trap 'prompt_stack=("${prompt_stack[@]}" "$BASH_COMMAND")' DEBUG
 
+function titlebar() {
+  case $TERM in
+    xterm*)
+      echo '\[\033]0;\u@\h\007\]'
+      ;;
+    *)
+      echo ''
+      ;;
+  esac
+}
+
 function prompt_command() {
   local exit_code=$?
   # If the first command in the stack is prompt_command, no command was run.
@@ -122,6 +133,8 @@ function prompt_command() {
   prompt_getcolors
   # http://twitter.com/cowboy/status/150254030654939137
   PS1="\n"
+  # set titlebar
+  PS1="$PS1$(titlebar)"
   # svn: [repo:lastchanged]
   PS1="$PS1$(prompt_svn)"
   # git: [branch:flags]
