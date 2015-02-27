@@ -6,7 +6,7 @@ if [[ "$1" == "-r" ]]; then
   ssh -t ec2 screen -r
 else
   if [[ "$OSTYPE" =~ ^darwin ]]; then
-    while read -r x; do
+    (pbpaste; echo) | while read -r x; do
       [ -n "$x" ] && ssh ec2 'maguri '"'$x'"
     done
   else
