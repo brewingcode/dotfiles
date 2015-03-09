@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# kick the AFP process when network Time Machine backups start saying "backup
+# already in use" or such shit
+
+for i in stop start; do sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin $i afp; done
