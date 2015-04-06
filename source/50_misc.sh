@@ -65,3 +65,8 @@ function hex2bin {
 function vimm {
   vim -u /dev/null $*
 }
+
+# days_since YYYY M D
+function days_since {
+  python -c "from datetime import date; print (date.today() - date($1, $2, $3)).days"
+}
