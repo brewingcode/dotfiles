@@ -7,7 +7,7 @@ if [[ "$1" == "-r" ]]; then
 else
   if [[ "$OSTYPE" =~ ^darwin ]]; then
     (pbpaste; echo) | while read -r x; do
-      [ -n "$x" ] && ssh ec2 'maguri '"'$x'"
+      [ -n "$x" ] && ssh ec2 'maguri '\'$x\'
     done
   else
     [[ "$1" =~ xt=urn:btih:([^&/]+) ]] || return 1;
