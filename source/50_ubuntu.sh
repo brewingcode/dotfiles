@@ -33,3 +33,5 @@ function node_ver() {
 }
 
 eval $(perl -I${HOME}/perl5/lib/perl5 -Mlocal::lib)
+
+export LD_LIBRARY_PATH=/usr/lib:/usr/local/lib
