@@ -37,9 +37,10 @@ import json
 import codecs
 import shutil
 import tempfile
-import urllib3
+import requests
 
-urllib3.disable_warnings()
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 data_root = os.path.join(os.environ['HOME'], '.htmlcache')
 sleep = 0
@@ -97,8 +98,6 @@ def _load_jar():
     return jar
 
 def _get_url(url, headers, stream=False):
-    import requests
-
     jar = _load_jar()
     response = requests.get(url, headers=headers, cookies=jar, stream=stream, verify=False)
     if cookie_file:
