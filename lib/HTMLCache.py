@@ -39,8 +39,9 @@ import shutil
 import tempfile
 import requests
 
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from requests.packages.urllib3.exceptions import InsecureRequestWarning, InsecurePlatformWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+requests.packages.urllib3.disable_warnings(InsecurePlatformWarning)
 
 data_root = os.path.join(os.environ['HOME'], '.htmlcache')
 sleep = 0
