@@ -91,3 +91,9 @@ function portre {
 function launchds {
   find /Library/Launch* /System/Library/Launch* $HOME/Library/Launch* -ls | perl -lpe 's/^\d+\s+\d+\s+//'
 }
+
+# fire up boot2docker, and prepare shell for running commands in it
+function dockup {
+  boot2docker up >/dev/null 2>&1
+  eval "$(boot2docker shellinit 2>/dev/null)" >/dev/null 2>&1
+}
