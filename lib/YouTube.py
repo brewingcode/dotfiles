@@ -43,6 +43,13 @@ def check_items(data):
         dump_json(data, '! ')
         sys.exit(1)
 
+def make_time(s):
+    h = s / 3600
+    s -= 3600 * h
+    m = s / 60
+    s -= 60 * m
+    return '{:02d}:{:02d}:{:02d}'.format(h, m, s)
+
 def get_playlist(playlist_id):
     import isodate
 
@@ -86,7 +93,8 @@ def get_playlist(playlist_id):
             v['url'] = 'http://www.youtube.com/watch?v={}'.format(stat['id'])
 
             # convert duration from ISO8601 "PT<x>M<y>S" duration
-            v['duration'] = str(int(isodate.parse_duration(v['duration']).total_seconds()))
+            v['duration'] = int(isodate.parse_duration(v['duration']).total_seconds())
+            v['time'] = make_time(int(v['duration']))
 
             videos[stat['id']] = v
 
@@ -138,6 +146,8 @@ block of json as arguments, eg:
         help="include headers in first line of output")
     parser.add_option('--fetch', '-f', action="store_true",
         help="fetch pages (bypass the html cache)")
+    parser.add_option('--sort', '-s', default="views",
+        help="sort based on this (default: 'views')")
     parser.add_option('--api', '-a', nargs=2,
         help=optparse.SUPPRESS_HELP)
 
@@ -185,14 +195,18 @@ def main():
 
     header = ['views', 'title', 'url']
     if opts.more:
-        for i in ['dislikes', 'likes', 'duration', 'published']:
+        for i in ['dislikes', 'likes', 'time', 'duration', 'published']:
             header.insert(1, i)
 
     if opts.header:
         print "\t".join(header)
 
-    for video in sorted(videos.values(), key=lambda x: int(x['views']), reverse=True):
-        print "\t".join(video[i] for i in header)
+    sort_key = lambda x: int(x[opts.sort])
+    if opts.sort in ['published', 'time']:
+        sort_key = lambda x: str(x[opts.sort])
+
+    for video in sorted(videos.values(), key=sort_key, reverse=True):
+        print "\t".join(str(video[i]) for i in header)
 
 if __name__ == '__main__': main()
 
