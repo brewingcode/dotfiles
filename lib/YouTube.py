@@ -118,11 +118,18 @@ playlist or channel.
 
 Shortcuts:
   -p blh      Husky's "Bronze League Heroes" playlist
-  -c husky    Husky's Starcraft channnel""")
+  -c husky    Husky's Starcraft channnel
+
+Raw API calls are possible with --api/-a, which takes a PATH and a
+block of json as arguments, eg:
+
+  -a channels '{"part":"contentDetails","forUsername":"bkraz333"}'""")
     parser.add_option('--playlist', '-p', metavar="PLAYLIST",
         help="get videos in a playlist (id OR url)")
     parser.add_option('--channel', '-c', metavar="CHANNEL",
         help="get videos uploaded to this channel (id OR url)")
+    parser.add_option('--user', '-u', metavar="USERNAME",
+        help="get videos uploaded by USERNAME")
     parser.add_option('--verbose', '-v', action='store_true',
         help="print incoming and outgoing JSON data on stderr")
     parser.add_option('--more', '-m', action="store_true",
@@ -131,6 +138,8 @@ Shortcuts:
         help="include headers in first line of output")
     parser.add_option('--fetch', '-f', action="store_true",
         help="fetch pages (bypass the html cache)")
+    parser.add_option('--api', '-a', nargs=2,
+        help=optparse.SUPPRESS_HELP)
 
     global opts
     if not opts:
@@ -141,6 +150,11 @@ def main():
     sys.setdefaultencoding('utf-8')
 
     init_opts()
+
+    if opts.api:
+        args = json.loads(opts.api[1])
+        dump_json(api_call(opts.api[0], args), '')
+        return
 
     if opts.playlist:
         m = re.search(r'list=([\w\-]+)', opts.playlist)
@@ -159,6 +173,11 @@ def main():
             opts.channel = 'UCZ8D7Qvm0YHm0vZKFl-AFdA'
 
         videos = get_channel(opts.channel)
+
+    elif opts.user:
+        channel = api_call('channels', {'forUsername':opts.user, 'part':'contentDetails'})
+        check_items(channel)
+        videos = get_playlist(channel['items'][0]['contentDetails']['relatedPlaylists']['uploads'])
 
     else:
         sys.stderr.write('nothing to do, try --help\n')
