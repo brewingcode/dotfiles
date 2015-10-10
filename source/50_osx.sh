@@ -40,3 +40,8 @@ function dockup {
   boot2docker up >/dev/null 2>&1
   eval "$(boot2docker shellinit 2>/dev/null)" >/dev/null 2>&1
 }
+
+function brewup {
+  export PATH="/opt/homebrew/bin:$PATH"
+}
+
