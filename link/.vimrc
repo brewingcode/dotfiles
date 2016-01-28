@@ -8,13 +8,8 @@ nnoremap ; :
 nnoremap j gj
 nnoremap k gk
 
-" Local dirs
-if !has('win32')
-  set backupdir=$DOTFILES/caches/vim
-  set directory=$DOTFILES/caches/vim
-  set undodir=$DOTFILES/caches/vim
-  let g:netrw_home = expand('$DOTFILES/caches/vim')
-endif
+set directory=/tmp
+
 
 " Theme / Syntax highlighting
 augroup color_scheme
@@ -53,8 +48,10 @@ augroup relative_numbers
 augroup END
 
 " Make it obvious where 80 characters is
-set textwidth=80
-set colorcolumn=+1
+"set textwidth=80
+"set colorcolumn=+1
+set textwidth=0
+set nowrap
 
 " Scrolling
 set scrolloff=3 " Start scrolling three lines before horizontal border of window.
@@ -290,4 +287,9 @@ let g:pymode_lint_ignore = "E501,E302,E401,E111,W0611"
 
 let g:pymode_rope = 0
 
-au BufEnter /private/tmp/crontab.* setl backupcopy=yes
+"au BufEnter /private/tmp/crontab.* setl backupcopy=yes
+
+set backspace=indent,eol,start
+
+autocmd filetype crontab setlocal nobackup nowritebackup
+
