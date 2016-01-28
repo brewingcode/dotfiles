@@ -20,3 +20,6 @@
 
 # ignore compiled python libs
 *.pyc
+
+# some vim booger
+link/.vim/.netrwhist
