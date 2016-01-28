@@ -78,3 +78,7 @@ function mkown {
 # for example, `ls -d $HOME/$H`
 export H=".!(|.)"
 
+function deadlinks {
+  find . -type l ! -exec test -e {} \; -print
+}
+
