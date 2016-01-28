@@ -70,3 +70,11 @@ function vimm {
 function days_since {
   python -c "from datetime import date; print (date.today() - date($1, $2, $3)).days"
 }
+
+function mkown {
+  sudo mkdir -p "$@" && sudo chown "$USER" "$@"
+}
+
+# for example, `ls -d $HOME/$H`
+export H=".!(|.)"
+
