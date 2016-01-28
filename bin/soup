@@ -21,7 +21,7 @@ cmdparser.add_option("--infile", "-i",
     help="specify file rather than stdin")
 (opts, args) = cmdparser.parse_args()
 
-soup = BeautifulSoup(open(opts.infile, 'r', 'utf-8') if opts.infile else stdin)
+soup = BeautifulSoup(open(opts.infile, 'r', 'utf-8') if opts.infile else stdin, "html.parser")
 
 def out(s):
     stdout.write(s)
