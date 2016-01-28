@@ -35,6 +35,14 @@ alias gu-all='eachdir git pull'
 alias gp-all='eachdir git push'
 alias gs-all='eachdir git status'
 
+alias gitup='git push --set-upstream origin "$(git rev-parse --abbrev-ref HEAD)"'
+
+alias gitrc='git rebase --continue'
+alias gitra='git rebase --abort'
+
+function gitre() { git rebase -i "$(git merge-base HEAD "${1:-master}")"; }
+function gitfp() { git commit --fixup HEAD "$@"; gitre HEAD^^; }
+
 # open all changed files (that still actually exist) in the editor
 function ged() {
   local files=()
@@ -147,6 +155,7 @@ function gitsync {
       echo "fetching $remote"
       gitsync "$remote"
     done
+    git status
   else
     git fetch -p $1 2>&1 \
       | perl -ne '
@@ -161,6 +170,14 @@ function gitsync {
           print `git diff --stat $1`, "\n";
         }'
   fi
+}
+
+# summary of local branches
+function gitsumm {
+  git branch | perl -lpe 's/[\s\*]//g' | sort | while read -r x; do
+    git log --pretty=format:'%C(yellow)%h %Cred%ai%Creset %s%Cgreen%d%Creset --%C(cyan)%an %Creset' "$x" | head -7
+    echo
+  done
 }
 
 source $DOTFILES/vendor/git-completion.bash
