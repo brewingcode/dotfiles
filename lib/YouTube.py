@@ -4,18 +4,19 @@ import json
 import sys
 import re
 import os
+import re
+import urllib
+import HTMLCache
+import isodate
+import optparse
 
 opts = False
 
 def dump_json(data, prepend):
-    import re
     s = json.dumps(data, indent=2, separators=(', ', ': '))
     sys.stderr.write('{}\n'.format(re.sub(r'^', prepend, s, flags=re.MULTILINE)))
 
 def api_call(path, data):
-    import urllib
-    import HTMLCache
-
     init_opts()
 
     if opts.verbose:
@@ -51,8 +52,6 @@ def make_time(s):
     return '{:02d}:{:02d}:{:02d}'.format(h, m, s)
 
 def get_playlist(playlist_id):
-    import isodate
-
     videos = {}
     args = {
         'part':'snippet',
@@ -118,8 +117,6 @@ def get_channel(channel_id):
     return get_playlist(channel['items'][0]['contentDetails']['relatedPlaylists']['uploads'])
 
 def init_opts():
-    import optparse
-
     parser = optparse.OptionParser("""
 Print a tab-separated list to stdout of all videos in a youtube
 playlist or channel.
