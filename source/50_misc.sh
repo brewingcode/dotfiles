@@ -82,3 +82,6 @@ function deadlinks {
   find . -type l ! -exec test -e {} \; -print
 }
 
+function rsyncinc {
+  rsync -aP --include '*/' --include "$1" --exclude '*' "${@:2}"
+}
