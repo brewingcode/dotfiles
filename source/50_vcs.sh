@@ -184,4 +184,10 @@ function gitbr {
   git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))'
 }
 
+function gitmast {
+  head="$(git rev-parse --abbrev-ref HEAD)"
+  gitsync
+  git checkout master && git pull && git checkout "$head"
+}
+
 source $DOTFILES/vendor/git-completion.bash
