@@ -85,3 +85,8 @@ function deadlinks {
 function rsyncinc {
   rsync -aP --include '*/' --include "$1" --exclude '*' "${@:2}"
 }
+
+function mkcd {
+  mkdir -p "$1" && cd "$1"
+}
+
