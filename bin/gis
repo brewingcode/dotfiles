@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+
+# save top 10 google image search results to current directory
+# https://developers.google.com/custom-search/json-api/v1/using_rest
+
+import requests
+import os
+import sys
+import re
+import shutil
+
+url = 'https://www.googleapis.com/customsearch/v1?key={}&cx={}&searchType=image&q={}'
+apiKey = os.environ['GOOGLE_IMAGE_APIKEY']
+cx = os.environ['GOOGLE_CSE_ID']
+q = sys.argv[1]
+
+i = 1
+for result in requests.get(url.format(apiKey, cx, q)).json()['items']:
+  link = result['link']
+  image = requests.get(link, stream=True)
+  if image.status_code == 200:
+    m = re.search(r'[^\.]+$', link)
+    filename = './{}-{}.{}'.format(q, i, m.group())
+    with open(filename, 'wb') as f:
+      image.raw.decode_content = True
+      shutil.copyfileobj(image.raw, f)
+    i += 1
+
