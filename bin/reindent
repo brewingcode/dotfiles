@@ -16,7 +16,7 @@ regex = r'^( +)'
 
 def reindent(m):
   depth = len(m.group(1)) / old_indent
-  return '  ' * depth
+  return ' ' * new_indent * depth
 
 def rewrite(filename):
   tmp = tempfile.NamedTemporaryFile(delete=False)
