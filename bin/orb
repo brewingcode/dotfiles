@@ -3,7 +3,7 @@
 # calculate apoapsis/periapsis speed and orbital period for small body
 # orbiting a large body in an elliptical orbit (not para/hyperbolic)
 
-import argparse, math
+import sys, math, re
 
 # standard gravitational params (in km^3 s^-2 )
 # http://en.wikipedia.org/wiki/Standard_gravitational_parameter
@@ -34,44 +34,51 @@ radii = {
   'ceres': 471
 }
 
-parser = argparse.ArgumentParser(usage="""orb --body <b> --ap <x> [--pe <y>] [--units au]
+usage = """orb ORBIT [BODY]
 
-Calculate velocities, period, and eccentricity of an elliptical orbit
-around <b> with apoapsis <x> and periapsis <y>.
+Calculate velocities, period, and eccentricity of ORBIT around BODY.
 
-By default, --units is "km", which takes into account the radius of
-the central body. In other words, --ap and --pe are assumed to be
-low-orbit altitudes. Changing --units to "au" will change --ap and
---pe to astronomical units.
+By default, BODY is the Earth. ORBIT can be things like:
 
-If one of the apoapsis and periapsis values are given but not the
-other, the missing value will be taken from the given value (so a
-circular orbit just needs one of --ap or --pe).
-""")
+  300               LEO, 300km x 300km (km by default)
+  270x36000         GTO, 270km x 36000 km
+  35.1aux.586au     Halley's Comet (assuming BODY="sun")
+  1aux1au           Earth's orbit (assuming BODY="sun")
 
-parser.add_argument('--body', help="central body: "+",".join(["'"+k+"'" for k in sgp]))
-parser.add_argument('--ap', help="apoapsis")
-parser.add_argument('--pe', help="periapsis")
-parser.add_argument('--units', help="units for --ap/--pe: 'km','au'", default="km")
-args = parser.parse_args()
+Pass "list" to list known bodies."""
 
-if args.ap and not args.pe:
-  args.pe = args.ap
-elif args.pe and not args.ap:
-  args.ap = args.pe
+if len(sys.argv) < 2 or '--help' in sys.argv:
+  print usage
+  sys.exit(1)
+
+if sys.argv[1].lower() == 'list':
+  fmt = '{: <8} {: <8} {: <8}'
+  print fmt.format('NAME', 'RADIUS', 'SGP')
+  for k in sorted(radii, key=radii.get):
+    print fmt.format(k, radii[k], sgp[k])
+  sys.exit(0)
+
+ap = None
+pe = None
+body = None
 
 # given a string representing a distance, return a numeric orbital radius
 def to_radius(s):
-  n = float(s)
-  if args.units == 'au':
-    return n * 149597871
-  elif args.units == 'km':
-    return n + radii[args.body]
+  m = re.match(r'(.*?)(km|au)?$', s.lower(), flags=re.I)
+  n = float(m.group(1))
+  if m.group(2) and m.group(2).lower() == 'au':
+    n = n * 149597871
+
+  # any orbit within 10x the body radius is assumed to be an altitude above
+  # that body, and so must account for the body's radius
+  if n < radii[body] * 10:
+    n += radii[body]
+  return n
 
 # given a semi-major axis and an orbital radius, return the velocity
 def vel(sma, r):
   # http://en.wikipedia.org/wiki/Elliptic_orbit#Velocity
-  v = math.sqrt( sgp[args.body] * ( 2/r - 1/sma ) )
+  v = math.sqrt( sgp[body] * ( 2/r - 1/sma ) )
   if v < 1:
     return "{:.4f} m/s".format(1000*v)
   else:
@@ -80,7 +87,7 @@ def vel(sma, r):
 # given a sma, return the orbital period
 def period(sma):
   # http://en.wikipedia.org/wiki/Elliptic_orbit#Orbital_period
-  return 2 * math.pi * math.sqrt( sma**3 / sgp[args.body] )
+  return 2 * math.pi * math.sqrt( sma**3 / sgp[body] )
 
 # given an apoapsis and periapsis, return the eccentricity
 def eccentricity(a,p):
@@ -105,10 +112,26 @@ def sec_to_string(t):
         else:
           return "{:.2f} years".format(d/365)
 
-# semi-major axis
-sma = ( to_radius(args.ap) + to_radius(args.pe) ) / 2
+if len(sys.argv) > 2:
+  body = sys.argv[2].lower()
+else:
+  body = 'earth'
 
-print "ap speed: {}".format(vel(sma, to_radius(args.ap)))
-print "pe speed: {}".format(vel(sma, to_radius(args.pe)))
+m = re.search(r'(.*?)x(.*)', sys.argv[1])
+if m:
+  ap = to_radius(m.group(1))
+  pe = to_radius(m.group(2))
+else:
+  ap = to_radius(sys.argv[1])
+  pe = ap
+if pe > ap:
+  ap,pe = pe, ap
+
+sma = ( ap + pe ) / 2
+
+print "orbit:    {}km x {}km around {}".format(ap, pe, body)
+print "ap speed: {}".format(vel(sma, ap))
+print "pe speed: {}".format(vel(sma, pe))
 print "period:   {}".format(sec_to_string(period(sma)))
-print "eccentr:  {:.4f}".format(eccentricity(to_radius(args.ap), to_radius(args.pe)))
+print "eccentr:  {:.4f}".format(eccentricity(ap, pe))
+
