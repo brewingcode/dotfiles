@@ -33,7 +33,6 @@ set background=dark
 set cursorline " Highlight current line
 set number " Enable line numbers.
 set showtabline=2 " Always show tab bar.
-set relativenumber " Use relative line numbers. Current line is still in status bar.
 "set title " Show the filename in the window titlebar.
 set nowrap " Do not wrap lines.
 set noshowmode " Don't show the current mode (airline.vim takes care of us)
