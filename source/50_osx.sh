@@ -2,13 +2,8 @@
 is_osx || return 1
 
 PATH=`/usr/bin/paste -d ":" -s - << EOF
-/opt/local/bin
-/opt/local/sbin
 /usr/local/bin
 $PATH
-/opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin
-/opt/local/lib/mysql56/bin
-/opt/local/libexec/perl5.16
 EOF`
 export PATH
 
