@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# setup for building torch with CUDA 7.0 on El Capitan
+
+# https://github.com/jcjohnson/neural-style
+# http://developer.download.nvidia.com/compute/cuda/7_0/Prod/local_installers/cuda_7.0.29_mac.pkg
+# http://adcdownload.apple.com/Developer_Tools/Command_Line_Tools_OS_X_10.10_for_Xcode_6.4/Command_Line_Tools_OS_X_10.10_for_Xcode_6.4.dmg
+
+# NOTE: the command line tools above are installed to /Library/Developer/CommandLineTools, I move that
+# directory to its own 6.4 directory to be explicit
+
+# to put xcode back to default:
+# sudo xcode-select -r
+old_xcode="/Library/Developer/CommandLineTools-6.4"
+export CUDA_BIN_PATH="$old_xcode"
+sudo xcode-select -s "$old_xcode"
+export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer/
+export PATH="$old_xcode/usr/bin":"$PATH"
+
+# mono has v1.4 of libpng, which breaks neural-style with:
+# libpng warning: Application built with libpng-1.4.12 but running with 1.6.21
+if test -d /Library/Frameworks/Mono.framework; then
+  echo Mono framework found, moving it out of the way, as it will produce:
+  echo warning: Application built with libpng-1.4.12 but running with 1.6.21
+  sudo mv /Library/Frameworks/{,tmp-}Mono.framework
+fi
+
+ns-luadeps() {
+  for i in loadcaffe cutorch cunn cltorch clnn; do
+    luarocks install $i;
+  done
+}
