@@ -40,11 +40,11 @@ alias gitup='git push --set-upstream origin "$(git rev-parse --abbrev-ref HEAD)"
 alias gitrc='git rebase --continue'
 alias gitra='git rebase --abort'
 
-function gitre() { git rebase -i "$(git merge-base HEAD "${1:-master}")"; }
-function gitfp() { git commit --fixup HEAD "$@"; gitre HEAD^^; }
+gitre() { git rebase -i "$(git merge-base HEAD "${1:-master}")"; }
+gitfp() { git commit --fixup HEAD "$@"; gitre HEAD^^; }
 
 # open all changed files (that still actually exist) in the editor
-function ged() {
+ged() {
   local files=()
   for f in $(git diff --name-only "$@"); do
     [[ -e "$f" ]] && files=("${files[@]}" "$f")
@@ -56,7 +56,7 @@ function ged() {
 }
 
 # add a github remote by github username
-function gra() {
+gra() {
   if (( "${#@}" != 1 )); then
     echo "Usage: gra githubuser"
     return 1;
@@ -66,7 +66,7 @@ function gra() {
 }
 
 # GitHub URL for current repo.
-function gurl() {
+gurl() {
   local remotename="${@:-origin}"
   local remote="$(git remote -v | awk '/^'"$remotename"'.*\(push\)$/ {print $2}')"
   [[ "$remote" ]] || return
@@ -105,7 +105,7 @@ alias gj-='gj prev'
 if is_osx; then
   alias gdk='git ksdiff'
   alias gdkc='gdk --cached'
-  function gt() {
+  gt() {
     local path repo
     {
       pushd "${1:-$PWD}"
@@ -126,7 +126,7 @@ fi
 #   githeads [remote_name]
 # remote_name can be the bit after "refs/remotes/", or "." for the local repo, or
 # blank to show all remotes plus the local repo
-function githeads {
+githeads() {
   if [[ "$1" == "" ]]; then
     git remote | while read -r remote; do
       githeads "$remote"
@@ -149,7 +149,7 @@ function githeads {
 # given the name of a git remote, fetch it and look for A..B rev ranges
 # in the output so that we can print them nicely. If no remote is given,
 # call `git remote` and run against each one.
-function gitsync {
+gitsync() {
   if [[ "$1" == "" ]]; then
     git remote | while read -r remote; do
       echo "fetching $remote"
@@ -173,14 +173,7 @@ function gitsync {
 }
 
 # summary of local branches
-function gitsumm {
-  git branch | perl -lpe 's/[\s\*]//g' | sort | while read -r x; do
-    git log --pretty=format:'%C(yellow)%h %Cred%ai%Creset %s%Cgreen%d%Creset --%C(cyan)%an %Creset' "$x" | head -7
-    echo
-  done
-}
-
-function gitbr {
+gitsumm() {
   for i in remotes heads; do
     git for-each-ref --sort=committerdate refs/$i \
       --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))' \
@@ -188,7 +181,8 @@ function gitbr {
   done
 }
 
-function gitmast {
+# checkout master, pull it, and switch back
+gitmast() {
   head="$(git rev-parse --abbrev-ref HEAD)"
   gitsync
   git checkout master && git pull && git checkout "$head"
