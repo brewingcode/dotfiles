@@ -132,4 +132,12 @@ gitmast() {
   git checkout master && git pull && git checkout "$head"
 }
 
+# no whitespace
+gitnw() {
+  git diff -b --numstat \
+    | egrep $'^0\t0\t' \
+    | cut -d$'\t' -f3- \
+    | xargs git checkout HEAD --
+}
+
 source $DOTFILES/vendor/git-completion.bash
