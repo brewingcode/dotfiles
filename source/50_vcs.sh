@@ -12,28 +12,6 @@ alias gra='git rebase --abort'
 gitre() { git rebase -i "$(git merge-base HEAD "${1:-master}")"; }
 gitfp() { git commit --fixup HEAD "$@"; gitre HEAD^^; }
 
-# open all changed files (that still actually exist) in the editor
-ged() {
-  local files=()
-  for f in $(git diff --name-only "$@"); do
-    [[ -e "$f" ]] && files=("${files[@]}" "$f")
-  done
-  local n=${#files[@]}
-  echo "Opening $n $([[ "$@" ]] || echo "modified ")file$([[ $n != 1 ]] && \
-    echo s)${@:+ modified in }$@"
-  q "${files[@]}"
-}
-
-# add a github remote by github username
-gra() {
-  if (( "${#@}" != 1 )); then
-    echo "Usage: gra githubuser"
-    return 1;
-  fi
-  local repo=$(gr show -n origin | perl -ne '/Fetch URL: .*github\.com[:\/].*\/(.*)/ && print $1')
-  gr add "$1" "git://github.com/$1/$repo"
-}
-
 # GitHub URL for current repo.
 gurl() {
   local remotename="${@:-origin}"
@@ -49,6 +27,7 @@ alias gurlp='echo $(gurl)/tree/$(gbs)/$(git rev-parse --show-prefix)'
 if is_osx; then
   alias gdk='git ksdiff'
   alias gdkc='gdk --cached'
+
   gt() {
     local path repo
     {
@@ -63,6 +42,18 @@ if is_osx; then
     else
       echo "Error: $path is not a git repo."
     fi
+  }
+
+  # open all changed files (that still actually exist) in the editor
+  ged() {
+    local files=()
+    for f in $(git diff --name-only "$@"); do
+      [[ -e "$f" ]] && files=("${files[@]}" "$f")
+    done
+    local n=${#files[@]}
+    echo "Opening $n $([[ "$@" ]] || echo "modified ")file$([[ $n != 1 ]] && \
+      echo s)${@:+ modified in }$@"
+    atom "${files[@]}"
   }
 fi
 
