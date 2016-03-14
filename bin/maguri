@@ -3,7 +3,7 @@
 # manage magnet urls
 
 if [[ "$1" == "-r" ]]; then
-  ssh -t ec2 screen -r
+  ssh -t ec2 screen -x "$SCREEN_TORRENT_ID"
 else
   if [[ "$OSTYPE" =~ ^darwin ]]; then
     (pbpaste; echo) | while read -r x; do
