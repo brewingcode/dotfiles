@@ -53,3 +53,11 @@ function recurl {
 
 alias clc="fc -ln -1 | awk '{\$1=\$1}1' | pbcopy"
 
+function vjq {
+  tmp=/tmp/$(openssl rand -hex 16)
+  pbpaste > $tmp
+  vim $tmp
+  echo "wrote json to $tmp"
+  jq . < $tmp
+}
+
