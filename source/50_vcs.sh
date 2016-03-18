@@ -1,13 +1,10 @@
 
 # Git shortcuts
-alias gcd='git rev-parse 2>/dev/null && cd "./$(git rev-parse --show-cdup)"'
+alias gitcd='git rev-parse 2>/dev/null && cd "./$(git rev-parse --show-cdup)"'
 
-# Current branch or SHA if detached.
-alias gbs='git branch | perl -ne '"'"'/^\* (?:\(detached from (.*)\)|(.*))/ && print "$1$2"'"'"''
-
-alias gup='git push --set-upstream origin "$(git rev-parse --abbrev-ref HEAD)"'
-alias grc='git rebase --continue'
-alias gra='git rebase --abort'
+alias gitup='git push --set-upstream origin "$(git rev-parse --abbrev-ref HEAD)"'
+alias gitrc='git rebase --continue'
+alias gitra='git rebase --abort'
 
 gitre() { git rebase -i "$(git merge-base HEAD "${1:-master}")"; }
 gitfp() { git commit --fixup HEAD "$@"; gitre HEAD^^; }
