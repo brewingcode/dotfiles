@@ -106,10 +106,12 @@ gitsync() {
 
 # summary of local branches
 gitsumm() {
+  count="${1:-10}"
   for i in remotes heads; do
+    echo "# $i"
     git for-each-ref --sort=committerdate refs/$i \
       --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))' \
-      | tail
+      | tail -n "$count"
   done
 }
 
