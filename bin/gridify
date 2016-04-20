@@ -24,8 +24,8 @@ else {
   open $fh, '< -' or die "couldn't open stdin: $!";
 }
 
-$o{ex} = split /\s*,\s*/, $o{ex};
-$o{ex} = () unless $o{ex};
+$o{ex} = [split /\s*,\s*/, $o{ex}];
+$o{ex} = [] unless $o{ex};
 
 while (<$fh>) {
     chomp;
