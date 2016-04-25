@@ -105,23 +105,24 @@ gitsync() {
 }
 
 # see `gitsumm` function
-recent_branch_commits() {
-  git for-each-ref --sort=committerdate refs/$1 \
+gittail() {
+  count="${1:-10}"
+  refs="${2:-heads}"
+
+  git for-each-ref --sort=committerdate refs/"$refs" \
     --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))' \
-    | tail -n "$2"
+    | tail -n "$count"
 }
 
-# summary of local branches
+# summary of local and remote branches
 gitsumm() {
-  count="${1:-10}"
-
   git remote | sort | uniq | while read -r i; do
-    echo "# remote branches from $i"
-    recent_branch_commits "remotes/$i" $count
+    echo "# remote: $i $(git remote get-url $i)"
+    gittail "$1" "remotes/$i"
   done
 
-  echo "# local branches"
-  recent_branch_commits "heads" $count
+  echo "# local: "
+  gittail "$1"
 }
 
 # checkout master, pull it, and switch back
