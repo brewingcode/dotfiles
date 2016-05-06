@@ -61,3 +61,9 @@ function vjq {
   jq . < $tmp
 }
 
+# switch java versions via OSX's java_home
+jvm() {
+  version=${1:-1.6}
+  export JAVA_HOME=$(/usr/libexec/java_home -v $version)
+}
+
