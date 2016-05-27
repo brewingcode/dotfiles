@@ -76,13 +76,16 @@ def to_radius(s):
     return n
 
 # given a semi-major axis and an orbital radius, return the velocity
-def vel(sma, r):
+def vel(sma, r, per='second'):
     # http://en.wikipedia.org/wiki/Elliptic_orbit#Velocity
     v = math.sqrt( sgp[body] * ( 2/r - 1/sma ) )
-    if v < 1:
-        return "{:.4f} m/s".format(1000*v)
+    if per == 'second':
+        if v < 1:
+            return "{:.4f} m/s".format(1000*v)
+        else:
+            return "{:.4f} km/s".format(v)
     else:
-        return "{:.4f} km/s".format(v)
+        return "{:.0f} km/h".format(v*3600)
 
 # given a sma, return the orbital period
 def period(sma):
@@ -130,8 +133,8 @@ if pe > ap:
 sma = ( ap + pe ) / 2
 
 print "orbit:    {}km x {}km around {}".format(ap, pe, body)
-print "ap speed: {}".format(vel(sma, ap))
-print "pe speed: {}".format(vel(sma, pe))
+print "ap speed: {} ({})".format(vel(sma, ap), vel(sma, ap, 'hour'))
+print "pe speed: {} ({})".format(vel(sma, pe), vel(sma, pe, 'hour'))
 print "period:   {}".format(sec_to_string(period(sma)))
 print "eccentr:  {:.4f}".format(eccentricity(ap, pe))
 
