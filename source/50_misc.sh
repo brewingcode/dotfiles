@@ -90,3 +90,9 @@ function mkcd {
   mkdir -p "$1" && cd "$1"
 }
 
+# open a couple pages that are nice for full-screen ISS tracking
+function hdev {
+  open 'http://www.ustream.tv/embed/17074538?v=3&amp;controls=false&autoplay=true&quality=hd&volume=0'
+  open 'http://www.lizard-tail.com/isana/tracking/'
+}
+
