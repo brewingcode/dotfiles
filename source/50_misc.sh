@@ -92,7 +92,9 @@ function mkcd {
 
 # open a couple pages that are nice for full-screen ISS tracking
 function hdev {
-  open 'http://www.ustream.tv/embed/17074538?autoplay=1&volume=0'
-  open 'http://www.lizard-tail.com/isana/tracking/'
+  for x in 'ustream.tv/embed/17074538?autoplay=1&volume=0&controls=false' 'lizard-tail.com/isana/tracking/'; do
+    #open "http://www.$x"
+    /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --app="http://www.$x"
+  done
 }
 
