@@ -140,4 +140,17 @@ gitnw() {
     | xargs git checkout HEAD --
 }
 
+# print commit sha of the merge commit for when commit $1 was merged into
+# branch $2 (master by default)
+# https://stackoverflow.com/a/10079510/2926055
+gitwhen() {
+  [ -z "$1" ] && { echo "need a commit sha to search for" >&2; return 1; }
+  tip="${2:-master}"
+  perl -ne 'print if ($seen{$_} .= @ARGV) =~ /10$/' \
+    <(git rev-list --ancestry-path "$1".."$tip") \
+    <(git rev-list --first-parent "$1".."$tip") \
+    | tail -n 1
+}
+
 source $DOTFILES/vendor/git-completion.bash
+
