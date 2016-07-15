@@ -69,3 +69,9 @@ jvm() {
   export JAVA_HOME=$(/usr/libexec/java_home -v $version)
 }
 
+# open a url in Chrome with minimal UI
+minchr() {
+  [ -z "$1" ] && { echo "url required" >&2; return 1; }
+  /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --app="$1"
+}
+
