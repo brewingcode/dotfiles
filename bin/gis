@@ -19,10 +19,12 @@ for result in requests.get(url.format(apiKey, cx, q)).json()['items']:
   link = result['link']
   image = requests.get(link, stream=True)
   if image.status_code == 200:
-    m = re.search(r'[^\.]+$', link)
-    filename = './{}-{}.{}'.format(q, i, m.group())
-    with open(filename, 'wb') as f:
-      image.raw.decode_content = True
-      shutil.copyfileobj(image.raw, f)
-    i += 1
+    #m = re.search(r'[^\.]+$', link)
+    m = re.search(r'.*\.(jpe?g|tiff?|png|gif|bmp)', link, re.I)
+    if m:
+        filename = './{}-{}.{}'.format(q, i, m.group(1))
+        with open(filename, 'wb') as f:
+          image.raw.decode_content = True
+          shutil.copyfileobj(image.raw, f)
+        i += 1
 
