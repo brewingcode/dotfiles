@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Build ultra-barebones jQuery and Bootstrap files.
+#
+# jquery.min.js: 25 MB git repo -> 15.6 KB minified
+# bootstrap.min.css: 86 MB git repo -> 47.3 KB minified
+
+jquery() {
+  d=/tmp/jquery.git
+  git clone git://github.com/jquery/jquery.git "$d"
+  cd "$d"
+  npm install
+  grunt custom:-ajax,-css,-deprecated,-dimensions,-effects,-event,-offset,-wrap,-core/ready,-deferred
+  cd -
+  cp "$d/dist/jquery.min.js" .
+}
+
+bootstrap() {
+  d=/tmp/bootstrap.git
+  git clone https://github.com/twbs/bootstrap "$d"
+  cd "$d"
+  npm install
+  cat > less/bootstrap.less <<EOF
+// Core variables and mixins
+@import "variables.less";
+@import "mixins.less";
+
+// Reset and dependencies
+@import "normalize.less";
+
+// Core CSS
+@import "scaffolding.less";
+@import "type.less";
+@import "grid.less";
+EOF
+  grunt dist-css
+  cd -
+  cp "$d/dist/css/bootstrap.min.css" .
+}
+
+jquery
+bootstrap
+ls -l jquery.min.js bootstrap.min.css
+
