@@ -50,7 +50,7 @@ function recurl {
     s/^curl ('\''.*?'\'')/curl /;
     $_ .= " \\\n $1";
     s/ -H/ \\\n  -H/g;
-  ' | pbcopy
+  '
 }
 
 alias clc="fc -ln -1 | awk '{\$1=\$1}1' | pbcopy"
