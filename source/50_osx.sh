@@ -38,10 +38,6 @@ function dockup {
   eval "$(boot2docker shellinit 2>/dev/null)" >/dev/null 2>&1
 }
 
-function brewup {
-  export PATH="/opt/homebrew/bin:$PATH"
-}
-
 code () { VSCODE_CWD="$PWD" open -n -b "com.microsoft.VSCode" --args $* ;}
 
 # prettify Chrome's "copy as curl" command line
