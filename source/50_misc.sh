@@ -98,3 +98,21 @@ function hdev {
   done
 }
 
+# similar to bash's `which`, this finds a python module using
+# the imp.find_module builtin
+function pywhich {
+  python - "$1" <<EOF
+import imp
+
+def int_to_const(i):
+  for c in ['PY_SOURCE', 'PY_COMPILED', 'C_EXTENSION', 'PKG_DIRECTORY', 'C_BUILTIN', 'PY_FROZEN']:
+    if getattr(imp, c) == i: return c
+
+m = imp.find_module(sys.argv[1])
+m = list(m)
+m[2] = list(m[2])
+m[2][2] = int_to_const(m[2][2])
+print m
+EOF
+}
+
