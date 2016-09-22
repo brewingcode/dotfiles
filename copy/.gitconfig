@@ -8,18 +8,6 @@
 [apply]
   whitespace = fix
 [alias]
-  br = branch
-  ci = commit
-  co = checkout
-  df = diff
-  g = grep -I
-  lg = log -p
-  pp = !"echo 'Pull'; git pull; echo 'Push'; git push"
-  rb = rbranch
-  rv = review
-  st = status
-  ksdiff = difftool -y -t Kaleidoscope
-
   # "pretty log"
   plog = log --pretty=format:'%C(yellow)%h %Cred%ai%Creset %s%Cgreen%d%Creset --%C(cyan)%an %Creset'
   plog2 = log --pretty=format:'%C(yellow)%h %Cred%ai%Creset %s%Cgreen%d%Creset --%C(cyan)%an %Creset%n%-b%-n'
@@ -29,8 +17,6 @@
 
   # "fancy log"
   flog = log --color --graph --pretty=format:'%h %ai%Cgreen%d%Creset %s --%an'
-
-  fsl = ! gitsync && git plog | head
 [color]
   ui = auto
 [color "branch"]
@@ -48,8 +34,6 @@
   untracked = cyan
 [merge]
   log = true
-[difftool "Kaleidoscope"]
-  cmd = ksdiff-wrapper git \"$LOCAL\" \"$REMOTE\"
 [rerere]
   enabled = 1
 
