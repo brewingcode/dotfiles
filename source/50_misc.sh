@@ -116,3 +116,8 @@ print m
 EOF
 }
 
+function strip_ansi {
+  # http://unix.stackexchange.com/a/4529
+  perl -pe 's/\e\[?.*?[\@-~]//g'
+}
+
