@@ -103,6 +103,7 @@ function hdev {
 function pywhich {
   python - "$1" <<EOF
 import imp
+import sys
 
 def int_to_const(i):
   for c in ['PY_SOURCE', 'PY_COMPILED', 'C_EXTENSION', 'PKG_DIRECTORY', 'C_BUILTIN', 'PY_FROZEN']:
