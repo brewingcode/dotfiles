@@ -92,7 +92,7 @@ gitsync() {
     git fetch -p $1 2>&1 \
       | perl -ne '
         next unless /\S/;
-        print "# $_\n";
+        print "# $_";
         if (/^\s+(\w{7}\.\.\w{7})\s/) {
           print "\n";
           $fmt = q/'\''%C(yellow)%h %Cred%ai%Creset %s%Cgreen%d%Creset --%Cblue%an %Creset%n%b'\''/;
