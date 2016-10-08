@@ -122,3 +122,7 @@ function strip_ansi {
   perl -pe 's/\e\[?.*?[\@-~]//g'
 }
 
+function dunno {
+  echo "¯\_(ツ)_/¯"
+}
+
