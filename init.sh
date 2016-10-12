@@ -1,3 +1,5 @@
+[ -d "$DOTFILES" ] || echo { \$DOTFILES does not point to a directory >&2; return 1; }
+
 # add binaries into the path
 export PATH="$DOTFILES/bin:$PATH"
 
