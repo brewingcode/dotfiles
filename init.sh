@@ -3,6 +3,9 @@
 # add binaries into the path
 export PATH="$DOTFILES/bin:$PATH"
 
+# pull in dotfiles utility functions
+cd "$DOTFILES/utils.sh"
+
 # source all the things
 cd "$DOTFILES"/source
 for f in *; do
