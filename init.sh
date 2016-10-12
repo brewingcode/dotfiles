@@ -1,10 +1,20 @@
 [ -d "$DOTFILES" ] || echo { \$DOTFILES does not point to a directory >&2; return 1; }
 
+# OS detection
+is_osx() {
+  [[ "$OSTYPE" =~ ^darwin ]] || return 1
+}
+is_ubuntu() {
+  [[ "$(cat /etc/issue 2> /dev/null)" =~ Ubuntu ]] || return 1
+}
+get_os() {
+  for os in osx ubuntu; do
+    is_$os; [[ $? == ${1:-0} ]] && echo $os
+  done
+}
+
 # add binaries into the path
 export PATH="$DOTFILES/bin:$PATH"
-
-# pull in dotfiles utility functions
-cd "$DOTFILES/utils.sh"
 
 # source all the things
 cd "$DOTFILES"/source
