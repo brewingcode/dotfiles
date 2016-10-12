@@ -1,17 +1,16 @@
 [ -d "$DOTFILES" ] || echo { \$DOTFILES does not point to a directory >&2; return 1; }
 
-# OS detection
+# OS detection: some things are only OSX, others are only Ubuntu, but
+# both are in the minority
 is_osx() {
   [[ "$OSTYPE" =~ ^darwin ]] || return 1
 }
 is_ubuntu() {
   [[ "$(cat /etc/issue 2> /dev/null)" =~ Ubuntu ]] || return 1
 }
-get_os() {
-  for os in osx ubuntu; do
-    is_$os; [[ $? == ${1:-0} ]] && echo $os
-  done
-}
+
+[[ is_osx ]] && source "$DOTFILES/osx.sh"
+[[ is_ubuntu ]] & source "$DOTFILES/ubuntu.sh"
 
 # add binaries into the path
 export PATH="$DOTFILES/bin:$PATH"
