@@ -10,7 +10,7 @@
 initial_dir=$(pwd)
 
 export DOTFILES=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-[ -d "$DOTFILES" ] || { printf "DOTFILES=%s does not point to a directory" "$DOTFILES" 1>&2; return 1; }
+[ -d "$DOTFILES" ] || { printf "DOTFILES=%s does not point to a directory" "$DOTFILES" 1>&2; exit 1; }
 
 is_osx() {
   [[ "$OSTYPE" =~ ^darwin ]] || return 1
@@ -29,21 +29,21 @@ export PATH="$DOTFILES/bin:$PATH"
 shopt -s dotglob nullglob
 
 # source all the things
-cd "$DOTFILES/soffweurce" || return 2
+cd "$DOTFILES/source" || exit 2
 for f in *; do
   source "$f"
 done
 
 # make sure links exist
-cd "$DOTFILES/link" || return 3
+cd "$DOTFILES/link" || exit 3
 for f in *; do
   if [ ! -e "$HOME/$f" ] || [ -n "$RELINK_DOTFILES" ]; then
-     ln -fs "$DOTFILES/link/$f" "$HOME/$f"
+    ln -fs "$DOTFILES/link/$f" "$HOME/$f"
   fi
 done
 
 # make sure files have been copied, but only if they don't exists already
-cd "$DOTFILES/copy" || return 4
+cd "$DOTFILES/copy" || exit 4
 for f in *; do
   if [ ! -e "$HOME/$f" ] || [ -n "$RECOPY_DOTFILES" ]; then
     cp -r "$f" "$HOME/$f"
