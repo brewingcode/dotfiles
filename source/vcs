@@ -152,5 +152,3 @@ gitwhen() {
     | tail -n 1
 }
 
-source $DOTFILES/vendor/git-completion.bash
-
