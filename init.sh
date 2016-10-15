@@ -26,6 +26,7 @@ is_ubuntu() {
 export PATH="$DOTFILES/bin:$PATH"
 
 # make splat smarter
+shoptions=$(shopt -p)
 shopt -s dotglob nullglob
 
 # source all the things
@@ -50,5 +51,6 @@ for f in *; do
   fi
 done
 
+eval "$shoptions"
 cd "$initial_dir"
 
