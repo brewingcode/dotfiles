@@ -9,6 +9,8 @@ $PATH
 EOF`
 export PATH
 
+export EDITOR=vim
+
 # Trim new lines and copy to clipboard
 alias c="tr -d '\n' | pbcopy"
 
