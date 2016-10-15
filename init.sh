@@ -19,9 +19,6 @@ is_ubuntu() {
   [[ "$(cat /etc/issue 2> /dev/null)" =~ Ubuntu ]] || return 1
 }
 
-[[ is_osx ]] && source "$DOTFILES/osx.sh"
-[[ is_ubuntu ]] && source "$DOTFILES/ubuntu.sh"
-
 # add binaries into the path
 export PATH="$DOTFILES/bin:$PATH"
 
