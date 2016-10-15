@@ -1,9 +1,17 @@
-# bootstrap for dotfiles: source this file
-DOTFILES=$(pwd)/$(dirname "$_")
-[ -d "$DOTFILES" ] || { echo "\$DOTFILES=$DOTFILES does not point to a directory" >&2; return 1; }
+# Bootstrap for dotfiles: source this file.
+#
+# 1. add "bin" to the PATH env var
+# 2. source everything in the "source" dir
+# 3. link everything in "links" into $HOME, but only if it doesn't already
+#    exist (set RELINK_DOTFILES=1 to override)
+# 4. copy everything in "copy" into $HOME, but only if it doesn't already
+#    exist (set RECOPY_DOTFILES=1 to override)
 
-# OS detection: some things are only OSX, others are only Ubuntu, but
-# both are in the minority
+initial_dir=$(pwd)
+
+export DOTFILES=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+[ -d "$DOTFILES" ] || { printf "DOTFILES=%s does not point to a directory" "$DOTFILES" 1>&2; return 1; }
+
 is_osx() {
   [[ "$OSTYPE" =~ ^darwin ]] || return 1
 }
@@ -21,20 +29,26 @@ export PATH="$DOTFILES/bin:$PATH"
 shopt -s dotglob nullglob
 
 # source all the things
-cd "$DOTFILES/source" || { echo "$DOTFILES/source is not a directory" >&2; return 2; }
+cd "$DOTFILES/soffweurce" || return 2
 for f in *; do
   source "$f"
 done
 
 # make sure links exist
-cd "$DOTFILES/link" || { echo "$DOTFILES/link is not a directory" >&2; return 3; }
+cd "$DOTFILES/link" || return 3
 for f in *; do
-  ln -fs "$DOTFILES/link/$f" "$HOME/$f"
+  if [ ! -e "$HOME/$f" ] || [ -n "$RELINK_DOTFILES" ]; then
+     ln -fs "$DOTFILES/link/$f" "$HOME/$f"
+  fi
 done
 
 # make sure files have been copied, but only if they don't exists already
-cd "$DOTFILES/copy" || { echo "$DOTFILES/copy is not a directory" >&2; return 4; }
+cd "$DOTFILES/copy" || return 4
 for f in *; do
-  [ -e "$HOME/$f" ] || cp -r "$f" "$HOME/$f"
+  if [ ! -e "$HOME/$f" ] || [ -n "$RECOPY_DOTFILES" ]; then
+    cp -r "$f" "$HOME/$f"
+  fi
 done
+
+cd "$initial_dir"
 
