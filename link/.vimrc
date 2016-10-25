@@ -285,5 +285,5 @@ let g:pymode_rope = 0
 
 set backspace=indent,eol,start
 
-autocmd filetype crontab setlocal nobackup nowritebackup
+autocmd FileType crontab setlocal nobackup nowritebackup
 
