@@ -11,7 +11,7 @@ use warnings;
 use Getopt::Long;
 
 my %o = ( ex => '', plain => 0, truncate => 0, file => '' );
-GetOptions(\%o, 'ex=s', 'plain', 'truncate=i', 'file=s') or die "invalid options";
+GetOptions(\%o, 'ex=s', 'plain', 'truncate=i', 'file=s', 'left') or die "invalid options";
 
 my @rows;
 my @widths;
@@ -67,7 +67,10 @@ for my $row (@rows) {
        push @$row, '' for 1 .. (@widths - @$row);
     }
     print "| " unless $o{plain};
-    print join($o{plain} ? "\t" : " | ", map { sprintf "\%$widths[$_].$widths[$_]s", $row->[$_] } 0 .. (@$row - 1));
+    print join($o{plain} ? "\t" : " | ", map {
+        my $fmt = $o{left} ? "\%-$widths[$_]s" : "\%$widths[$_].$widths[$_]s";
+        sprintf $fmt, $row->[$_]
+    } 0 .. (@$row - 1));
     print " |" unless $o{plain};
     print "\n";
 }
