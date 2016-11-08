@@ -145,3 +145,5 @@ slink() {
   (cd /usr/local/bin && ln -s "$target" "$name")
 }
 
+alias imgsize="identify -format '%f	%w	%h	%b\n'"
+
