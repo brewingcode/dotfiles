@@ -147,3 +147,15 @@ slink() {
 
 alias imgsize="identify -format '%f	%w	%h	%b\n'"
 
+# generate a random 6-digit hex color, and then create a 100x100 swatch image of it
+# (if a filename is given), or simply echo the color
+# note: the color is between #222 and #ddd, to rule out very dark and very light colors
+randcolor() {
+  color=$(perl -e '@v = (2..9, "a".."d"); for (0..5) { print $v[int rand scalar @v] } print "\n"')
+  if [[ -n "$1" ]]; then
+    convert -size 100x100 xc:"#$color" "$1"
+  else
+    echo "#$color"
+  fi
+}
+
