@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# usage: ./git-fusion URL DIR
+# merges git repo specified by URL into DIR in the current git repo
+# NOTE: assumes master branch in both repos
+# http://stackoverflow.com/a/20974621/2926055
+# https://github.com/TylerRick/tyler-git/blob/master/bin/git-move-tree-into-subdir-using-tree-filter
+
+[ -n "$1" ] || { echo "first arg required: git repo url" >&2; exit 1; }
+[ -n "$2" ] || { echo "second arg required: directory to put the other repo in" >&2; exit 2; }
+cd "$(git rev-parse --show-toplevel)" || { echo "error: you are not in a git repo" >&2; exit 3; }
+[ -d "$2" ] && { echo "error: $2 already exists" >&2; exit 4; }
+
+remote=$(openssl rand -hex 6)
+branch=$(openssl rand -hex 6)
+
+git remote add $remote "$1"
+git fetch $remote
+git checkout -b $branch $remote/master
+git filter-branch -f --tree-filter "mkdir '$2'; git ls-tree --name-only -z \$GIT_COMMIT | xargs -n 1 -0 -I : git mv : '$2'"
+git checkout master
+git merge --allow-unrelated-histories -m "fuse $1 into $2" $branch
+git branch -D $branch
+git remote remove $remote
+
