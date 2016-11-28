@@ -98,9 +98,9 @@ def _load_jar():
 
     return jar
 
-def _get_url(url, headers, stream=False):
+def _get_url(url, headers, stream=False, auth=None):
     jar = _load_jar()
-    response = requests.get(url, headers=headers, cookies=jar, stream=stream, verify=False)
+    response = requests.get(url, headers=headers, cookies=jar, stream=stream, verify=False, auth=auth)
     if cookie_file:
         for cookie in response.cookies:
             jar.set_cookie(cookie)
@@ -148,7 +148,7 @@ def store(url, html, headers=None):
     _trace(url)
     _write_index()
 
-def fetch(url, headers=None, bin_file=False):
+def fetch(url, headers=None, bin_file=False, auth=None):
     """ Return the html of a url. "url" is required, "headers" is an optional dict of
 name-value pairs to include as http request headers, and "bin_file" is an
 optional flag to set if the url is a binary file. If "bin_file" is set, then
@@ -164,7 +164,7 @@ the return value is the filepath of the fetched file."""
         headers['User-Agent'] = 'curl/7.30.0'
 
         if bin_file:
-            response = _get_url(url, headers, True)
+            response = _get_url(url, headers, True, auth)
             digest = hashlib.sha1(url).hexdigest()
             filename = _make_file_path([data_root, 'bin', digest])
             fh = open(filename, 'wb')
@@ -180,7 +180,7 @@ the return value is the filepath of the fetched file."""
             _write_index()
 
         else:
-            response = _get_url(url, headers)
+            response = _get_url(url, headers, False, auth)
             store(url, response.text, dict(response.headers))
 
         time.sleep(sleep)
