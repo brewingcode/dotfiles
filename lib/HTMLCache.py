@@ -190,6 +190,13 @@ the return value is the filepath of the fetched file."""
     else:
         return lookup(url)
 
+def fetch_with_headers(*args, **kwargs):
+    html = fetch(*args, **kwargs)
+    if html:
+        url = args[0]
+        headers = dict((k.lower(), v) for k,v in index[url]['headers'].iteritems())
+    return [html, headers]
+
 if __name__ == '__main__':
     bypass = True
 
