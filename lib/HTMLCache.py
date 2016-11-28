@@ -148,7 +148,7 @@ def store(url, html, headers=None):
     _trace(url)
     _write_index()
 
-def fetch(url, headers=None, bin_file=False, auth=None):
+def fetch(url, headers=None, bin_file=False, auth=None, skip_cache=False):
     """ Return the html of a url. "url" is required, "headers" is an optional dict of
 name-value pairs to include as http request headers, and "bin_file" is an
 optional flag to set if the url is a binary file. If "bin_file" is set, then
@@ -158,7 +158,7 @@ the return value is the filepath of the fetched file."""
 
     _read_index()
 
-    if bypass or not url in index:
+    if bypass or skip_cache or not url in index:
         if headers == None:
             headers = {}
         headers['User-Agent'] = 'curl/7.30.0'
