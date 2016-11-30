@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# print google's autocomplete results for a query
+# https://news.ycombinator.com/item?id=13065670
+
+[ -z "$1" ] && { echo "error: missing query" >&2; exit 1; }
+
+curl -sS -G 'https://www.google.com/complete/search?client=hp&hl=en&xhr=t' --data-urlencode "q=$1" \
+  | jq . | grep '<b>' | perl -lne 's/<[^>]+>//g; /"(.*)"/; print $1'
+
