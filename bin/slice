@@ -15,12 +15,14 @@ sys.setdefaultencoding('UTF8')
 def parse_args():
     global args
     parser = argparse.ArgumentParser(description="""
-Slices the first piece out of file(s) or stdin.
+Return the first 100 megabytes from file(s) or stdin.
+
+Note: this is far slower than simply calling `head -n <number of lines>`.
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('--megs', '-m', metavar='N', type=int, default=50,
+        help='return the first N megabytes (default: 50)')
     parser.add_argument('--divide', '-d', metavar='N', type=int,
         help='divide file by N, return the first piece')
-    parser.add_argument('--megs', '-m', metavar='N', type=int,
-        help='return the first N megabytes')
     args, remaining = parser.parse_known_args()
     args.files = remaining
 
@@ -32,7 +34,7 @@ def read_file(fh):
         size_limit = os.path.getsize(tmp.name) / args.divide
         tmp.seek(0)
         fh = tmp
-    if args.megs:
+    else:
         size_limit = args.megs * 1e6
 
     size = 0
