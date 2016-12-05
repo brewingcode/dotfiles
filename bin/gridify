@@ -9,21 +9,31 @@ import codecs
 
 def parse_args():
     global args
-    parser = argparse.ArgumentParser(description='Takes tab-sep data in files or stdin and turns it into a grid, just like mysql can do.')
-    parser.add_argument('--ex', help='which column indicies (0-based) to print (default: all)')
+    parser = argparse.ArgumentParser(description="""
+Takes tab-sep data in files or stdin and turns it into a grid, just like mysql
+can do, using the tabulate[1] library.
+
+Examples:
+
+    # chops all columns to 10 chars max, and only prints the 1st and 3rd column
+    %(prog)s --truncate 10 --limit 0,2
+
+[1] https://bitbucket.org/astanin/python-tabulate
+""", formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('--limit', help='limit output to column indicies (0-based) (default: none)')
     parser.add_argument('--plain', action='store_true', help='omit grid lines, but still print aligned columns')
     parser.add_argument('--truncate', metavar='N', help='truncate column content to N letters')
     args, remaining = parser.parse_known_args()
     args.files = remaining
     args.truncate = int(args.truncate) if args.truncate else 0
-    args.ex = [int(x) for x in args.ex.split(',')] if args.ex else []
+    args.limit = [int(x) for x in args.limit.split(',')] if args.limit else []
 
 def get_lines(fh):
     for line in fh:
         fields = line.rstrip().split('\t')
 
-        if len(args.ex):
-            fields = [v for i,v in enumerate(fields) if i in args.ex]
+        if len(args.limit):
+            fields = [v for i,v in enumerate(fields) if i in args.limit]
 
         if args.truncate > 0:
             fields = [v[:args.truncate] for v in fields]
