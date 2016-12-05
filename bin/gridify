@@ -36,10 +36,11 @@ Examples:
         help='truncate column content to N letters')
     parser.add_argument('--sepchar', '-s', default='\t',
         help='separating character between fields (default: \\t)')
-    parser.add_argument('--examine', '-e', action='store_true',
-        help='examine input for patterns (suppresses normal output, ignores most options')
     parser.add_argument('--field-count', '-c', metavar='N', type=int,
         help='only include lines from input with N fields')
+    parser.add_argument('--examine', '-e', action='store_true',
+        help='examine input for patterns (suppresses normal output, ignores most options')
+
     args, remaining = parser.parse_known_args()
     args.files = remaining
     args.limit = [int(x) for x in args.limit.split(',')] if args.limit else []
