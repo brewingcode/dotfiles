@@ -30,7 +30,7 @@ Examples:
 [1] https://bitbucket.org/astanin/python-tabulate
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--limit', '-l',
-        help='limit output to column indicies (0-based) (default: none)')
+        help='limit output to 0-based column indicies (default: none)')
     parser.add_argument('--format', '-f', default='psql',
         help='format to use for printing, see tabulate\'s options (default: psql)')
     parser.add_argument('--truncate', '-t', metavar='N', default=0, type=int,
@@ -40,7 +40,7 @@ Examples:
     parser.add_argument('--field-count', '-c', metavar='N', type=int,
         help='only include lines from input with N fields')
     parser.add_argument('--examine', '-e', action='store_true',
-        help='examine input for patterns (suppresses normal output, ignores most options')
+        help='examine input for patterns (suppresses normal output, ignores most options)')
 
     args, remaining = parser.parse_known_args()
     args.files = remaining
