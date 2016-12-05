@@ -22,8 +22,8 @@ Examples:
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--limit', '-l',
         help='limit output to column indicies (0-based) (default: none)')
-    parser.add_argument('--plain', '-p', action='store_true',
-        help='omit grid lines, but still print aligned columns')
+    parser.add_argument('--format', '-f', default='psql',
+        help='format to use for printing, see tabulate\'s options (default: psql)')
     parser.add_argument('--truncate', '-t', metavar='N',
         help='truncate column content to N letters')
     args, remaining = parser.parse_known_args()
@@ -44,8 +44,7 @@ def get_lines(fh):
         yield fields
 
 def print_file(fh):
-    fmt = 'plain' if args.plain else 'psql'
-    table = tabulate(get_lines(fh), tablefmt=fmt)
+    table = tabulate(get_lines(fh), tablefmt=args.format)
     print(table)
 
 if __name__ == '__main__':
