@@ -1,78 +1,45 @@
-#!/usr/bin/perl
-use strict;
-use warnings;
+#!/usr/bin/env python
 
-# Takes tab-sep data and turns it into a grid, just like mysql can do.
-# --ex <x,y,z> excludes columns with indicies x, y, and z (0-based)
-# --plain outputs lines, just tab-sep data
-# --truncate <n> will chop all columns to n letters
-# --file <name> read <name> instead of stdin
+# gridify text, see --help
 
-use Getopt::Long;
+import sys
+import argparse
+from tabulate import tabulate
+import codecs
 
-my %o = ( ex => '', plain => 0, truncate => 0, file => '' );
-GetOptions(\%o, 'ex=s', 'plain', 'truncate=i', 'file=s', 'left') or die "invalid options";
+def parse_args():
+    global args
+    parser = argparse.ArgumentParser(description='Takes tab-sep data in files or stdin and turns it into a grid, just like mysql can do.')
+    parser.add_argument('--ex', help='which column indicies (0-based) to print (default: all)')
+    parser.add_argument('--plain', action='store_true', help='omit grid lines, but still print aligned columns')
+    parser.add_argument('--truncate', metavar='N', help='truncate column content to N letters')
+    args, remaining = parser.parse_known_args()
+    args.files = remaining
+    args.truncate = int(args.truncate) if args.truncate else 0
+    args.ex = [int(x) for x in args.ex.split(',')] if args.ex else []
 
-my @rows;
-my @widths;
+def get_lines(fh):
+    for line in fh:
+        fields = line.rstrip().split('\t')
 
-my $fh;
-if ($o{file}) {
-  open $fh, '<', $o{file} or die "couldn't open file '$o{file}': $!";
-}
-else {
-  open $fh, '< -' or die "couldn't open stdin: $!";
-}
+        if len(args.ex):
+            fields = [v for i,v in enumerate(fields) if i in args.ex]
 
-$o{ex} = [split /\s*,\s*/, $o{ex}];
-$o{ex} = [] unless $o{ex};
+        if args.truncate > 0:
+            fields = [v[:args.truncate] for v in fields]
 
-while (<$fh>) {
-    chomp;
-    my @cols = split /\t/;
-    my @row;
+        yield fields
 
-    for my $i (0 .. (@cols - 1)) {
-        if (grep {$i == $_} @{$o{ex}}) {
-            # skip this column
-        }
-        else {
-            push @row, $cols[$i];
-        }
-    }
+def print_file(fh):
+    fmt = 'plain' if args.plain else 'psql'
+    table = tabulate(get_lines(fh), tablefmt=fmt)
+    print(table)
 
-    for my $i (0 .. (@row - 1)) {
-        push @widths, 0 unless @widths >= $i + 1;
-        $row[$i] = ' ' unless defined $row[$i];
-        my $w = length($row[$i]);
-
-        $widths[$i] = $w if $w > $widths[$i];
-        if ($o{truncate} and $w > $o{truncate}) {
-            $widths[$i] = $o{truncate};
-        }
-    }
-    push @rows, \@row;
-}
-
-my $hr = '+';
-for (@widths) {
-    $hr .= '-' x ($_ + 2);
-    $hr .= '+';
-}
-
-print "$hr\n" unless $o{plain};
-
-for my $row (@rows) {
-    if (@widths > @$row) {
-       push @$row, '' for 1 .. (@widths - @$row);
-    }
-    print "| " unless $o{plain};
-    print join($o{plain} ? "\t" : " | ", map {
-        my $fmt = $o{left} ? "\%-$widths[$_]s" : "\%$widths[$_].$widths[$_]s";
-        sprintf $fmt, $row->[$_]
-    } 0 .. (@$row - 1));
-    print " |" unless $o{plain};
-    print "\n";
-}
-
-print "$hr\n" unless $o{plain};
+if __name__ == '__main__':
+    parse_args()
+    if args.files:
+        for f in args.files:
+            with codecs.open(f, 'r', 'utf-8') as fh:
+                print_file(fh)
+    else:
+        print_file(sys.stdin)
