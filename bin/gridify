@@ -60,8 +60,45 @@ def get_lines(fh):
         yield fields
 
 def percentage(x, y):
-#    return '%0.1f' % (100 * float(x)/float(y))
-    return 100.0 * float(x)/float(y)
+    return 100 * float(x)/float(y)
+
+def examine(fh):
+    field_counts = {}
+    total_lines = 0
+    field_values = {}
+
+    for fields in get_lines(fh):
+        total_lines += 1
+        num_fields = len(fields)
+
+        if num_fields not in field_counts:
+            field_counts[num_fields] = 0
+        field_counts[num_fields] += 1
+
+        for i,f in enumerate(fields):
+            if i not in field_values:
+                field_values[i] = set()
+            field_values[i].add(f)
+
+    field_counts = sorted([(
+        k,
+        v,
+        percentage(v, total_lines)
+    ) for k,v in field_counts.iteritems()], key=operator.itemgetter(2), reverse=True)
+
+    field_values = sorted([(
+        k,
+        len(field_values[k]),
+        percentage(len(field_values[k]), total_lines)
+    ) for k in field_values.keys()], key=operator.itemgetter(0))
+
+    table1 = tabulate([['Total lines', total_lines]], tablefmt=args.format)
+    table2 = tabulate(field_counts, headers=['fields', 'freq', '%'],
+        tablefmt=args.format, floatfmt='.1f')
+    table3 = tabulate(field_values, headers=['index', 'uniqs', '%'],
+        tablefmt=args.format, floatfmt='.1f')
+
+    side_by_side(table3, table2, table1)
 
 def read_file(fh):
     if args.examine:
