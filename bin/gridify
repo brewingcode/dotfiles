@@ -6,6 +6,7 @@ import sys
 import argparse
 from tabulate import tabulate
 import codecs
+import operator
 
 def parse_args():
     global args
@@ -21,19 +22,26 @@ Examples:
     # chops all columns to 10 chars max, and only prints the 1st and 3rd column
     %(prog)s --truncate 10 --limit 0,2
 
+    # examine input to determine useful options, this ignores all options
+    # except for --format and --sepchar
+    %(prog)s --examine
+
 [1] https://bitbucket.org/astanin/python-tabulate
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--limit', '-l',
         help='limit output to column indicies (0-based) (default: none)')
     parser.add_argument('--format', '-f', default='psql',
         help='format to use for printing, see tabulate\'s options (default: psql)')
-    parser.add_argument('--truncate', '-t', metavar='N',
+    parser.add_argument('--truncate', '-t', metavar='N', default=0, type=int,
         help='truncate column content to N letters')
     parser.add_argument('--sepchar', '-s', default='\t',
         help='separating character between fields (default: \\t)')
+    parser.add_argument('--examine', '-e', action='store_true',
+        help='examine input for patterns (suppresses normal output, ignores most options')
+    parser.add_argument('--field-count', '-c', metavar='N', type=int,
+        help='only include lines from input with N fields')
     args, remaining = parser.parse_known_args()
     args.files = remaining
-    args.truncate = int(args.truncate) if args.truncate else 0
     args.limit = [int(x) for x in args.limit.split(',')] if args.limit else []
 
 def get_lines(fh):
@@ -41,17 +49,38 @@ def get_lines(fh):
         fields = [v.strip() for v in line.rstrip().split(args.sepchar)]
         if args.sepchar == ' ':
             fields = [v for v in fields if len(v) > 0]
-
-        if len(args.limit):
-            fields = [v for i,v in enumerate(fields) if i in args.limit]
-
-        if args.truncate > 0:
-            fields = [v[:args.truncate] for v in fields]
-
+        if not args.examine:
+            if args.field_count > 0 and args.field_count != len(fields):
+                continue
+            if len(args.limit):
+                fields = [fields[i] for i in args.limit]
+            if args.truncate > 0:
+                fields = [v[:args.truncate] for v in fields]
         yield fields
 
-def print_file(fh):
-    table = tabulate(get_lines(fh), tablefmt=args.format)
+def percentage(x, y):
+#    return '%0.1f' % (100 * float(x)/float(y))
+    return 100.0 * float(x)/float(y)
+
+def read_file(fh):
+    if args.examine:
+        field_counts = {}
+        total_lines = 0
+        for fields in get_lines(fh):
+            total_lines += 1
+            num_fields = len(fields)
+            if num_fields not in field_counts:
+                field_counts[num_fields] = 0
+            field_counts[num_fields] += 1
+
+        totals_added = [(k, v, percentage(v, total_lines)) for k,v in field_counts.iteritems()]
+        data = sorted(totals_added, key=operator.itemgetter(1), reverse=True)[:5]
+        table = tabulate(data, headers=['fields', 'count', '%'],
+            tablefmt=args.format, floatfmt='.1f')
+        print 'total lines: ', total_lines
+    else:
+        table = tabulate(get_lines(fh), tablefmt=args.format)
+
     print(table)
 
 if __name__ == '__main__':
@@ -59,6 +88,6 @@ if __name__ == '__main__':
     if args.files:
         for f in args.files:
             with codecs.open(f, 'r', 'utf-8') as fh:
-                print_file(fh)
+                read_file(fh)
     else:
-        print_file(sys.stdin)
+        read_file(sys.stdin)
