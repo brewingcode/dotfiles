@@ -93,7 +93,7 @@ gitsync() {
       | perl -ne '
         next unless /\S/;
         print "# $_";
-        if (/^\s+(\w{7}\.\.\w{7})\s/) {
+        if (/^\s+(\w{7,12}\.\.\w{7,12})\s/) {
           print "\n";
           $fmt = q/'\''%C(yellow)%h %Cred%ai%Creset %s%Cgreen%d%Creset --%Cblue%an %Creset%n%b'\''/;
           $log = `git log --graph --pretty=format:$fmt $1 2>&1`;
