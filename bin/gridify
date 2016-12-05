@@ -10,8 +10,11 @@ import codecs
 def parse_args():
     global args
     parser = argparse.ArgumentParser(description="""
-Takes tab-sep data in files or stdin and turns it into a grid, just like mysql
-can do, using the tabulate[1] library.
+Takes character-separated data in files or stdin and turns it into a grid,
+just like mysql can do, using the tabulate[1] library.
+
+Note: if --sepchar is a single space, multiple spaces will be collapsed into
+a single space.
 
 Examples:
 
@@ -26,6 +29,8 @@ Examples:
         help='format to use for printing, see tabulate\'s options (default: psql)')
     parser.add_argument('--truncate', '-t', metavar='N',
         help='truncate column content to N letters')
+    parser.add_argument('--sepchar', '-s', default='\t',
+        help='separating character between fields (default: \\t)')
     args, remaining = parser.parse_known_args()
     args.files = remaining
     args.truncate = int(args.truncate) if args.truncate else 0
@@ -33,7 +38,9 @@ Examples:
 
 def get_lines(fh):
     for line in fh:
-        fields = line.rstrip().split('\t')
+        fields = [v.strip() for v in line.rstrip().split(args.sepchar)]
+        if args.sepchar == ' ':
+            fields = [v for v in fields if len(v) > 0]
 
         if len(args.limit):
             fields = [v for i,v in enumerate(fields) if i in args.limit]
