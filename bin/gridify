@@ -20,9 +20,12 @@ Examples:
 
 [1] https://bitbucket.org/astanin/python-tabulate
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('--limit', help='limit output to column indicies (0-based) (default: none)')
-    parser.add_argument('--plain', action='store_true', help='omit grid lines, but still print aligned columns')
-    parser.add_argument('--truncate', metavar='N', help='truncate column content to N letters')
+    parser.add_argument('--limit', '-l',
+        help='limit output to column indicies (0-based) (default: none)')
+    parser.add_argument('--plain', '-p', action='store_true',
+        help='omit grid lines, but still print aligned columns')
+    parser.add_argument('--truncate', '-t', metavar='N',
+        help='truncate column content to N letters')
     args, remaining = parser.parse_known_args()
     args.files = remaining
     args.truncate = int(args.truncate) if args.truncate else 0
