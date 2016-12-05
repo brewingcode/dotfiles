@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+
+# slice a small(er) piece out of a big file, see --help
+
+import sys
+import argparse
+import codecs
+import tempfile
+import os
+import shutil
+
+reload(sys)
+sys.setdefaultencoding('UTF8')
+
+def parse_args():
+    global args
+    parser = argparse.ArgumentParser(description="""
+Slices the first piece out of file(s) or stdin.
+""", formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('--divide', '-d', metavar='N', type=int,
+        help='divide file by N, return the first piece')
+    parser.add_argument('--megs', '-m', metavar='N', type=int,
+        help='return the first N megabytes')
+    args, remaining = parser.parse_known_args()
+    args.files = remaining
+
+def read_file(fh):
+    if args.divide:
+        # need a tempfile to write, then count lines, then calculate size_limit
+        tmp = tempfile.NamedTemporaryFile()
+        shutil.copyfileobj(fh, tmp)
+        size_limit = os.path.getsize(tmp.name) / args.divide
+        tmp.seek(0)
+        fh = tmp
+    if args.megs:
+        size_limit = args.megs * 1e6
+
+    size = 0
+    for line in fh:
+        sys.stdout.write(line)
+        size += len(line)
+        if size > size_limit:
+            break
+
+if __name__ == '__main__':
+    parse_args()
+    if len(args.files):
+        for f in args.files:
+            with codecs.open(f, 'r', 'utf-8') as fh:
+                read_file(fh)
+    else:
+        read_file(sys.stdin)
