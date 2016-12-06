@@ -23,26 +23,40 @@ Note: this is far slower than simply calling `head -n <number of lines>`.
         help='return the first N megabytes (default: 50)')
     parser.add_argument('--divide', '-d', metavar='N', type=int,
         help='divide file by N, return the first piece')
+    parser.add_argument('--debug', '-g', action='store_true',
+        help='print debug stats to stderr')
     args, remaining = parser.parse_known_args()
     args.files = remaining
+
+def debug(msg):
+    if args.debug:
+        sys.stderr.write(msg)
 
 def read_file(fh):
     if args.divide:
         # need a tempfile to write, then count lines, then calculate size_limit
         tmp = tempfile.NamedTemporaryFile()
         shutil.copyfileobj(fh, tmp)
-        size_limit = os.path.getsize(tmp.name) / args.divide
+        size = os.path.getsize(tmp.name)
+        size_limit = size / args.divide
+        if args.debug:
+            debug('slice: file is {} bytes\n'.format(size))
+            debug('slice: divided by {} is {} bytes\n'.format(args.divide, size_limit))
         tmp.seek(0)
         fh = tmp
     else:
         size_limit = args.megs * 1e6
 
     size = 0
+    lines = 0
     for line in fh:
         sys.stdout.write(line)
         size += len(line)
+        lines += 1
         if size > size_limit:
             break
+
+    debug('slice: printed {} lines\n'.format(lines))
 
 if __name__ == '__main__':
     parse_args()
