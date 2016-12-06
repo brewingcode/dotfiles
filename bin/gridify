@@ -54,8 +54,9 @@ def get_lines(fh):
         if not args.examine:
             if args.field_count > 0 and args.field_count != len(fields):
                 continue
-            if len(args.limit):
-                fields = [fields[i] for i in args.limit]
+            if len(args.limit) > 0:
+                indexes = filter(lambda i: i < len(fields), args.limit)
+                fields = [fields[i] for i in indexes]
             if args.truncate > 0:
                 fields = [v[:args.truncate] for v in fields]
         yield fields
