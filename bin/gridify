@@ -50,7 +50,8 @@ def get_lines(fh):
     for line in fh:
         fields = [v.strip() for v in line.rstrip().split(args.sepchar)]
         if args.sepchar == ' ':
-            fields = [v for v in fields if len(v) > 0]
+            fields = filter(lambda v: v, fields)
+
         if not args.examine:
             if args.field_count > 0 and args.field_count != len(fields):
                 continue
@@ -76,14 +77,20 @@ def side_by_side(*args):
                 out.append(y)
         print(' '.join(out))
 
-def examine(fh):
+def pad_lines(lines, num_fields):
+    for line in lines:
+        yield line + [None] * (num_fields - len(line))
+
+def read_file(fh):
     field_counts = {}
     total_lines = 0
+    lines = []
     field_values = {}
 
     for fields in get_lines(fh):
         total_lines += 1
         num_fields = len(fields)
+        lines.append(fields)
 
         if num_fields not in field_counts:
             field_counts[num_fields] = 0
@@ -93,6 +100,10 @@ def examine(fh):
             if i not in field_values:
                 field_values[i] = set()
             field_values[i].add(f)
+
+    if not args.examine:
+        print tabulate(pad_lines(lines, max(field_counts.keys(), key=int)), tablefmt=args.format)
+        return
 
     field_counts = sorted([(
         k,
@@ -113,13 +124,6 @@ def examine(fh):
         tablefmt=args.format, floatfmt='.1f')
 
     side_by_side(table3, table2, table1)
-
-def read_file(fh):
-    if args.examine:
-        examine(fh)
-    else:
-        table = tabulate(get_lines(fh), tablefmt=args.format)
-        print(table)
 
 def read_files():
     if not args.files:
