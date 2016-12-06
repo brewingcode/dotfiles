@@ -12,15 +12,11 @@ process.stdin.on('readable', function() {
 });
 
 process.stdin.on('end', function() {
-  var decl = 'var ev ';
-  var replaced = s.replace(/^\s*var\s+(\w+)/, decl);
-  if (replaced == s) {
-    replaced = decl + ' = ' + s;
-  }
-
+  s = s.replace(/\s*(var\s+)?(\S+\s*=\s*)?/, 'var x = ');
+  s = s.replace(/;\s*$/, '');
   try {
-    eval(replaced);
-    var j = JSON.stringify(ev, null, '  ');
+    eval(s);
+    var j = JSON.stringify(x, null, '  ');
     process.stdout.write(j);
   }
   catch (e) {
