@@ -17,7 +17,17 @@ function convert(s) {
   }
 }
 
-if (1) {
+if (process.env.JS2JSON_TEST) {
+  // the most amazing test framework ever
+  convert('{"a":"b"}');
+  convert('foo = {"a":"b"}');
+  convert('foo.bar={"a":"b"};');
+  convert('var baz ={"a":"b"};');
+  convert('let qux = {"a":"b"}');
+  convert('["a","b"];');
+  convert('null');
+}
+else {
   process.stdin.on('readable', function() {
     var chunk = process.stdin.read();
     if (chunk !== null) {
@@ -29,13 +39,4 @@ if (1) {
     convert(s);
   });
 }
-else {
-  // the most amazing test framework ever
-  convert('{"a":"b"}');
-  convert('foo = {"a":"b"}');
-  convert('foo.bar={"a":"b"};');
-  convert('var baz ={"a":"b"};');
-  convert('let qux = {"a":"b"}');
-  convert('["a","b"];');
-  convert('null');
-}
+
