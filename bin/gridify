@@ -98,13 +98,13 @@ def examine(fh):
         k,
         v,
         percentage(v, total_lines)
-    ) for k,v in field_counts.iteritems()], key=operator.itemgetter(2), reverse=True)
+    ) for k,v in field_counts.iteritems()], key=operator.itemgetter(2), reverse=True)[:20]
 
     field_values = sorted([(
         k,
         len(field_values[k]),
         percentage(len(field_values[k]), total_lines)
-    ) for k in field_values.keys()], key=operator.itemgetter(0))
+    ) for k in field_values.keys()], key=operator.itemgetter(0))[:20]
 
     table1 = tabulate([['Total lines', total_lines]], tablefmt=args.format)
     table2 = tabulate(field_counts, headers=['fields', 'freq', '%'],
