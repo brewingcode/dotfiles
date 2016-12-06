@@ -1,12 +1,17 @@
 #!/usr/bin/env node
 
+// converts javascript to json in some lazy error-prone way
+
 process.stdin.setEncoding('utf8');
 
 var s = '';
 
 function convert(s) {
-  s = s.replace(/\s*((var|let)\s+)?(\S+\s*=\s*)?/, 'var x = ');
+  s = s.replace(/^\s*\S+\s*\(/, '');
   s = s.replace(/;\s*$/, '');
+  s = s.replace(/\)\s*$/, '');
+  s = s.replace(/^\s*((var|let)\s+)?(\S+\s*=\s*)?/, 'var x = ');
+
   try {
     eval(s);
     var j = JSON.stringify(x, null, '  ');
@@ -26,6 +31,7 @@ if (process.env.JS2JSON_TEST) {
   convert('let qux = {"a":"b"}');
   convert('["a","b"];');
   convert('null');
+  convert(' foo_bar({"a":"b"})');
 }
 else {
   process.stdin.on('readable', function() {
