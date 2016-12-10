@@ -136,6 +136,7 @@ def read_file(fh):
         tablefmt=args.format, floatfmt='.1f')
 
     side_by_side(table3, table2, table1)
+    print tabulate([(i,f) for i,f in enumerate(lines[0])], tablefmt=args.format)
 
 def read_files():
     if not args.files:
