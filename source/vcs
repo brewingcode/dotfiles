@@ -152,3 +152,10 @@ gitwhen() {
     | tail -n 1
 }
 
+# git-rebase-merge-base: rebase from the merge-base of us and master (or the
+# given ref). seems like this should be some setting that's already in git
+gitrmb() {
+  upstream="${1:-master}"
+  git rebase -i --autosquash $(git merge-base HEAD "$upstream")
+}
+
