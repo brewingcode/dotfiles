@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# basic wrapper around Steam Web API (https://developer.valvesoftware.com/wiki/Steam_Web_API)
+#   1. STEAMKEY: web api key https://steamcommunity.com/dev/apikey
+#   2. STEAMID: (for some calls): a steam user ID
+
+req() {
+  curl -qs "https://api.steampowered.com/$1/?key=$STEAMKEY&format=json&$2" | jq .
+}
+
+case "$1" in
+  games) req IPlayerService/GetOwnedGames/v00001 "steamid=$STEAMID";;
+esac
+
