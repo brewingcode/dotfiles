@@ -1,18 +1,24 @@
-#!/bin/bash
+#!/usr/bin/env python
 
 # basic wrapper around Steam Web API (https://developer.valvesoftware.com/wiki/Steam_Web_API)
 #   1. STEAMKEY: web api key https://steamcommunity.com/dev/apikey
 #   2. STEAMID: (for some calls): a steam user ID
 
-req() {
-    curl -qs "https://api.steampowered.com/$1/?key=$STEAMKEY&format=json&$2"
-}
+import sys
+import os
+import HTMLCache
 
-cmd=$1
-shift
-case "$cmd" in
-    games) req IPlayerService/GetOwnedGames/v00001 "steamid=$STEAMID" | jq . ;;
-    game) req ISteamUserStats/GetSchemaForGame/v2 "appid=$1" ;;
-    *) exit 1;;
-esac
+def req(api, params):
+    steamkey = os.environ['STEAMKEY']
+    url = 'https://api.steampowered.com/{}/?key={}&format=json&{}'.format(api, steamkey, params)
+    print HTMLCache.fetch(url)
 
+cmd = sys.argv[1]
+if cmd == 'games':
+    steamid = os.environ['STEAMID']
+    req('IPlayerService/GetOwnedGames/v00001', 'steamid={}'.format(steamid))
+elif cmd == 'game':
+    req('ISteamUserStats/GetSchemaForGame/v2', 'appid={}'.format(sys.argv[2]))
+else:
+    sys.stderr.write('unknown command: {}'.format(cmd))
+    sys.exit(1)
