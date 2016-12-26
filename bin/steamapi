@@ -5,10 +5,14 @@
 #   2. STEAMID: (for some calls): a steam user ID
 
 req() {
-  curl -qs "https://api.steampowered.com/$1/?key=$STEAMKEY&format=json&$2" | jq .
+    curl -qs "https://api.steampowered.com/$1/?key=$STEAMKEY&format=json&$2"
 }
 
-case "$1" in
-  games) req IPlayerService/GetOwnedGames/v00001 "steamid=$STEAMID";;
+cmd=$1
+shift
+case "$cmd" in
+    games) req IPlayerService/GetOwnedGames/v00001 "steamid=$STEAMID" | jq . ;;
+    game) req ISteamUserStats/GetSchemaForGame/v2 "appid=$1" ;;
+    *) exit 1;;
 esac
 
