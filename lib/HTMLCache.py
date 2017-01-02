@@ -15,9 +15,9 @@ properties that control behavior:
   `~/.htmlcache`).
 
 * `sleep`: Number of seconds to sleep after performing an http fetch. Note
-  that cache hits do NOT incur this `sleep()` (default: `5`).
+  that cache hits do NOT incur this `sleep()` (default: 0).
 
-* `bypass`: Bypass cache lookups (default: `False`).
+* `bypass`: Bypass cache lookups (default: False).
 
 * `cookie_file`: File path to a Netscape cookie file. Some on-the-fly
   corrections are made when reading the file to account for inconsistent
