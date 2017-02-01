@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# curl and only output the http response code
+# note: "000" is possible for errors such as invalid urls
+curl -s -o /dev/null -w '%{http_code}\n' "$@"
+
