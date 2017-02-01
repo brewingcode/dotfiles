@@ -1,0 +1,30 @@
+#!/usr/bin/env perl
+
+# Delete any local git branches that have been merged into the current checked-
+# out branch (except for "master", which is never deleted). Any arguments are
+# regexes for branches that should be excluded from deletion, eg "^dev$" or
+# "^staging$", etc.
+
+use strict;
+use warnings;
+
+push @ARGV, '^master$';
+
+my @branches;
+foreach (`git branch --no-color --merged | grep '^  '`) {
+  s/^\s*//;
+  s/\s*$//;
+
+  my $b = $_;
+  if (not grep { $b =~ /$_/i } @ARGV) {
+    push @branches, $b;
+  }
+}
+
+exit if not @branches;
+
+print "$_: " . `git show --quiet --pretty=format:'%h %ai %s --%an' '$_'` . "\n" foreach @branches;
+print "Deleting the above branches in 5 seconds...\n";
+sleep 5;
+
+system "git branch -d '$_'" foreach @branches;
