@@ -19,7 +19,12 @@ alias c="tr -d '\n' | pbcopy"
 alias ss="open /System/Library/Frameworks/ScreenSaver.framework/Versions/A/Resources/ScreenSaverEngine.app"
 
 # restart wifi
-alias rswifi="networksetup -setairportpower en0 off ; networksetup -setairportpower en0 on"
+function rswifi {
+  ifc="${1:-en0}"
+  networksetup -setairportpower "$ifc" off
+  sleep 15
+  networksetup -setairportpower "$ifc" on
+}
 
 # restart a Macports daemon
 function portre {
