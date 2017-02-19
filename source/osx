@@ -76,3 +76,9 @@ minchr() {
   /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --app="$1"
 }
 
+# copies the latest jquery into clipboard, so you can then paste it into a
+# browser dev console and get jquery in your page
+jquery() {
+  curl -qs 'https://code.jquery.com/jquery-3.1.1.slim.min.js' | pbcopy
+}
+
