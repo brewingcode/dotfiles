@@ -24,8 +24,8 @@ Examples:
     %(prog)s --truncate 10 --limit 1,3
 
     # examine input to determine useful options, this ignores all options
-    # except for --format and --sepchar, and replaces the normal output with
-    # a few tables showing some stats about the input
+    # except for --format, --sepchar, and --truncate and replaces the normal
+    # output with a few tables showing some stats about the input
     %(prog)s --examine
 
     # equivalent to `cut -f 1,3,7`, *except* that %(prog)s will output in the
@@ -58,6 +58,8 @@ def get_lines(fh):
         fields = [v.strip() for v in line.rstrip().split(args.sepchar)]
         if args.sepchar == ' ':
             fields = filter(lambda v: v, fields)
+        if args.truncate > 0:
+            fields = [v[:args.truncate] for v in fields]
 
         if not args.examine:
             if args.field_count > 0 and args.field_count != len(fields):
@@ -65,8 +67,6 @@ def get_lines(fh):
             if len(args.limit) > 0:
                 indexes = filter(lambda i: i-1 < len(fields), args.limit)
                 fields = [fields[i-1] for i in indexes]
-            if args.truncate > 0:
-                fields = [v[:args.truncate] for v in fields]
         yield fields
 
 def percentage(x, y):
@@ -137,7 +137,8 @@ def read_file(fh):
         tablefmt=args.format, floatfmt='.1f')
 
     side_by_side(table3, table2, table1)
-    print tabulate([(i+1,f) for i,f in enumerate(lines[0])], tablefmt=args.format)
+    for line in lines:
+        print tabulate([(i+1,f) for i,f in enumerate(line)], tablefmt=args.format)
 
 def read_files():
     if not args.files:
