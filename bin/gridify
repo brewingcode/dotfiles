@@ -54,7 +54,10 @@ Examples:
     args.limit = [int(x) for x in args.limit.split(',')] if args.limit else []
 
 def get_lines(fh):
-    for line in fh:
+    while True:
+        line = sys.stdin.readline()
+        if line == '':
+            break
         fields = [v.strip() for v in line.rstrip().split(args.sepchar)]
         if args.sepchar == ' ':
             fields = filter(lambda v: v, fields)
