@@ -3,12 +3,6 @@ is_osx || return 1
 
 ulimit -n 10240
 
-PATH=`/usr/bin/paste -d ":" -s - << EOF
-/usr/local/bin
-$PATH
-EOF`
-export PATH
-
 # Trim new lines and copy to clipboard
 alias c="tr -d '\n' | pbcopy"
 
