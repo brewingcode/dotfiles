@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# chops history of branch off before commit $1
+#    git-chop <sha>
+# http://stackoverflow.com/a/3063486/2926055
+
+newroot="$1"
+branch="${2:-master}"
+
+git checkout -b oldroot "$newroot"
+TREE=`git write-tree`
+COMMIT=`echo "Killed history" | git commit-tree "$TREE"`
+git checkout -b newroot "$COMMIT"
+git rebase --onto newroot oldroot "$branch"
+git checkout "$branch"
+
+echo "if that worked, purge history with: git branch -D oldroot; git branch -D oldroot; git gc;"
+
