@@ -159,3 +159,7 @@ gitrmb() {
   git rebase -i --autosquash $(git merge-base HEAD "$upstream")
 }
 
+gitspa() {
+  git stash && git pull --rebase && git stash apply
+}
+
