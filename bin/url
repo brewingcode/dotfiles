@@ -1,28 +1,42 @@
-#!/usr/bin/env perl
+#!/usr/bin/env coffee
 
 # url encode/decode
-#
-use strict;
-use warnings;
-use URI::Escape;
 
-sub get_input {
-  if (@ARGV) {
-    return @ARGV;
-  }
-  else {
-    return <STDIN>;
-  }
-}
+url = require 'url'
+direction = 'decode'
 
-my $direction = shift @ARGV;
-if ($direction =~ /^--?d/) {
-  print uri_unescape($_) for get_input();
-}
-elsif ($direction =~ /^--?e/) {
-  print uri_escape($_) for get_input();
-}
-else {
-  die "supply either --encode or --decode\n";
-}
+handle = (s) ->
+    if direction is 'decode'
+        p = url.parse s.trim(), true
+        out = "#{p.protocol}//"
+        out += if p.auth then "#{p.auth}@" else ''
+        out += "#{p.host}/#{p.pathname}"
+        console.log out
+        if Object.keys(p.query).length
+            for k,v of p.query
+                console.log "#{k}=#{v}"
+        if p.hash
+            console.log p.hash
+    else
+        console.log encodeURIComponent s.trim()
 
+argv = process.argv.slice(2).filter (arg) ->
+    if arg.match /^--?d/
+        direction = 'decode'
+    else if arg.match /^--?e/
+        direction = 'encode'
+    else
+        return true
+    return false
+
+if argv.length
+    for arg in argv
+        handle arg
+else
+    data = ''
+    process.stdin
+        .setEncoding 'utf8'
+        .on 'readable', ->
+            chunk = process.stdin.read()
+            data += chunk if chunk
+        .on 'end', -> handle data
