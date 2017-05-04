@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# echo a gfycat.com-style identifier
+
+shuf=shuf
+command -v "$shuf" > /dev/null || shuf=gshuf
+
+[ -f /tmp/gfy-adjs.txt ] || curl -qso /tmp/gfy-adjs.txt http://assets.gfycat.com/adjectives
+[ -f /tmp/gfy-nouns.txt ] || curl -qso /tmp/gfy-nouns.txt http://assets.gfycat.com/animals
+
+adjs=$($shuf -n 2 < /tmp/gfy-adjs.txt | perl -pe 's/^(.)/uc($1)/e; s/\s//g' | paste -s -)
+noun=$($shuf -n 1 < /tmp/gfy-nouns.txt | perl -pe 's/^(.)/uc($1)/e; s/\s//g')
+
+echo "$adjs$noun"
+
