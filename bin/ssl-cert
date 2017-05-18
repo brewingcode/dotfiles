@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # generates SSL certs:
-#   - ca.cert and ca.key are the self-signing cert authority files, and will
+#   - ca.crt and ca.key are the self-signing cert authority files, and will
 #     NOT be created if they already exist
-#   - DOMAIN.cert and DOMAIN.key are for the particular domain(s)
+#   - DOMAIN.crt and DOMAIN.key are for the particular domain(s)
 #
 # examples:
 #   ./ssl-cert *.example.com example.com some-other-domain.com
@@ -13,7 +13,7 @@ domain="$1"
 [ -z "$domain" ] && { echo "domain required" >&2; exit 1; }
 filename="${domain//\*/STAR}"
 
-for f in "$filename.{key,cert}"; do
+for f in "$filename.{key,crt}"; do
     [ -f "$f" ] && { echo "refusing to overwrite existing file: $f" >&2; exit 2; }
 done
 
@@ -59,11 +59,11 @@ else
 fi
 
 # self-sign the certificate authority, and then trust our newly minted certificate authority
-if [ -f ca.cert ]; then
-    echo "re-using CA cert: ca.cert"
+if [ -f ca.crt ]; then
+    echo "re-using CA cert: ca.crt"
 else
-    openssl req -x509 -new -nodes -key ca.key -sha256 -days 1024 -out ca.cert -subj "/CN=$domain"
-    sudo security add-trusted-cert -d -r trustRoot -k "/Library/Keychains/System.keychain" ca.cert
+    openssl req -x509 -new -nodes -key ca.key -sha256 -days 1024 -out ca.crt -subj "/CN=$domain"
+    sudo security add-trusted-cert -d -r trustRoot -k "/Library/Keychains/System.keychain" ca.crt
 fi
 
 # generate the local domain key
@@ -74,7 +74,7 @@ san_cert "$@"
 openssl req -new -key "$filename.key" -out tmp-local.csr -config tmp-ssl.cnf
 
 # generate the local domain cert and sign it with ca.cert
-openssl x509 -req -in tmp-local.csr -CA ca.cert -CAkey ca.key -CAcreateserial -out "$filename.cert" -days 512 -sha256 -extensions v3_req -extfile tmp-ssl.cnf
+openssl x509 -req -in tmp-local.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out "$filename.crt" -days 512 -sha256 -extensions v3_req -extfile tmp-ssl.cnf
 
-# cleanup
+# cleanup (note: ca.srl is left hanging around, maybe delete it too...?)
 rm -f tmp-{local.csr,ssl.cnf}
