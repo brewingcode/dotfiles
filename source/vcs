@@ -146,10 +146,12 @@ gitnw() {
 gitwhen() {
   [ -z "$1" ] && { echo "need a commit sha to search for" >&2; return 1; }
   tip="${2:-master}"
-  perl -ne 'print if ($seen{$_} .= @ARGV) =~ /10$/' \
-    <(git rev-list --ancestry-path "$1".."$tip") \
-    <(git rev-list --first-parent "$1".."$tip") \
-    | tail -n 1
+  tmp1=$(mktemp /tmp/gitwhen.XXXX)
+  tmp2=$(mktemp /tmp/gitwhen.XXXX)
+  git rev-list --ancestry-path "$1".."$tip" > "$tmp1"
+  git rev-list --first-parent "$1".."$tip" > "$tmp2"
+  perl -ne 'print if ($seen{$_} .= @ARGV) =~ /10$/' "$tmp1" "$tmp2" | tail -n 1
+  rm "$tmp1" "$tmp2"
 }
 
 # git-rebase-merge-base: rebase from the merge-base of us and master (or the
