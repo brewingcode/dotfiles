@@ -1,0 +1,33 @@
+#!/usr/bin/env perl
+
+# convert video to gif, eg `mov2gif my-screencast.mov 0.5` will convert
+# "my-screencast.mov" to "my-screencast.gif" at half (0.5) the resolution
+# of the video
+
+use strict;
+use warnings;
+
+# adapted from https://gist.github.com/dergachev/4627207, originally:
+#   ffmpeg -i "$in" -s "$size" -pix_fmt rgb24 -r 10 -f gif - | gifsicle --optimize=3 --delay=3 > "$out"
+
+my $in = shift or die "filename of input video required";
+my $scale = shift;
+
+0 == system 'type ffmpeg >&2' or die;
+0 == system 'type gifsicle >&2' or die;
+-e $in or die "file $in doesn't exist\n";
+
+my $out = $in;
+$out =~ s/\.[^\.]+$/.gif/;
+
+$in =~ s/'/'"'"'/g;
+$out =~ s/'/'"'"'/g;
+
+my ($w, $h) = `ffmpeg -i '$in' 2>&1` =~ /(\d{2,})x(\d{2,})/ or die "couldn't find AxB movie size in ffmpeg output";
+if ($scale) {
+    $w *= $scale;
+    $h *= $scale;
+}
+
+warn "gif will be ${w}x${h}\n";
+exit system "ffmpeg -i '$in' -s '${w}x${h}' -map_metadata -1 -f gif - | gifsicle --optimize=9 --delay=3 > '$out'";
