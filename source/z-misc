@@ -171,3 +171,8 @@ flip_tables() {
   echo "┬──┬ ノ(゜-゜ノ)"
 }
 
+dockwipe() {
+  docker rm $(docker ps -a -q)
+  docker rmi $(docker images -q)
+}
+
