@@ -1,7 +1,8 @@
 # OSX-only stuff. Abort if not OSX.
 is_osx || return 1
 
-ulimit -n 10240
+# https://unix.stackexchange.com/a/221988
+ulimit -n 10000
 
 export PATH="/usr/local/bin:$PATH"
 
