@@ -1,22 +1,26 @@
 #!/bin/sh
 
-[ -z "$OLD_EMAIL" ] && { echo "define OLD_EMAIL and re-run" >&2; exit 1; }
-[ -z "$CORRECT_NAME" ] && { echo "define CORRECT_NAME and re-run" >&2; exit 2; }
-[ -z "$CORRECT_EMAIL" ] && { echo "define CORRECT_EMAIL and re-run" >&2; exit 3; }
+export OLD_EMAIL="${OLD_EMAIL:-$1}"
+export NEW_EMAIL="${NEW_EMAIL:-$2}"
+export NEW_NAME="${NEW_NAME:-$3}"
 
-echo "correcting $OLD_EMAIL -> $CORRECT_NAME <$CORRECT_EMAIL>"
+[ -z "$OLD_EMAIL" ] && { echo "define OLD_EMAIL and re-run" >&2; exit 1; }
+[ -z "$NEW_EMAIL" ] && { echo "define NEW_EMAIL and re-run" >&2; exit 3; }
+[ -z "$NEW_NAME" ] && { echo "define NEW_NAME and re-run" >&2; exit 2; }
+
+echo "correcting $OLD_EMAIL -> $NEW_NAME <$NEW_EMAIL>"
 sleep 5
 
 git filter-branch --env-filter '
 if [ "$GIT_COMMITTER_EMAIL" = "$OLD_EMAIL" ]
 then
-    export GIT_COMMITTER_NAME="$CORRECT_NAME"
-    export GIT_COMMITTER_EMAIL="$CORRECT_EMAIL"
+    export GIT_COMMITTER_NAME="$NEW_NAME"
+    export GIT_COMMITTER_EMAIL="$NEW_EMAIL"
 fi
 if [ "$GIT_AUTHOR_EMAIL" = "$OLD_EMAIL" ]
 then
-    export GIT_AUTHOR_NAME="$CORRECT_NAME"
-    export GIT_AUTHOR_EMAIL="$CORRECT_EMAIL"
+    export GIT_AUTHOR_NAME="$NEW_NAME"
+    export GIT_AUTHOR_EMAIL="$NEW_EMAIL"
 fi
 ' --tag-name-filter cat -- --branches --tags
 
