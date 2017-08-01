@@ -161,7 +161,8 @@ the return value is the filepath of the fetched file."""
     if bypass or skip_cache or not url in index:
         if headers == None:
             headers = {}
-        headers['User-Agent'] = 'curl/7.30.0'
+        if not 'User-Agent' in headers:
+            headers['User-Agent'] = 'curl/7.30.0'
 
         if bin_file:
             response = _get_url(url, headers, True, auth)
