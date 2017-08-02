@@ -117,7 +117,8 @@ gittail() {
 # summary of local and remote branches
 gitsum() {
   git remote | sort | uniq | while read -r i; do
-    echo "# remote: $i $(git remote get-url $i)"
+    giturl=$(git remote get-url $i 2>/dev/null)
+    echo "# remote: $i $giturl"
     gittail "$1" "remotes/$i"
   done
 
