@@ -1,0 +1,28 @@
+# all the terrible `curl|bash` installers that have a better-than-even chance
+# of fucking up your shell (actually just rvm sucks)
+
+get_rvm() {
+  command -v rvm && { echo "error: rvm already exists"; return 1; }
+  if ! [ -d "$HOME/.rvm" ]; then
+    gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+    \curl -sSL https://get.rvm.io | bash -s stable
+  fi
+  . "$HOME/.rvm/scripts/rvm"
+}
+
+
+get_nvm() {
+  command -v nvm && { echo "error: nvm already exists"; return 1; }
+  if ! [ -d "$HOME/.nvm" ]; then
+    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash
+  fi
+  . "$HOME/.nvm/nvm.sh"
+}
+
+get_brew() {
+  command -v brew && { echo "error: brew already exists"; return 1; }
+  if ! [ -d /usr/local/Cellar ]; then
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  fi
+}
+
