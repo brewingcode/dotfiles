@@ -12,13 +12,13 @@ handle = (s) ->
         if p.host
             out = "#{p.protocol}//"
             out += if p.auth then "#{p.auth}@" else ''
-            out += "#{p.host}/#{p.pathname}"
-            console.log out
+            out += "#{p.host}#{p.pathname}"
             if Object.keys(p.query).length
-                for k,v of p.query
-                    console.log "#{k}=#{v}"
+                out += '\n  ?'
+                out += ( "#{k}=#{v}" for k,v of p.query ).join '\n  &'
             if p.hash
-                console.log p.hash
+                out += "\n  #{p.hash}"
+            console.log out
         else
             console.log decodeURIComponent s
     else
