@@ -89,7 +89,7 @@ gitsync() {
     done
     git status
   else
-    git fetch -p $1 2>&1 \
+    git fetch -p --tags $1 2>&1 \
       | perl -ne '
         next unless /\S/;
         print "# $_";
