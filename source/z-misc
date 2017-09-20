@@ -153,7 +153,9 @@ alias imgsize="identify -format '%f	%w	%h	%b\n'"
 randcolor() {
   color=$(perl -e '@v = (2..9, "a".."d"); for (0..5) { print $v[int rand scalar @v] } print "\n"')
   if [[ -n "$1" ]]; then
-    convert -size 100x100 xc:"#$color" "$1"
+    w="${2:-100}"
+    h="${3:-100}"
+    convert -size "${w}x${h}" xc:"#$color" "$1"
   else
     echo "#$color"
   fi
