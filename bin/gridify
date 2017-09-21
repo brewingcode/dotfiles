@@ -8,6 +8,7 @@ from tabulate import tabulate
 import codecs
 import operator
 import itertools
+import csv
 
 def parse_args():
     global args
@@ -38,6 +39,8 @@ Examples:
         help='limit output to 1-based column indicies (default: none)')
     parser.add_argument('--format', '-f', default='psql',
         help='format to use for printing, see tabulate\'s options (default: psql)')
+    parser.add_argument('--csv', default='excel', nargs='?', const='excel', metavar='FORMAT',
+        help='assume input in csv, see csv.list_dialects() for possible values (default: excel)')
     parser.add_argument('--truncate', '-t', metavar='N', default=0, type=int,
         help='truncate column content to N letters')
     parser.add_argument('--sepchar', '-e', default='\t',
@@ -53,24 +56,35 @@ Examples:
     args.files = remaining
     args.limit = [int(x) for x in args.limit.split(',')] if args.limit else []
 
-def get_lines(fh):
-    while True:
-        line = sys.stdin.readline()
-        if line == '':
-            break
-        fields = [v.strip() for v in line.rstrip().split(args.sepchar)]
-        if args.sepchar == ' ':
-            fields = filter(lambda v: v, fields)
-        if args.truncate > 0:
-            fields = [v[:args.truncate] for v in fields]
+def filter_fields(fields):
+    if args.truncate > 0:
+        fields = [v[:args.truncate] for v in fields]
+    if not args.examine:
+        if args.field_count > 0 and args.field_count != len(fields):
+            return None
+        if len(args.limit) > 0:
+            indexes = filter(lambda i: i-1 < len(fields), args.limit)
+            fields = [fields[i-1] for i in indexes]
+    return fields
 
-        if not args.examine:
-            if args.field_count > 0 and args.field_count != len(fields):
-                continue
-            if len(args.limit) > 0:
-                indexes = filter(lambda i: i-1 < len(fields), args.limit)
-                fields = [fields[i-1] for i in indexes]
-        yield fields
+def get_lines():
+    if args.csv:
+        reader = csv.reader(sys.stdin, dialect=args.csv)
+        for row in reader:
+            f = filter_fields(row)
+            if f:
+                yield f
+    else:
+        while True:
+            line = sys.stdin.readline()
+            if line == '':
+                break
+            fields = [v.strip() for v in line.rstrip().split(args.sepchar)]
+            if args.sepchar == ' ':
+                fields = filter(lambda v: v, fields)
+            f = filter_fields(fields)
+            if f:
+                yield f
 
 def percentage(x, y):
     return 100 * float(x)/float(y)
@@ -97,7 +111,7 @@ def read_file(fh):
     lines = []
     field_values = {}
 
-    for fields in get_lines(fh):
+    for fields in get_lines():
         if args.raw:
             print(args.sepchar.join(fields))
             continue
