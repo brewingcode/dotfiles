@@ -179,3 +179,9 @@ dockwipe() {
   find "$HOME/Library/Containers/com.docker.docker/Data" -name '*qcow*' -ls
 }
 
+dumbtext() {
+  # remove all non-ascii chars, and replace \r with \n
+  # this is a very dumb thing to do, but it's occasionally the easiest thing
+  perl -pe 's/[^\x00-\x7f]//g; s/\r/\n/g;'
+}
+
