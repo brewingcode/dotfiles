@@ -79,9 +79,10 @@ def get_lines():
             line = sys.stdin.readline()
             if line == '':
                 break
-            fields = [v.strip() for v in line.rstrip().split(args.sepchar)]
             if args.sepchar == ' ':
-                fields = filter(lambda v: v, fields)
+                fields = line.split()
+            else:
+                fields = [v.strip() for v in line.rstrip().split(args.sepchar)]
             f = filter_fields(fields)
             if f:
                 yield f
