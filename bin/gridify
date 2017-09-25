@@ -39,8 +39,8 @@ Examples:
         help='limit output to 1-based column indicies (default: none)')
     parser.add_argument('--format', '-f', default='psql',
         help='format to use for printing, see tabulate\'s options (default: psql)')
-    parser.add_argument('--csv', default='excel', nargs='?', const='excel', metavar='FORMAT',
-        help='assume input in csv, see csv.list_dialects() for possible values (default: excel)')
+    parser.add_argument('--csv', action='store_true',
+        help='parse input as csv format')
     parser.add_argument('--truncate', '-t', metavar='N', default=0, type=int,
         help='truncate column content to N letters')
     parser.add_argument('--sepchar', '-e', default='\t',
