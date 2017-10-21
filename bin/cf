@@ -1,0 +1,8 @@
+#!/bin/bash
+
+cd "$(dirname "$0")/../lib"
+[ -d node_modules ] || npm install
+./node_modules/.bin/coffee -r cheerio -r fs -e '
+$ = cheerio.load fs.readFileSync "/dev/stdin"
+{ log } = console
+'"$1"
