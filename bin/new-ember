@@ -1,0 +1,94 @@
+#!/bin/bash
+
+# Why isn't this simply in a repo of its own that I clone from when I want a
+# fresh Ember.js project? Well, because Ember's "new" command sticks your
+# project name in a dozen places, *and* because Ember changes so goddamn
+# often that re-starting from "ember new" is never a bad idea.
+
+[ -n "$1" ] || { echo "project dir (also used as name) required" >&2; exit 1; }
+[ -e "$1" ] && { echo "$1 exists, aborting" >&2; exit 2; }
+
+# we generate a sample component for fun
+comp=sample-component
+
+ember new "$1"
+cd "$1"
+
+yarn add -D bluebird moment
+
+for i in browserify inject-script concurrency math-helpers truth-helpers local-storage; do
+  yarn add -D "ember-$i"
+done
+
+for i in coffeescript deploy emblem stylus; do
+  yarn add -D "ember-cli-$i"
+done
+
+for i in build gzip revision-data s3 s3-index; do
+  yarn add -D "ember-cli-deploy-$i"
+done
+
+bower install bootstrap-stylus
+
+cat > app/templates/application.emblem <<EOF
+h1 $1
+=$comp
+  div This is a div for inside our sample component
+=outlet
+EOF
+
+ember generate component "$comp"
+
+cat > "app/templates/components/$comp.emblem" <<EOF
+div This is our sample component
+=input value=foo
+div The "bar" property is currently: #{bar}
+=yield
+div This is the end of our component
+EOF
+
+cat > "app/components/$comp.coffee" <<EOF
+import Ember from 'ember'
+export default Ember.Component.extend
+  foo: 'this is foo'
+  bar: Ember.computed 'foo', ->
+    'bar sees foo: ' + @get('foo')
+EOF
+
+cat > app/styles/app.styl <<EOF
+@import 'bootstrap/index'
+EOF
+
+rm app/templates/application.hbs app/styles/app.css "app/components/$comp.js"
+
+cat > /tmp/new-ember-tmp.txt <<EOF
+    stylusOptions: {
+      includePaths: [
+        'bower_components/bootstrap-stylus'
+      ]
+    }
+EOF
+
+perl -lni.bak -e 'print; print qx,cat /tmp/new-ember-tmp.txt, if /Add options here/' ember-cli-build.js
+if ! grep -q ember-cli-build.js{,.bak}; then
+  rm ember-cli-build.js.bak
+fi
+
+mv README.md BOILERPLATE.md
+
+cat > README.md <<EOF
+# $1
+
+This is an [Ember CLI app](BOILERPLATE.md) with the following main additions:
+
+* [ember-cli-coffeescript](https://github.com/kimroen/ember-cli-coffeescript)
+for cleaner and simpler JS
+
+* [ember-cli-emblem](https://github.com/Vestorly/ember-cli-emblem)
+for cleaner and simpler HTML
+
+* [bootstrap-stylus](https://github.com/maxmx/bootstrap-stylus)
+for cleaner and simpler CSS
+
+...plus a bunch of other packages.
+EOF
