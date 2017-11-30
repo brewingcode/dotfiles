@@ -47,3 +47,6 @@
   autosquash = true
 [push]
   default = simple
+[diff "nodiff"]
+	command = /usr/bin/true
+
