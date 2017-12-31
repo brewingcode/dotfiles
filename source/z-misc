@@ -139,10 +139,9 @@ export NVM_DIR=~/.nvm
 slink() {
   [ -z "$1" ] && { echo 'filename required' >&2; return 1; }
   target="$(pwd)/$1"
-  name="${2:-$1}"
   [ -x "$target" ] || { echo "$target is not an executable file" >&2; return 2; }
 
-  (cd /usr/local/bin && ln -s "$target" "$name")
+  (cd /usr/local/bin && ln -s "$target")
 }
 
 alias imgsize="identify -format '%f	%w	%h	%b\n'"
