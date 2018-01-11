@@ -5,7 +5,9 @@ shopt -s nocaseglob
 # update the values of LINES and COLUMNS.
 shopt -s checkwinsize
 
-export GREP_OPTIONS='--color=auto --line-buffered'
+alias grep="grep --color=auto --line-buffered"
+alias egrep="egrep --color=auto --line-buffered"
+alias fgrep="fgrep --color=auto --line-buffered"
 
 # editors
 export EDITOR=vim
