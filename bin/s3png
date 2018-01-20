@@ -5,6 +5,7 @@ request = require 'request-promise'
 proc = pr.promisifyAll require 'child_process'
 crypto = pr.promisifyAll require 'crypto'
 fs = pr.promisifyAll require 'fs'
+argv = require('minimist')(process.argv.slice(2))
 { log, error } = console
 
 if argv.h or argv.help
@@ -53,7 +54,8 @@ main = ->
     #crush(pngfile, '25%', 'quarter').then (f) -> upload(f)
   ]
 
-  proc.execAsync("echo '![image](#{prs[0]})' | pbcopy")
+  title = argv.m or argv.message or "image"
+  proc.execAsync("echo '![#{title}](#{prs[0]})' | pbcopy")
 
 # TODO: this produces *terrible* images, find something better
 crush = (pngfile, percentage, label) ->
