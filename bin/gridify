@@ -67,16 +67,16 @@ def filter_fields(fields):
             fields = [fields[i-1] for i in indexes]
     return fields
 
-def get_lines():
+def get_lines(fh):
     if args.csv:
-        reader = csv.reader(sys.stdin, dialect=args.csv)
+        reader = csv.reader(fh, dialect=args.csv)
         for row in reader:
             f = filter_fields(row)
             if f:
                 yield f
     else:
         while True:
-            line = sys.stdin.readline()
+            line = fh.readline()
             if line == '':
                 break
             if args.sepchar == ' ':
@@ -112,7 +112,7 @@ def read_file(fh):
     lines = []
     field_values = {}
 
-    for fields in get_lines():
+    for fields in get_lines(fh):
         if args.raw:
             print(args.sepchar.join(fields))
             continue
