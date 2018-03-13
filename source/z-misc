@@ -9,6 +9,9 @@ alias grep="grep --color=auto --line-buffered"
 alias egrep="egrep --color=auto --line-buffered"
 alias fgrep="fgrep --color=auto --line-buffered"
 
+# other useful options: --vcs=git --by-file
+alias cloc="cloc --script-lang=CoffeeScript,coffee --script-lang=JavaScript,node"
+
 # editors
 export EDITOR=vim
 export VISUAL="$EDITOR"
@@ -196,3 +199,4 @@ bin2hex() {
   # Merge lines
   tr -d '\n'
 }
+
