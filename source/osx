@@ -79,3 +79,13 @@ jquery() {
   curl -qs 'https://code.jquery.com/jquery-3.1.1.slim.min.js' | pbcopy
 }
 
+# start a completely new Chrome instance
+# NOTE: extra args are passed through to Chrome.app, eg:
+#   newchr --disable-extensions
+newchr() {
+  user_dir="/tmp/$(openssl rand -hex 5)"
+  mkdir -p "$user_dir"
+  echo "temporary user data dir: $user_dir"
+  open -na 'Google Chrome' --args --user-data-dir="$user_dir" $*
+}
+
