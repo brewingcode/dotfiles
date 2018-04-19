@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+
+# pip install -e git+https://github.com/wieden-kennedy/haikus#egg=haikus
+
+from haikus import HaikuText
+
+f = open("/dev/stdin", "r")
+
+text = HaikuText(text=f.read())
+
+for h in text.get_haikus():
+    print(' / '.join(h.get_lines()))
+
