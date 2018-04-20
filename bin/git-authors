@@ -1,6 +1,6 @@
 #!/usr/bin/env coffee
 
-{ spawn } = require 'child_process'
+{ spawnSync } = require 'child_process'
 _ = require 'lodash'
 
 args = process.argv.slice(2)
@@ -21,18 +21,19 @@ if help.length
   """
   process.exit()
 
-out = ''
-git = spawn 'git', ['log', '--pretty=format:%ae', args...]
-git.stdout.on 'data', (x) -> out += x.toString()
-git.on 'error', console.error
-git.on 'close', ->
-  _(out.split("\n"))
-    .map (x) ->
-      if squash.length
-        x = x.replace(/@.*$/, '').replace(/\W/g, '')
-      x.toLowerCase()
-    .countBy()
-    .map (v, k) -> [ k, v ]
-    .sortBy (x) -> -x[1]
-    .map (x) -> "#{x[1]}\t#{x[0]}"
-    .each (x) -> console.log(x)
+git = spawnSync 'git', ['log', '--pretty=format:%ae', args...]
+
+if git.status isnt 0
+  console.error "git error (#{git.status}):", git.stderr.toString()
+  process.exit(git.status)
+
+_(git.stdout.toString().split("\n"))
+  .map (x) ->
+    if squash.length
+      x = x.replace(/@.*$/, '').replace(/\W/g, '')
+    x.toLowerCase()
+  .countBy()
+  .map (v, k) -> [ k, v ]
+  .sortBy (x) -> -x[1]
+  .map (x) -> "#{x[1]}\t#{x[0]}"
+  .each (x) -> console.log(x)
