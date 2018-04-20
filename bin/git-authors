@@ -1,0 +1,18 @@
+#!/usr/bin/env coffee
+
+{ spawn } = require 'child_process'
+_ = require 'lodash'
+
+out = ''
+git = spawn 'git', ['log', '--pretty=format:%ae', process.argv.slice(2)...]
+git.stdout.on 'data', (x) ->
+  out += x.toString()
+git.on 'error', console.error
+git.on 'close', ->
+  counts = _(out.split("\n"))
+    .map (x) -> x.toLowerCase()
+    .countBy()
+    .map (v, k) -> [ k, v ]
+    .sortBy (x) -> -x[1]
+    .map (x) -> "#{x[1]}\t#{x[0]}"
+    .each (x) -> console.log(x)
