@@ -5,7 +5,7 @@ _ = require 'lodash'
 
 args = process.argv.slice(2)
 squash = _.remove args, (x) -> x.match /^(-s|--squash-email)$/i
-help = _.remove args, (x) -> x.match /^(-h|--help)/i
+help = _.remove args, (x) -> x.match /^(-h|--help)$/i
 
 if help.length
   console.log """
