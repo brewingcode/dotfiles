@@ -3,14 +3,34 @@
 { spawn } = require 'child_process'
 _ = require 'lodash'
 
+args = process.argv.slice(2)
+squash = _.remove args, (x) -> x.match /^(-s|--squash-email)$/i
+help = _.remove args, (x) -> x.match /^(-h|--help)/i
+
+if help.length
+  console.log """
+    usage: git-authors [-s|--squash-email] [args to git-log]
+
+    Produces a sorted list of number of commits from emails in git-log. Use -s
+    to squash emails into just user aliases, stripped of punctuation, eg:
+
+        bettysue@yahoo.com ->  bettysue
+        betty.sue@gmail.com -> bettysue
+
+    The two emails above would then be counted as the same author.
+  """
+  process.exit()
+
 out = ''
-git = spawn 'git', ['log', '--pretty=format:%ae', process.argv.slice(2)...]
-git.stdout.on 'data', (x) ->
-  out += x.toString()
+git = spawn 'git', ['log', '--pretty=format:%ae', args...]
+git.stdout.on 'data', (x) -> out += x.toString()
 git.on 'error', console.error
 git.on 'close', ->
-  counts = _(out.split("\n"))
-    .map (x) -> x.toLowerCase()
+  _(out.split("\n"))
+    .map (x) ->
+      if squash.length
+        x = x.replace(/@.*$/, '').replace(/\W/g, '')
+      x.toLowerCase()
     .countBy()
     .map (v, k) -> [ k, v ]
     .sortBy (x) -> -x[1]
