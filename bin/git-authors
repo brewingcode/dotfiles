@@ -27,7 +27,7 @@ if git.status isnt 0
   console.error "git error (#{git.status}):", git.stderr.toString()
   process.exit(git.status)
 
-_(git.stdout.toString().split("\n"))
+counts = _(git.stdout.toString().split("\n"))
   .map (x) ->
     if squash.length
       x = x.replace(/@.*$/, '').replace(/\W/g, '')
@@ -35,5 +35,10 @@ _(git.stdout.toString().split("\n"))
   .countBy()
   .map (v, k) -> [ k, v ]
   .sortBy (x) -> -x[1]
-  .map (x) -> "#{x[1]}\t#{x[0]}"
-  .each (x) -> console.log(x)
+  .value()
+
+total = _.sumBy counts, (x) -> x[1]
+
+_.each counts, (x) ->
+  percentage = _.round(x[1] / total * 100, 2).toFixed(2)
+  console.log [ x[1], percentage, x[0] ].join("\t")
