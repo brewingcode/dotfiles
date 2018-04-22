@@ -22,9 +22,6 @@ alias gurlp='echo $(gurl)/tree/$(gbs)/$(git rev-parse --show-prefix)'
 
 # OSX-specific Git shortcuts
 if is_osx; then
-  alias gdk='git ksdiff'
-  alias gdkc='gdk --cached'
-
   gt() {
     local path repo
     {
