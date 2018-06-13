@@ -39,6 +39,10 @@ if args.extractor
     header: false
     sourceMap: false
 
+for k in ['ignoreColumns', 'onlyColumns', 'headings']
+  if (k of args) and (typeof args[k] isnt 'object')
+    args[k] = [args[k]]
+
 html = fs.readFileSync('/dev/stdin', 'utf8')
 { window } = new jsdom.JSDOM(html)
 
