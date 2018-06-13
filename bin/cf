@@ -1,8 +1,18 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-cd "$(dirname "$0")/../lib"
-[ -d node_modules ] || npm install
-./node_modules/.bin/coffee -r cheerio -r fs -e '
-$ = cheerio.load fs.readFileSync "/dev/stdin"
+cat > /tmp/cf.coffee <<EOF
+cheerio = require('cheerio')
+pretty = require('pretty')
+fs = require('fs')
+
 { log } = console
-'"$1"
+html = fs.readFileSync "/dev/stdin", "utf8"
+if (html.match /<(tr|td|th|thead|tbody|tfooter)/i) and (not html.match /<table/i)
+  # table-children MUST have a <table> parent, otherwise the parsing is truly fucked
+  html = "<table>#{html}</table>"
+$ = cheerio.load html
+
+$1
+EOF
+
+coffee /tmp/cf.coffee
