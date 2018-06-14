@@ -1,5 +1,39 @@
 #!/usr/bin/env bash
 
+if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
+  cat <<'EOF'
+Parse html from stdin into a cheerio.js object. Includes some tersely-named
+helper functions. For example:
+
+    # shortcut to some html content
+    page() { curl -qs https://news.ycombinator.com; }
+
+    # with no args, simply pretty-print
+    page | cf
+
+    # print the text of each title [1]
+    page | cf '$(".storylink").each -> log $(@).text()'
+
+    # convert to json [2]
+    page | cf '$(".athing").map ->' \
+      '  m = $(@).next()?.text()?.match /(\d+)\s+comments/' \
+      '  log js { id: $(@).attr("id"), story: $(".storylink", @).attr("href"), comments: if m then +m[1] else 0 }'
+
+    # pretty-print the html of self posts [3]
+    page | cf '$(".storylink").each -> log pretty $(@).parents(".athing").html() unless $(@).next().length'
+
+[1]: "log" is aliased to console.log, and "$" is the parsed html from
+cheerio's .load() method: https://github.com/cheeriojs/cheerio
+
+[2]: "js" is aliased to JSON.stringify, and you can split multiple lines of
+coffeescript into arguments (be aware of indenting)
+
+[3]: "pretty" is available, from https://github.com/jonschlinkert/pretty
+
+EOF
+  exit
+fi
+
 cat > /tmp/cf.coffee <<EOF
 cheerio = require('cheerio')
 pretty = require('pretty')
