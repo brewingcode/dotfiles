@@ -6,6 +6,7 @@ pretty = require('pretty')
 fs = require('fs')
 
 { log } = console
+js = JSON.stringify
 html = fs.readFileSync "/dev/stdin", "utf8"
 if (html.match /<(tr|td|th|thead|tbody|tfooter)/i) and (not html.match /<table/i)
   # table-children MUST have a <table> parent, otherwise the parsing is truly fucked
