@@ -13,7 +13,14 @@ if (html.match /<(tr|td|th|thead|tbody|tfooter)/i) and (not html.match /<table/i
   html = "<table>#{html}</table>"
 $ = cheerio.load html
 
-$1
 EOF
+
+if [ $# -eq 0 ]; then
+  printf 'log pretty $.html()\n' >> /tmp/cf.coffee
+else
+  for x in "$@"; do
+    printf "%s\n" "$x" >> /tmp/cf.coffee
+  done
+fi
 
 coffee /tmp/cf.coffee
