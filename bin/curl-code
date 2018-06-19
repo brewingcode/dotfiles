@@ -1,6 +1,12 @@
 #!/bin/sh
 
-# curl and only output the http response code
-# note: "000" is possible for errors such as invalid urls
-curl -s -o /dev/null -w '%{http_code}\n' "$@"
+# curl and only output the http response code, and if the code is a redirect,
+# include the Location: header
+out="$(curl -sSI "$@")"
+[ -z "$out" ] && exit 1
+echo "$out" | perl -lne '
+  $code = $1 if /^HTTP\S+ (\d+)/;
+  $extra = $1 if $code =~ /^30/ and /^Location: (.*)/i;
+  END { print "$code $extra" }
+'
 
