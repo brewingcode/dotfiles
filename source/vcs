@@ -1,13 +1,16 @@
 
 # Git shortcuts
 alias gitcd='git rev-parse 2>/dev/null && cd "./$(git rev-parse --show-cdup)"'
-
-alias gitup='git push --set-upstream origin "$(git rev-parse --abbrev-ref HEAD)"'
 alias gitrc='git rebase --continue'
 alias gitra='git rebase --abort'
 
 gitre() { git rebase -i "$(git merge-base HEAD "${1:-master}")"; }
 gitfp() { git commit --fixup HEAD "$@"; gitre HEAD^^; }
+
+gitup() {
+  remote="${1:-origin}"
+  git push --set-upstream "$remote" "$(git rev-parse --abbrev-ref HEAD)"
+}
 
 # GitHub URL for current repo.
 gurl() {
@@ -17,6 +20,7 @@ gurl() {
   local user_repo="$(echo "$remote" | perl -pe 's/.*://;s/\.git$//')"
   echo "https://github.com/$user_repo"
 }
+
 # GitHub URL for current repo, including current branch + path.
 alias gurlp='echo $(gurl)/tree/$(gbs)/$(git rev-parse --show-prefix)'
 
@@ -152,14 +156,24 @@ gitwhen() {
   rm "$tmp1" "$tmp2"
 }
 
-# git-rebase-merge-base: rebase from the merge-base of us and master (or the
-# given ref). seems like this should be some setting that's already in git
-gitrmb() {
-  upstream="${1:-master}"
-  git rebase -i --autosquash $(git merge-base HEAD "$upstream")
+# get merge-base of HEAD and {$1:-master}
+gitmb() {
+  git merge-base HEAD "${1:-master}"
 }
 
+# git-rebase-merge-base: rebase from the merge-base of us and master (or the
+# given ref). seems like this should be some setting that's already in git
+gitrb() {
+  git rebase -i --autosquash "$(gitmb "$1")"
+}
+
+# git stash-pull-apply
 gitspa() {
   git stash && git pull --rebase && git stash apply
+}
+
+# git stash-checkout-apply
+gitsca() {
+  git stash && git checkout "${1:-master}" && git stash apply
 }
 
