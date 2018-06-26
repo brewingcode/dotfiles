@@ -3,7 +3,7 @@
 # Print process groups containing COMMAND that are older than AGE.
 # Pass --kill to kill them off, too.
 
-{ execSync } = require 'child_process'
+{ execSync, spawnSync } = require 'child_process'
 moment = require 'moment'
 minimist = require 'minimist'
 
@@ -59,4 +59,4 @@ if Object.keys(pgids).length
   for pgid, pids of pgids
     console.log pgid, "\t", pids.join(' ')
     if argv.kill
-      execSync 'kill -TERM -- -' + pgid
+      spawnSync '/bin/kill', ['TERM', '-'+pgid]
