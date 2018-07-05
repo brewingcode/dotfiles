@@ -3,44 +3,29 @@
 # url encode/decode
 
 url = require 'url'
-direction = 'decode'
+minimist = require 'minimist'
+
+argv = minimist process.argv.slice(2), boolean: ['e', 'encode', 'd', 'decode']
 
 handle = (s) ->
     s = s.trim()
-    if direction is 'decode'
+    if argv.d or argv.decode
         p = url.parse s, true
-        if p.host
-            out = "#{p.protocol}//"
-            out += if p.auth then "#{p.auth}@" else ''
-            out += "#{p.host}#{p.pathname}"
-            if Object.keys(p.query).length
-                out += '\n  ?'
-                out += ( "#{k}=#{v}" for k,v of p.query ).join '\n  &'
-            if p.hash
-                out += "\n  #{p.hash}"
-            console.log out
-        else
-            console.log decodeURIComponent s
+        out = ''
+        out += "#{p.protocol}//" if p.protocol
+        out += "#{p.auth}@" if p.auth
+        out += p.host if p.host
+        out += p.pathname if p.pathname
+        if p.query and Object.keys(p.query).length
+            out += '\n  ?'
+            out += ( "#{k}=#{v}" for k,v of p.query ).join '\n  &'
+        if p.hash
+            out += "\n  #{p.hash}"
+        console.log out
     else
         console.log encodeURIComponent s
 
-argv = process.argv.slice(2).filter (arg) ->
-    if arg.match /^--?d/
-        direction = 'decode'
-    else if arg.match /^--?e/
-        direction = 'encode'
-    else
-        return true
-    return false
-
-if argv.length
-    for arg in argv
-        handle arg
+if argv._.length
+    handle(arg) for arg in argv._
 else
-    data = ''
-    process.stdin
-        .setEncoding 'utf8'
-        .on 'readable', ->
-            chunk = process.stdin.read()
-            data += chunk if chunk
-        .on 'end', -> handle data
+    handle fs.readFileSync '/dev/stdin', 'utf8'
