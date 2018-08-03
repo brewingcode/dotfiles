@@ -4,6 +4,7 @@
 
 url = require 'url'
 minimist = require 'minimist'
+fs = require 'fs'
 
 argv = minimist process.argv.slice(2), boolean: ['e', 'encode', 'd', 'decode']
 
