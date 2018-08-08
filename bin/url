@@ -1,6 +1,6 @@
 #!/usr/bin/env coffee
 
-# url encode/decode
+# url parse (default), encode, or decode
 
 url = require 'url'
 minimist = require 'minimist'
@@ -10,7 +10,11 @@ argv = minimist process.argv.slice(2), boolean: ['e', 'encode', 'd', 'decode']
 
 handle = (s) ->
     s = s.trim()
-    if argv.d or argv.decode
+    if argv.e or argv.encode
+        console.log encodeURIComponent s
+    else if argv.d or argv.decode
+        console.log decodeURIComponent s
+    else
         p = url.parse s, true
         out = ''
         out += "#{p.protocol}//" if p.protocol
@@ -23,8 +27,6 @@ handle = (s) ->
         if p.hash
             out += "\n  #{p.hash}"
         console.log out
-    else
-        console.log encodeURIComponent s
 
 if argv._.length
     handle(arg) for arg in argv._
