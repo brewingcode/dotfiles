@@ -6,6 +6,7 @@
     "jsdom": "^11.11.0",
     "minimist": "^1.2.0",
     "moment": "^2.20.1",
+    "parse-domain": "^2.1.2",
     "pretty": "^2.0.0",
     "rc": "^1.2.8",
     "request": "^2.83.0",
