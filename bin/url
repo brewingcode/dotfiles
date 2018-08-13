@@ -7,7 +7,8 @@ minimist = require 'minimist'
 fs = require 'fs'
 pd = require 'parse-domain'
 
-argv = minimist process.argv.slice(2), boolean: ['e', 'encode', 'd', 'decode', 'tld', 'domain']
+argv = minimist process.argv.slice(2),
+    boolean: ['e', 'encode', 'd', 'decode', 'tld', 'domain', 'fulldomain']
 
 handle = (s) ->
     try
@@ -21,6 +22,9 @@ handle = (s) ->
         else if argv.domain
             parts = pd(s)
             console.log "#{parts.domain}.#{parts.tld}"
+        else if argv.fulldomain
+            parts = pd(s)
+            console.log "#{parts.subdomain}.#{parts.domain}.#{parts.tld}"
         else
             p = url.parse s, true
             out = ''
