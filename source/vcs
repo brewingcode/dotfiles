@@ -108,7 +108,11 @@ gitsync() {
 # see `gitsumm` function
 gittail() {
   count="${1:-10}"
-  refs="${2:-heads}"
+  if [ -n "$2" ]; then
+    refs="remotes/$2"
+  else
+    refs="heads"
+  fi
 
   git for-each-ref --sort=committerdate refs/"$refs" \
     --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))' \
@@ -120,7 +124,7 @@ gitsum() {
   git remote | sort | uniq | while read -r i; do
     giturl=$(git remote get-url $i 2>/dev/null)
     echo "# remote: $i $giturl"
-    gittail "$1" "remotes/$i"
+    gittail "$1" "$i"
   done
 
   echo "# local: "
