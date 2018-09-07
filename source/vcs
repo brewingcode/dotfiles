@@ -5,7 +5,16 @@ alias gitrc='git rebase --continue'
 alias gitra='git rebase --abort'
 
 gitre() { git rebase -i "$(git merge-base HEAD "${1:-master}")"; }
-gitfp() { git commit --fixup HEAD "$@"; gitre HEAD^^; }
+
+# git-fixup-to-previous
+gitfp() {
+  if [ $# -eq 0 ]; then
+    git commit --fixup --all HEAD
+  else
+    git commit --fixup HEAD -- "$@"
+  fi
+  git rebase -i HEAD^^
+}
 
 gitup() {
   remote="${1:-origin}"
