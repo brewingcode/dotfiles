@@ -16,6 +16,18 @@ gitfp() {
   git rebase -i HEAD^^
 }
 
+# git-fixup-to-commit (where commit cannot be "HEAD")
+gitfc() {
+  ref=shift
+  [[ "$ref" == "HEAD" ]] && { echo "use gitfp to fixup to HEAD" >&2; return 1; }
+  if [ $# -eq 0 ]; then
+    git commit --fixup --all "$ref"
+  else
+    git commit --fixup "$ref" -- "$@"
+  fi
+  git rebase -i "$ref"^
+}
+
 gitup() {
   remote="${1:-origin}"
   git push --set-upstream "$remote" "$(git rev-parse --abbrev-ref HEAD)"
@@ -189,4 +201,3 @@ gitspa() {
 gitsca() {
   git stash && git checkout "${1:-master}" && git stash apply
 }
-
