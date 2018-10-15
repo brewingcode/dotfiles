@@ -173,8 +173,8 @@ ptouch() {
 }
 
 flip_tables() {
-  echo "(╯°□°）╯︵ ┻━━┻"
-  echo "┬──┬ ノ(゜-゜ノ)"
+  echo "(╯°□°)╯︵ ┻━┻"
+  echo "┬─┬ノ(ಠ_ಠノ)"
 }
 
 dockwipe() {
