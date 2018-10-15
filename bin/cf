@@ -25,8 +25,8 @@ helper functions. For example:
 [1]: "log" is aliased to console.log, and "$" is the parsed html from
 cheerio's .load() method: https://github.com/cheeriojs/cheerio
 
-[2]: "js" is aliased to JSON.stringify, and you can split multiple lines of
-coffeescript into arguments (be aware of indenting)
+[2]: "js" is aliased to JSON.stringify (and "jp" for JSON.parse), and you can
+split multiple lines of coffeescript into arguments (be aware of indenting)
 
 [3]: "pretty" is available, from https://github.com/jonschlinkert/pretty
 
@@ -41,6 +41,7 @@ fs = require('fs')
 
 { log } = console
 js = JSON.stringify
+jp = JSON.parse
 html = fs.readFileSync "/dev/stdin", "utf8"
 if (html.match /<(tr|td|th|thead|tbody|tfooter)/i) and (not html.match /<table/i)
   # table-children MUST have a <table> parent, otherwise the parsing is truly fucked
