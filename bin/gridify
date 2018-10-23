@@ -49,6 +49,8 @@ Examples:
         help='only include lines from input with N fields')
     parser.add_argument('--raw', '-r', action='store_true',
         help='raw output (do not use tabulate), ignores -f and -x')
+    parser.add_argument('--transpose', '-p', action='store_true',
+        help='transpose each line as it is printed (vertical output)')
     parser.add_argument('--examine', '-x', action='store_true',
         help='examine input for patterns (see description above)')
 
@@ -133,7 +135,12 @@ def read_file(fh):
         return
 
     if not args.examine:
-        print tabulate(pad_lines(lines, max(field_counts.keys(), key=int)), tablefmt=args.format)
+        if args.transpose:
+            for line in lines:
+                print tabulate([(i+1,f) for i,f in enumerate(line)], tablefmt=args.format)
+        else:
+            print tabulate(pad_lines(lines, max(field_counts.keys(), key=int)), tablefmt=args.format)
+
         return
 
     field_counts = sorted([(
