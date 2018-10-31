@@ -47,8 +47,8 @@ Examples:
         help='separating character between fields (default: \\t)')
     parser.add_argument('--field-count', '-c', metavar='N', type=int,
         help='only include lines from input with N fields')
-    parser.add_argument('--raw', '-r', action='store_true',
-        help='raw output (do not use tabulate), ignores -f and -x')
+    parser.add_argument('--stream', '-s', action='store_true',
+        help='stream filtered output without tabulate (ignores -f and -x)')
     parser.add_argument('--transpose', '-p', action='store_true',
         help='transpose each line as it is printed (vertical output)')
     parser.add_argument('--examine', '-x', action='store_true',
@@ -115,7 +115,7 @@ def read_file(fh):
     field_values = {}
 
     for fields in get_lines(fh):
-        if args.raw:
+        if args.stream:
             print(args.sepchar.join(fields))
             continue
         total_lines += 1
@@ -131,7 +131,7 @@ def read_file(fh):
                 field_values[i] = set()
             field_values[i].add(f)
 
-    if args.raw:
+    if args.stream:
         return
 
     if not args.examine:
