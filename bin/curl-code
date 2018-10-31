@@ -5,8 +5,15 @@
 out="$(curl -sSI "$@")"
 [ -z "$out" ] && exit 1
 echo "$out" | perl -lne '
-  $code = $1 if /^HTTP\S+ (\d+)/;
-  $extra = $1 if $code =~ /^30/ and /^Location: (.*)/i;
-  END { print "$code $extra" }
+  if (/^HTTP\S+ (\d+)/) {
+    $code = $1;
+    if ($code !~ /^30/) {
+      print $code;
+      $code = undef;
+    }
+  }
+  if ($code and /^Location: (.*)/i) {
+    print "$code $1";
+    $code = undef;
+  }
 '
-
