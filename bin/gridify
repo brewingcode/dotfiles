@@ -14,7 +14,8 @@ def parse_args():
     global args
     parser = argparse.ArgumentParser(description="""
 Takes character-separated data in files or stdin and turns it into a grid,
-just like mysql can do, using the tabulate[1] library.
+just like mysql can do, using the tabulate[1] library. Some filtering and
+transformation is also supported.
 
 Note: if --sepchar is a single space, multiple spaces will be collapsed into
 a single space.
@@ -26,35 +27,37 @@ Examples:
 
     # examine input to determine useful options, this ignores all options
     # except for --format, --sepchar, and --truncate and replaces the normal
-    # output with a few tables showing some stats about the input
+    # output with a few tables showing some stats about the input. a second
+    # invocation shows the first three lines in a more friendly way
     %(prog)s --examine
+    head -3 | %(prog)s --vertical
 
     # equivalent to `cut -f 1,3,7`, *except* that %(prog)s will output in the
     # exact order --limit says to, whereas `cut` sorts its -f argument
-    %(prog)s --raw -l 7,1,3
+    %(prog)s --stream -l 7,1,3
 
 [1] https://bitbucket.org/astanin/python-tabulate
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('--limit', '-l',
-        help='limit output to 1-based column indicies (default: none)')
-    parser.add_argument('--format', '-f', default='psql',
+    parser.add_argument('-c', '--field-count', metavar='N', type=int,
+        help='only include lines from input with N fields')
+    parser.add_argument('-e', '--sepchar', default='\t',
+        help='separating character between fields (default: \\t)')
+    parser.add_argument('-f', '--format', default='psql',
         help='format to use for printing, see tabulate\'s options (default: psql)')
+    parser.add_argument('-l', '--limit',
+        help='limit output to comma-separated, 1-based column indicies (default: none)')
+    parser.add_argument('-p', '--transpose', action='store_true',
+        help='transpose rows with columns')
+    parser.add_argument('-r', '--vertical', action='store_true',
+        help='print each row vertically with column indexes')
+    parser.add_argument('-s', '--stream', action='store_true',
+        help='stream filtered output without tabulate (ignores -f, -p, -t, -x)')
+    parser.add_argument('-t', '--truncate', metavar='N', default=0, type=int,
+        help='truncate column content to N chars')
+    parser.add_argument('-x', '--examine', action='store_true',
+        help='examine input for patterns (see description above)')
     parser.add_argument('--csv', action='store_true',
         help='parse input as csv format')
-    parser.add_argument('--truncate', '-t', metavar='N', default=0, type=int,
-        help='truncate column content to N letters')
-    parser.add_argument('--sepchar', '-e', default='\t',
-        help='separating character between fields (default: \\t)')
-    parser.add_argument('--field-count', '-c', metavar='N', type=int,
-        help='only include lines from input with N fields')
-    parser.add_argument('--stream', '-s', action='store_true',
-        help='stream filtered output without tabulate (ignores -f, -x, -t, -p)')
-    parser.add_argument('--vertical', '-r', action='store_true',
-        help='print each row vertically with column indexes')
-    parser.add_argument('--transpose', '-p', action='store_true',
-        help='transpose rows with columns')
-    parser.add_argument('--examine', '-x', action='store_true',
-        help='examine input for patterns (see description above)')
 
     args, remaining = parser.parse_known_args()
     args.files = remaining
