@@ -199,3 +199,8 @@ bin2hex() {
   tr -d '\n'
 }
 
+sshme() {
+  eval $(ssh-agent)
+  ssh-add
+}
+
