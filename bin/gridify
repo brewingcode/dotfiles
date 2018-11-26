@@ -1,4 +1,4 @@
-#!/usr/bin/env python -u
+#!/usr/bin/env python
 
 # gridify text, see --help
 
@@ -175,6 +175,9 @@ def read_file(fh):
     side_by_side(table3, table2, table1)
 
 def read_files():
+    UTF8Reader = codecs.getreader('utf8')
+    sys.stdin = UTF8Reader(sys.stdin)
+
     if not args.files:
         read_file(sys.stdin)
     else:
