@@ -188,5 +188,7 @@ def read_files():
                 read_file(fh)
 
 if __name__ == '__main__':
+    UTF8Writer = codecs.getwriter('utf8')
+    sys.stdout = UTF8Writer(sys.stdout)
     parse_args()
     read_files()
