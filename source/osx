@@ -89,3 +89,6 @@ newchr() {
   open -na 'Google Chrome' --args --user-data-dir="$user_dir" $*
 }
 
+tmlog() {
+  log stream --predicate 'subsystem == "com.apple.TimeMachine"' --info
+}
