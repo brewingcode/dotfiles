@@ -91,7 +91,8 @@ newchr() {
 
 # tail the time machine system messages, reformatted to cut out junk
 tmlog() {
-  log stream --predicate 'subsystem == "com.apple.TimeMachine"' --info | \
+  (log show --last 1h --predicate 'subsystem == "com.apple.TimeMachine"' --info ; \
+   log stream --predicate 'subsystem == "com.apple.TimeMachine"' --info ) | \
     perl -lane '
       if (/^\d{4}/) {
         my $x = @F - 1;
