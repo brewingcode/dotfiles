@@ -89,19 +89,23 @@ newchr() {
   open -na 'Google Chrome' --args --user-data-dir="$user_dir" $*
 }
 
-# tail the time machine system messages, reformatted to cut out junk
+# filter output of `log` for human readability
+tmlog_filter() {
+  perl -lane '
+    if (/^\d{4}/) {
+      my $x = @F - 1;
+      my ($t) = $F[1] =~ /^(.*)\./;
+      print join(" ", (@F[0], $t, @F[9..$x]));
+    }
+    else {
+      print;
+    }
+  '
+}
+
+# tail the time machine system messages
 tmlog() {
-  (log show --last 1h --predicate 'subsystem == "com.apple.TimeMachine"' --info ; \
-   log stream --predicate 'subsystem == "com.apple.TimeMachine"' --info ) | \
-    perl -lane '
-      if (/^\d{4}/) {
-        my $x = @F - 1;
-        my ($t) = $F[1] =~ /^(.*)\./;
-        print join(" ", (@F[0], $t, @F[9..$x]));
-      }
-      else {
-        print;
-      }
-    '
+  log show   --predicate 'subsystem == "com.apple.TimeMachine"' --info --last 2h | tmlog_filter
+  log stream --predicate 'subsystem == "com.apple.TimeMachine"' --info           | tmlog_filter
 }
 
