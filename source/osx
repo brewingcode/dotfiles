@@ -93,9 +93,15 @@ newchr() {
 tmlog_filter() {
   perl -lane '
     if (/^\d{4}/) {
-      my $x = @F - 1;
       my ($t) = $F[1] =~ /^(.*)\./;
-      print join(" ", (@F[0], $t, @F[9..$x]));
+      my @bits = ($F[0], $t);
+      splice(@F, 0, 3);
+      push(@bits, shift(@F));
+      splice(@F, 0, 2);
+      if ($F[0] =~ /^[\-\d]+$/) {
+        shift(@F);
+      }
+      print join(" ", @bits, grep { !/^(\(TimeMachine\)|\[com\.apple\.TimeMachine:TMLog\w+\])$/ } @F);
     }
     else {
       print;
