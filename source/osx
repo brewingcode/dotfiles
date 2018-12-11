@@ -97,12 +97,12 @@ newchr() {
 #
 # We output 0 1 3 7 10 11 ..., while also handling the case where column 6 just doesn't exist at all
 tmlog_filter() {
-  perl -lane '
+  perl -MScalar::Util=looks_like_number -lane '
     if (/^\d{4}/) {
       my ($t) = $F[1] =~ /^(.*)\./;
       my @bits = ($F[0], $t, $F[3]);
       splice(@F, 0, 6);
-      if ($F[0] =~ /^[\-\d]+$/) {
+      if (looks_like_number($F[0])) {
         shift(@F);
       }
       print join(" ", @bits, grep { !/^(\(TimeMachine\)|\[com\.apple\.TimeMachine:TMLog\w+\])$/ } @F);
