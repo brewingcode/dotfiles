@@ -115,7 +115,8 @@ tmlog_filter() {
 
 # tail the time machine system messages
 tmlog() {
-  log show   --predicate 'subsystem == "com.apple.TimeMachine"' --info --last 2h | tmlog_filter
-  log stream --predicate 'subsystem == "com.apple.TimeMachine"' --info           | tmlog_filter
+  last="${1:-2h}"
+  log show   --predicate 'subsystem == "com.apple.TimeMachine"' --info --last "$last" | tmlog_filter
+  log stream --predicate 'subsystem == "com.apple.TimeMachine"' --info                | tmlog_filter
 }
 
