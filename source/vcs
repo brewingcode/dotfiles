@@ -178,9 +178,11 @@ gitwhen() {
   rm "$tmp1" "$tmp2"
 }
 
-# get merge-base of HEAD and {$1:-master}
+# get merge-base of $1 (other branch, default master) and $2 (this branch, default HEAD)
 gitmb() {
-  git merge-base HEAD "${1:-master}"
+  other="${1:-master}"
+  this="${2:-HEAD}"
+  git merge-base "$other" "$this"
 }
 
 # git-rebase-merge-base: rebase from the merge-base of us and master (or the
