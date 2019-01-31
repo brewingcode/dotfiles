@@ -6,9 +6,12 @@ url = require 'url'
 minimist = require 'minimist'
 fs = require 'fs'
 pd = require 'parse-domain'
+Entities = require('html-entities').AllHtmlEntities
+entities = new Entities()
 
 argv = minimist process.argv.slice(2),
-    boolean: ['e', 'encode', 'd', 'decode', 'tld', 'domain', 'fulldomain']
+    boolean: ['e', 'encode', 'd', 'decode', 'E', 'enc-ent', 'D', 'dec-ent',
+        'tld', 'domain', 'fulldomain']
 
 handle = (s) ->
     try
@@ -17,6 +20,10 @@ handle = (s) ->
             console.log encodeURIComponent s
         else if argv.d or argv.decode
             console.log decodeURIComponent s
+        else if argv.E or argv['to-entities']
+            console.log entities.encode(s)
+        else if argv.D or argv['from-entities']
+            console.log entities.decode(s)
         else if argv.tld
             console.log pd(s).tld
         else if argv.domain
