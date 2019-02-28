@@ -37,6 +37,9 @@ function fromExp(e) {
 
 process.argv.slice(2).forEach (x) ->
   # https://stackoverflow.com/a/2901298/2926055
-  m = fromExp(eval x).match(/(\d+)(\.(\d+))?/)
-  decimals = m[3]?.replace /(\d{3})(?=\d)/g, (x...) -> "#{x[1]},"
-  console.log m[1].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + if decimals then  '.' + decimals else ''
+  num = fromExp(eval x)
+  if m = num.match(/(\d+)(\.(\d+))?/)
+    decimals = m[3]?.replace /(\d{3})(?=\d)/g, (x...) -> "#{x[1]},"
+    console.log m[1].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + if decimals then  '.' + decimals else ''
+  else
+    console.log num
