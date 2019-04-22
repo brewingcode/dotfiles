@@ -40,6 +40,13 @@ function finds {
   find "$@" -ls | awk '{X+=$7} END {print X/1000}'
 }
 
+# find, sort by time
+findt() {
+  find=gfind
+  gfind --help > /dev/null || find=find
+  $find $* -printf "%T+\t%p\n" | sort
+}
+
 # truncate stdin exactly to term width
 function trunc {
   cut -c -$(tput cols)
