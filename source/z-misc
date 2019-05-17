@@ -211,3 +211,13 @@ sshme() {
   ssh-add
 }
 
+# converts raw utf8 byte sequences for certain characters that people
+# love to paste everywhere
+#   e2809c   left smartquote
+#   e2809d   right smartquote
+#   e28098   left smartapos
+#   e28099   right smartapos
+dumbquote() {
+  perl -pe 's/\xe2\x80(\x9c|\x9d)/"/g; s/\xe2\x80(\x98|\x99)/'"'"'/g'
+}
+
