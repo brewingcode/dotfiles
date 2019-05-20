@@ -221,3 +221,38 @@ dumbquote() {
   perl -pe 's/\xe2\x80(\x9c|\x9d)/"/g; s/\xe2\x80(\x98|\x99)/'"'"'/g'
 }
 
+# coffeescript + es
+# run coffeescript out of our dotfiles lib directory for Babel bullshit. Babel
+# is unwilling to consider the case where you use a globablly-installed
+# node_modules, so we need to hack it together
+ces() {
+  # collect symlinks to cleanup later
+  paths=()
+
+  # symlink in everything we'll need
+  if ! [ -d node_modules/@babel ]; then
+    mkdir -p node_modules/@babel
+  fi
+  for i in core node preset-env polyfill; do
+    if ! [ -d node_modules/@babel/$i ]; then
+      ln -s "$DOTFILES/lib/node_modules/@babel/$i" "node_modules/@babel/$i"
+      paths+=("node_modules/@babel/$i")
+    fi
+  done
+  if ! [ -f .babelrc ]; then
+    ln -s "$DOTFILES/lib/.babelrc" .babelrc
+    paths+=(.babelrc)
+  fi
+
+  # run the actual command
+  coffee --transpile $*
+  rc=$?
+
+  # cleanup
+  for p in "${paths[@]}"; do
+    rm "$p"
+  done
+  find node_modules -type d -empty -delete
+
+  return $rc
+}
