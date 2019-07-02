@@ -8,7 +8,8 @@ usage() {
 Stitch two images and put captions below.
 
 OPTIONS
-  -l,  --labels     Add labels separated by comma. eg: before,after"
+  -l,  --labels     Add labels separated by comma. eg: before,after
+  -c,  --clipboard  Use most recent images from Alfred Clipboard history"
 }
 
 add_border_caption() {
@@ -31,16 +32,23 @@ imgimg() {
     local IMG2="${2}"
     IFS="," read -ra LABEL1 <<< "${LABELS}";
     local LABEL2=`echo ${LABELS##*,}` 
-    local IMG1_BORDER=`add_border_caption ${IMG1} ${LABEL1} Khaki`
-    local IMG2_BORDER=`add_border_caption ${IMG2} ${LABEL2} Plum`
-    local OUT=`mktemp /tmp/tmp.XXXXX.jpg`
-    convert +append -background none -gravity south $IMG1_BORDER $IMG2_BORDER $OUT
-    echo $OUT
-    display $OUT
+    local IMG1_BORDER=$(add_border_caption "$IMG1" "$LABEL1" Khaki)
+    local IMG2_BORDER=$(add_border_caption "$IMG2" "$LABEL2" Plum)
+    local OUT=$(mktemp /tmp/tmp.XXXXX).tiff
+    convert +append -background none -gravity south "$IMG1_BORDER" "$IMG2_BORDER" "$OUT"
+    open "$OUT"
+}
+
+sql() {
+    root="$1"
+    offset="$2"
+    f=$(sqlite3 "$root/clipboard.alfdb" 'select dataHash from clipboard where dataHash like "%.tiff" order by ts desc limit 1 offset '"$offset")
+    echo "$root/clipboard.alfdb.data/$f"
 }
 
 main() {
     LABELS=''
+    CLIPBOARD=''
     while [ $# -gt 0 ];do
     case "$1" in
         -h|--help)
@@ -50,6 +58,9 @@ main() {
             shift;
             LABELS=$1
             ;;
+        -c|--clipboard)
+            CLIPBOARD=1
+            ;;
         --)
             shift;
             break
@@ -57,6 +68,12 @@ main() {
     esac
     shift
     done
+
+    if [[ -n "$CLIPBOARD" ]]; then
+        alf="$HOME/Library/Application Support/Alfred 3/Databases"
+        imgimg "$(sql "$alf" 0)" "$(sql "$alf" 1)"
+        exit 0
+    fi
 
     if (( $# != 2 )); then
         usage
