@@ -17,11 +17,11 @@ add_border_caption() {
     local CAPTION="${2}"
     local COLOR="${3}"
     local IMG_EXT="${IMG##*.}"
-    local IMG_BORDER=`mktemp /tmp/tmp.XXXXX.${IMG_EXT}`
+    local IMG_BORDER=$(mktemp /tmp/tmp.XXXXX)".$IMG_EXT"
     if [ -n "$CAPTION" ]; then
-        OPTION="-background ${COLOR} label:"${CAPTION}" -gravity Center -append"  
+        OPTION="-background ${COLOR} label:"${CAPTION}" -gravity Center -append"
     fi
-    convert ${IMG} -bordercolor black -border 1 $OPTION ${IMG_BORDER}
+    convert "$IMG" -bordercolor black -border 1 $OPTION ${IMG_BORDER}
     echo ${IMG_BORDER}
 }
 
