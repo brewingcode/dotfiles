@@ -10,8 +10,8 @@
 void usage()
 {
     printf("Usage:\n\n"
-      "Copy file to clipboard:\n    pngcopy path/to/file\n\n"
-      "Copy stdin to clipboard:\n    cat /path/to/file | pngcopy -");
+      "Copy image file to clipboard:\n    pngcopy path/to/file\n\n"
+      "Copy image data in stdin to clipboard:\n    cat /path/to/file | pngcopy -");
 }
 
 BOOL copy_to_clipboard(NSString *path)

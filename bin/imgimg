@@ -5,7 +5,8 @@
 
 usage() {
     echo "Usage: $0 [OPTIONS] IMAGE_1 IMAGE2
-Stitch two images and put captions below.
+Stitch two images and put captions below. Image path is echo'd to stdout,
+and the image itself is copied to the pasteboard.
 
 OPTIONS
   -l,  --labels     Add labels separated by comma. eg: before,after
@@ -36,7 +37,8 @@ imgimg() {
     local IMG2_BORDER=$(add_border_caption "$IMG2" "$LABEL2" Plum)
     local OUT=$(mktemp /tmp/tmp.XXXXX).tiff
     convert +append -background none -gravity south "$IMG1_BORDER" "$IMG2_BORDER" "$OUT"
-    open "$OUT"
+    echo "$OUT"
+    pngcopy "$OUT"
 }
 
 sql() {
