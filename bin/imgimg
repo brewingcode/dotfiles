@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Stitch two images side by side with optional captions
+# Stitch two images together with optional captions
 # Copyright kray.me 2019
+
+VERTICAL=''
 
 usage() {
     echo "Usage: $0 [OPTIONS] IMAGE_1 IMAGE2
@@ -10,7 +12,8 @@ and the image itself is copied to the pasteboard.
 
 OPTIONS
   -l,  --labels     Add labels separated by comma. eg: before,after
-  -c,  --clipboard  Use most recent images from Alfred Clipboard history"
+  -c,  --clipboard  Use most recent images from Alfred Clipboard history
+  -v,  --vertical   Combine images vertically instead of horizontally"
 }
 
 add_border_caption() {
@@ -20,9 +23,10 @@ add_border_caption() {
     local IMG_EXT="${IMG##*.}"
     local IMG_BORDER=$(mktemp /tmp/tmp.XXXXX)".$IMG_EXT"
     if [ -n "$CAPTION" ]; then
-        OPTION="-background ${COLOR} label:"${CAPTION}" -gravity Center -append"
+        convert "$IMG" -bordercolor black -border 1 -background "$COLOR" label:"$CAPTION" -gravity Center -append "$IMG_BORDER"
+    else
+        convert "$IMG" -bordercolor black -border 1 "$IMG_BORDER"
     fi
-    convert "$IMG" -bordercolor black -border 1 $OPTION ${IMG_BORDER}
     echo ${IMG_BORDER}
 }
 
@@ -32,11 +36,17 @@ imgimg() {
     local IMG1="${1}"
     local IMG2="${2}"
     IFS="," read -ra LABEL1 <<< "${LABELS}";
-    local LABEL2=`echo ${LABELS##*,}` 
+    local LABEL2=`echo ${LABELS##*,}`
     local IMG1_BORDER=$(add_border_caption "$IMG1" "$LABEL1" Khaki)
     local IMG2_BORDER=$(add_border_caption "$IMG2" "$LABEL2" Plum)
     local OUT=$(mktemp /tmp/tmp.XXXXX).tiff
-    convert +append -background none -gravity south "$IMG1_BORDER" "$IMG2_BORDER" "$OUT"
+
+    if [ -n "$VERTICAL" ]; then
+        cmd='-append -gravity west'
+    else
+        cmd='+append -gravity south'
+    fi
+    convert $cmd -background none "$IMG1_BORDER" "$IMG2_BORDER" "$OUT"
     echo "$OUT"
     pngcopy "$OUT"
 }
@@ -63,6 +73,9 @@ main() {
         -c|--clipboard)
             CLIPBOARD=1
             ;;
+        -v|--vertical)
+            VERTICAL=1
+            ;;
         --)
             shift;
             break
@@ -81,9 +94,7 @@ main() {
         usage
         exit 0
     fi
-    IMG1=${@:$OPTIND:1}
-    IMG2=${@:$OPTIND+1:1}
-    
+
     imgimg "$@"
 }
 main "$@"
