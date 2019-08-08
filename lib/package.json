@@ -1,21 +1,22 @@
 {
   "dependencies": {
-    "@babel/core": "^7.4.4",
-    "@babel/node": "^7.2.2",
+    "@babel/core": "^7.5.5",
+    "@babel/node": "^7.5.5",
     "@babel/polyfill": "^7.4.4",
-    "@babel/preset-env": "^7.4.4",
-    "bluebird": "^3.5.1",
-    "cheerio": "^1.0.0-rc.2",
-    "coffeescript": "^2.0.1",
+    "@babel/preset-env": "^7.5.5",
+    "bluebird": "^3.5.5",
+    "cheerio": "^1.0.0-rc.3",
+    "coffeescript": "^2.4.1",
     "html-entities": "^1.2.1",
-    "jsdom": "^11.11.0",
+    "jsdom": "^15.1.1",
+    "lodash": "^4.17.15",
     "minimist": "^1.2.0",
-    "moment": "^2.20.1",
-    "parse-domain": "^2.1.2",
+    "moment": "^2.24.0",
+    "parse-domain": "^2.3.1",
     "pretty": "^2.0.0",
     "rc": "^1.2.8",
-    "request": "^2.83.0",
+    "request": "^2.88.0",
     "request-debug": "^0.2.0",
-    "request-promise": "^4.2.2"
+    "request-promise": "^4.2.4"
   }
 }
