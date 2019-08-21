@@ -1,0 +1,19 @@
+#!/bin/bash
+here="$(pwd)"
+
+while [ ! -f "$(pwd)/.npmrc" ]; do
+  [[ "$(pwd)" == "/" ]] && { echo "no .npmrc found above us" >&2; exit 1; }
+  cd ..
+done
+
+[ -f ~/.npmrc ] && cp ~/.npmrc ~/.npmrc.before-publish
+cat .npmrc >> ~/.npmrc
+cd "$here"
+npm publish $*
+x=$?
+if [ -f ~/.npmrc.before-publish ]; then
+  mv ~/.npmrc.before-publish ~/.npmrc
+else
+  rm ~/.npmrc
+fi
+exit $x
