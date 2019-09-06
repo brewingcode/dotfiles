@@ -1,0 +1,9 @@
+#!/bin/bash
+
+sha="${1:-HEAD}"
+
+git log --merges --pretty='%h' "$sha" | while read -r h; do
+  git show --pretty='%h %ad %s' "$h"
+  git log --no-merges --pretty='    %h %ad %s --%an' "$h"^.."$h"
+  echo
+done
