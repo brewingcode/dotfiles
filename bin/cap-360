@@ -13,13 +13,21 @@ pr.try ->
   [user, pass] = process.env.CAPITAL_CREDS.match(/^(.)([^\1]+)\1(.*)/).slice(2)
 
   browser = await puppeteer.launch
-    headless: false
+    headless: not debug
     defaultViewport:
       width: 600
       height: 2000
     devtools: debug
 
   page = (await browser.pages())[0]
+  await page.setUserAgent 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36'
+  await page.evaluateOnNewDocument ->
+    Object.defineProperty navigator, i[0], i[1] for i in [
+      [ 'languages', [ 'en-US', 'en', 'mt' ] ]
+      [ 'plugins', [ 1, 2, 3 ] ]
+      [ 'webdriver', false ]
+    ]
+
   await page.setRequestInterception true
   page.on 'request', (req) ->
     { host } = new URL req.url()
