@@ -13,8 +13,10 @@ pr.try ->
   [user, pass] = process.env.CAPITAL_CREDS.match(/^(.)([^\1]+)\1(.*)/).slice(2)
 
   browser = await puppeteer.launch
-    headless: not debug
-    defaultViewport: null
+    headless: false
+    defaultViewport:
+      width: 600
+      height: 2000
     devtools: debug
 
   page = (await browser.pages())[0]
@@ -30,6 +32,7 @@ pr.try ->
   waitClick = (sel) ->
     try
       await page.waitForSelector sel
+      await page.waitFor 500
       await page.click sel
     catch
       file = '/tmp/cap-360-error'
