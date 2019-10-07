@@ -256,3 +256,7 @@ ces() {
 
   return $rc
 }
+
+stripshell() {
+  sed 's/\x1b\[[0-9;]*m//g'
+}
