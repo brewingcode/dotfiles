@@ -200,3 +200,7 @@ gitspa() {
 gitsca() {
   git stash && git checkout "${1:-master}" && git stash apply
 }
+
+gittags() {
+  git for-each-ref --sort=taggerdate --format '%(refname) %(taggerdate)' refs/tags
+}
