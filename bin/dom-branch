@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# writes a blob of javascript to the clipboard that is intended to be pasted
+# into devtools, which adds two things to `window`:
+#
+# 1. `branch` function: follows a node's parent-chain up to the root, then
+#    clones that DOM branch and returns the root
+#
+# 2. `$b` object: return value of `branch($0)`
+#
+# note: `copy($b.innerHTML)` will put the resulting branch HTML on the
+# clipboard, `navigator.clipboard` and `document.execCommand` are too
+# annoying to type out
+
+coffee -bps <<'EOF' | pbcopy
+window.branch = (node) ->
+  nodes = []
+  while node
+    nodes.push node.cloneNode(false)
+    node = node.parentElement
+  root = node = nodes.pop()
+  while nodes.length
+    next = nodes.pop()
+    node.appendChild(next)
+    node = next
+  root
+
+window.$b = window.branch($0)
+EOF
