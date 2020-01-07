@@ -1,5 +1,7 @@
 #!/usr/bin/env coffee
 
+child = require 'child_process'
+
 # https://github.com/shrpne/from-exponential
 # ...install, minify, beautify, prune
 `
@@ -40,6 +42,9 @@ process.argv.slice(2).forEach (x) ->
     if x is '-j'
         json = []
         return
+    if x is '-p'
+        x = child.execSync 'pbpaste'
+
     # https://stackoverflow.com/a/2901298/2926055
     num = fromExp(eval x)
     if m = num.match(/(\d+)(\.(\d+))?/)
@@ -56,5 +61,5 @@ process.argv.slice(2).forEach (x) ->
     else
         console.log num
 
-if json?.length
+if json
     console.log JSON.stringify items:json
