@@ -12,7 +12,7 @@ following annoyances:
 moment = require('moment-timezone')
 child = require('child_process')
 
-boolean = [ 'help', 'verbatim', 'clipboard' ]
+boolean = [ 'help', 'verbatim', 'paste' ]
 alias = { w:'within' }
 boolean.forEach (b) -> alias[b[0]] = b
 args = require('minimist')(process.argv.slice(2), { boolean, alias })
@@ -23,23 +23,30 @@ if args.verbatim and args.within
 
 if args.help
   console.log '''
-    usage: g <query> [--w|--within ...] [-v|--verbatim] [-c|--clipboard]
+    usage: g <query> [short or long options]
 
-    examples of --within (to specify custom/quick date range)
-      1y: 1 year
-      6m: 6 months
-      2w: 2 weeks
-      3d: 3 days
-      hour: last hour
-      day: last day
+    --within DURATION
+        Limit to custom date range, such as:
+            1y: 1 year
+            6m: 6 months
+            2w: 2 weeks
+            3d: 3 days
+            hour: last hour
+            day: last day
+
+    --verbatim
+      Enable verbatim results (no personalization, literal search, etc)
+
+    --paste
+      Use contents of clipboard as search query
   '''
   process.exit(0)
 
 query = null
-if args.clipboard and args._.length
-  console.error('search query cannot be mixed with --clipboard')
+if args.paste and args._.length
+  console.error('search query cannot be mixed with --paste')
   process.exit(1)
-else if args.clipboard
+else if args.paste
   query = child.execSync('pbpaste')
 else if args._.length
   query = args._.join(' ')
