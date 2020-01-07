@@ -35,11 +35,26 @@ function fromExp(e) {
 }
 `
 
+json = null
 process.argv.slice(2).forEach (x) ->
-  # https://stackoverflow.com/a/2901298/2926055
-  num = fromExp(eval x)
-  if m = num.match(/(\d+)(\.(\d+))?/)
-    decimals = m[3]?.replace /(\d{3})(?=\d)/g, (x...) -> "#{x[1]},"
-    console.log m[1].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + if decimals then  '.' + decimals else ''
-  else
-    console.log num
+    if x is '-j'
+        json = []
+        return
+    # https://stackoverflow.com/a/2901298/2926055
+    num = fromExp(eval x)
+    if m = num.match(/(\d+)(\.(\d+))?/)
+        decimals = m[3]?.replace /(\d{3})(?=\d)/g, (x...) -> "#{x[1]},"
+        num = m[1].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + if decimals then  '.' + decimals else ''
+
+    unless num.match /^[\-\d,]+$/
+        return
+
+    if json
+        json.push
+            title: num
+            arg: num
+    else
+        console.log num
+
+if json?.length
+    console.log JSON.stringify items:json
