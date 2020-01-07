@@ -12,14 +12,14 @@ following annoyances:
 moment = require('moment-timezone')
 child = require('child_process')
 
-boolean = [ 'help', 'verbatim' ]
+boolean = [ 'help', 'verbatim', 'clipboard' ]
 alias = { w:'within' }
 boolean.forEach (b) -> alias[b[0]] = b
 args = require('minimist')(process.argv.slice(2), { boolean, alias })
 
 if args.help
   console.log '''
-    usage: g <search term(s)> [--w|--within ...] [-v|--verbatim]
+    usage: g <search term(s)> [--w|--within ...] [-v|--verbatim] [-c|--clipboard]
 
     examples of --within (to specify custom/quick date range)
       1y: 1 year
@@ -31,14 +31,21 @@ if args.help
   '''
   process.exit(0)
 
-query = args._.join(' ')
-unless query
-  console.error('one or more search terms required')
+query = null
+if args.clipboard and args._.length
+  console.error('search terms cannot be mixed with --clipboard')
+  process.exit(1)
+else if args.clipboard
+  query = child.execSync('pbpaste')
+else if args._.length
+  query = args._.join(' ')
+else
+  console.error('no search terms specified')
   process.exit(1)
 
 if args.verbatim and args.within
   console.error('--verbatim and --within are mutually exclusive (google says so)')
-  process.exit(2)
+  process.exit(1)
 
 url = new URL('https://www.google.com/search')
 url.searchParams.set('q', query)
@@ -56,7 +63,7 @@ if args.within
     url.searchParams.set('tbs', 'qdr:d')
   else
     console.error('invalid --within, see --help')
-    process.exit(3)
+    process.exit(1)
 
 if args.verbatim
   url.searchParams.set('tbs', 'li:1')
