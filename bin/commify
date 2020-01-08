@@ -58,6 +58,7 @@ process.argv.slice(2).forEach (x) ->
         json.push
             title: num
             arg: num
+            text: largetype: num
     else
         console.log num
 
