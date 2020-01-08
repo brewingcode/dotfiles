@@ -51,7 +51,7 @@ process.argv.slice(2).forEach (x) ->
         decimals = m[3]?.replace /(\d{3})(?=\d)/g, (x...) -> "#{x[1]},"
         num = m[1].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + if decimals then  '.' + decimals else ''
 
-    unless num.match /^[\-\d,]+$/
+    unless num.match /^[\-\d,\.]+$/
         return
 
     if json
