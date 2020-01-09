@@ -1,16 +1,14 @@
 #!/bin/bash
 
 # writes a blob of javascript to the clipboard that is intended to be pasted
-# into devtools, which adds two things to `window`:
+# into devtools, which adds things to `window`:
 #
 # 1. `branch` function: follows a node's parent-chain up to the root, then
 #    clones that DOM branch and returns the root
 #
-# 2. `$b` object: return value of `branch($0)`
-#
-# note: `copy($b.innerHTML)` will put the resulting branch HTML on the
-# clipboard, `navigator.clipboard` and `document.execCommand` are too
-# annoying to type out
+# 2. `nodes` function: follows a node's parent-chain up to the root, and
+#    returns a list of a specific property of each node (the "className"
+#    property by default)
 
 coffee -bps <<'EOF' | pbcopy
 window.branch = (node) ->
@@ -25,5 +23,19 @@ window.branch = (node) ->
     node = next
   root
 
-window.$b = window.branch($0)
+window.nodes = (node, prop = "className") ->
+  classes = []
+  while node
+    classes.push node[prop]
+    node = node.parentElement
+  classes.reverse()
+  classes
+
+# useful ways to use the above
+#   copy(branch($0))
+#   copy(nodes($0))
+#   copy(nodes($0, "tagName"))
+
+undefined
 EOF
+
