@@ -23,8 +23,9 @@ window.branch = (node) ->
     node = next
   root
 
-window.nodes = (node, prop = "className") ->
+window.nodes = (node, prop) ->
   classes = []
+  prop ?= "className"
   while node
     classes.push node[prop]
     node = node.parentElement
