@@ -1,0 +1,35 @@
+#!/usr/bin/env coffee
+
+puppeteer = require 'puppeteer'
+
+[ url ] = process.argv.slice(2)
+if not url
+  console.error "error: no url given"
+  process.exit 1
+
+debug = false
+
+do ->
+  try
+    browser = await puppeteer.launch
+      headless: not debug
+      defaultViewport:
+        width: 600
+        height: 2000
+      devtools: debug
+
+    page = (await browser.pages())[0]
+    await page.setUserAgent 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36'
+    await page.evaluateOnNewDocument ->
+      Object.defineProperty navigator, i[0], i[1] for i in [
+        [ 'languages', [ 'en-US', 'en', 'mt' ] ]
+        [ 'plugins', [ 1, 2, 3 ] ]
+        [ 'webdriver', false ]
+      ]
+
+    await page.goto url
+    console.log await page.content()
+    await browser.close()
+  catch e
+    console.error e.message
+    process.exit(2)
