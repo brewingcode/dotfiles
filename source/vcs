@@ -204,3 +204,15 @@ gitsca() {
 gittags() {
   git for-each-ref --sort=taggerdate --format '%(refname) %(taggerdate)' refs/tags
 }
+
+_gitum() {
+  git for-each-ref --sort=committerdate "$1" \
+    --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))' \
+    --no-merged
+}
+
+gitum() { _gitum refs/heads; }
+gitrum() {
+  remote="${1:-origin}"
+  _gitum "refs/remotes/$remote"
+}
