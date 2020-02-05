@@ -1,12 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # gridify text, see --help
 
 import sys
 import argparse
 from tabulate import tabulate
-import codecs
 import operator
+import codecs
 import itertools
 import csv
 
@@ -38,7 +38,7 @@ Examples:
 
 [1] https://bitbucket.org/astanin/python-tabulate
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('-c', '--field-count', metavar='N', type=int,
+    parser.add_argument('-c', '--field-count', default=0, metavar='N', type=int,
         help='only include lines from input with N fields')
     parser.add_argument('-e', '--sepchar', default='\t',
         help='separating character between fields (default: \\t)')
@@ -100,7 +100,7 @@ def percentage(x, y):
 def side_by_side(*args):
     paras = [x.splitlines() for x in args]
     widths = [len(max(p, key=len)) for p in paras]
-    for x in list(itertools.izip_longest(*paras)):
+    for x in list(itertools.zip_longest(*paras)):
         out = []
         for i,y in enumerate(x):
             if y is None:
@@ -148,9 +148,10 @@ def read_file(fh):
 
         if args.vertical:
             for line in lines:
-                print tabulate([(i+1,f) for i,f in enumerate(line)], tablefmt=args.format)
+                print(tabulate([(i+1,f) for i,f in enumerate(line)], tablefmt=args.format))
         else:
-            print tabulate(pad_lines(lines, max(field_counts.keys(), key=int)), tablefmt=args.format)
+            if len(field_counts.keys()) > 0:
+                print(tabulate(pad_lines(lines, max(field_counts.keys(), key=int)), tablefmt=args.format))
 
         return
 
@@ -158,7 +159,7 @@ def read_file(fh):
         k,
         v,
         percentage(v, total_lines)
-    ) for k,v in field_counts.iteritems()], key=operator.itemgetter(2), reverse=True)[:20]
+    ) for k,v in field_counts.items()], key=operator.itemgetter(2), reverse=True)[:20]
 
     field_values = sorted([(
         k+1,
@@ -175,9 +176,6 @@ def read_file(fh):
     side_by_side(table3, table2, table1)
 
 def read_files():
-    UTF8Reader = codecs.getreader('utf8')
-    sys.stdin = UTF8Reader(sys.stdin)
-
     if not args.files:
         read_file(sys.stdin)
     else:
@@ -188,7 +186,7 @@ def read_files():
                 read_file(fh)
 
 if __name__ == '__main__':
-    UTF8Writer = codecs.getwriter('utf8')
-    sys.stdout = UTF8Writer(sys.stdout)
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stdin.reconfigure(encoding='utf-8')
     parse_args()
     read_files()
