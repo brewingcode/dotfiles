@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Output the last last N entries from the Alfred Clipboard. Default is 1,
+# equivalent to a simple `pbpaste`.
+
+usage() {
+    cat <<EOF
+usage: acb [LIMIT]
+       acb [--limit LIMIT] [--offset OFFSET] [--short]
+       acb [-l LIMIT] [-o OFFSET] [-s]
+
+Prints the most recent LIMIT (default 1) and OFFSET (default 0) non-binary
+items from Alfred's Clipboard database.  --short will output shortened items
+by stripping newlines and only including the first 70 characters. For example:
+
+    acb -l 4 -o 4    # output items ⌘5 through ⌘8
+EOF
+}
+
+limit=1
+offset=0
+short=0
+db="$HOME/Library/Application Support/Alfred 3/Databases/clipboard.alfdb"
+
+while (( "$#" )); do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        -l|--limit) limit="$2"; shift 2 ;;
+        -o|--offset) offset="$2"; shift 2 ;;
+        -s|--short) short=1; shift ;;
+        *) limit="$1"; shift ;;
+    esac
+done
+
+if [[ "$short" == "1" ]]; then
+    # first 70 chars, minus newlines
+    col="substr(replace(item, char(10), ' '), 0, 70)"
+else
+    col="item"
+fi
+
+query="select $col from clipboard where dataHash is null order by ts desc limit $limit offset $offset"
+
+sqlite3 "$db" "$query"
