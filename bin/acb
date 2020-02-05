@@ -6,14 +6,16 @@
 usage() {
     cat <<EOF
 usage: acb [LIMIT]
-       acb [--limit LIMIT] [--offset OFFSET] [--short]
-       acb [-l LIMIT] [-o OFFSET] [-s]
+       acb [--limit LIMIT] [--offset OFFSET] [--from FROM] [--short]
+       acb [-l LIMIT] [-o OFFSET] [-f FROM] [-s]
 
 Prints the most recent LIMIT (default 1) and OFFSET (default 0) non-binary
 items from Alfred's Clipboard database.  --short will output shortened items
-by stripping newlines and only including the first 70 characters. For example:
+by stripping newlines and only including the first 70 characters. FROM is
+available as a variant of OFFSET: it is simply OFFSET + 1. For example:
 
-    acb -l 4 -o 4    # output items ⌘5 through ⌘8
+    acb -l 4 -o 4    # output items ⌘5 through ⌘8 (0-based counting)
+    acb -l 4 -f 5    # the same thing (1-based counting, like the UI)
 EOF
 }
 
@@ -27,6 +29,7 @@ while (( "$#" )); do
         -h|--help) usage; exit 0 ;;
         -l|--limit) limit="$2"; shift 2 ;;
         -o|--offset) offset="$2"; shift 2 ;;
+        -f|--from) offset="$(( $2 - 1 ))"; shift 2 ;;
         -s|--short) short=1; shift ;;
         *) limit="$1"; shift ;;
     esac
