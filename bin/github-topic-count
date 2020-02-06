@@ -1,0 +1,3 @@
+#!/bin/bash
+
+curl -qsS https://github.com/topics/"$1" | cf 'log $(".h3-mktg").text()?.replace(/,/g, "").match(/\d+/)?[0] or 0'
