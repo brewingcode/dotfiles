@@ -1,6 +1,7 @@
-#!/usr/bin/env coffee
+#!/usr/bin/env node
 
 child = require 'child_process'
+comm = require '../lib/dist/commify'
 
 # https://github.com/shrpne/from-exponential
 # ...install, minify, beautify, prune
@@ -46,14 +47,7 @@ process.argv.slice(2).forEach (x) ->
         x = child.execSync 'pbpaste'
 
     # https://stackoverflow.com/a/2901298/2926055
-    num = fromExp(eval x)
-    if m = num.match(/(\d+)(\.(\d+))?/)
-        decimals = m[3]?.replace /(\d{3})(?=\d)/g, (x...) -> "#{x[1]},"
-        num = m[1].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + if decimals then  '.' + decimals else ''
-
-    unless num.match /^[\-\d,\.]+$/
-        return
-
+    num = comm fromExp x
     if json
         json.push
             title: num
