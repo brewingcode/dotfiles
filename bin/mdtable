@@ -9,7 +9,7 @@ const argv = require('minimist')(process.argv.slice(2), {
 
 const usage = `usage: mdtable [options and filename(s)]
 
-Reads lines from stdin and/or filename(s) and outputs them in a nicely
+Reads lines from filename(s) and/or stdin and outputs them in a nicely
 formatted Markdown table.
 
 -r REGEX     regex used to split each row into cells ("\t" by default)
@@ -32,40 +32,44 @@ const regex = (argv.regex || argv.r) ? new RegExp(argv.regex||argv.r) : /\t/
 const align = argv.align || argv.a
 const names = argv.names || argv.n
 const truncate = parseFloat(argv.truncate || argv.t)
-const indexes = argv.indexes || argv.include || argv.i
+let indexes = argv.indexes || argv.include || argv.i
 const strict = parseFloat(argv.strict || argv.s)
-let lines = []
+const lines = []
+
+if (indexes) {
+  indexes = indexes.split(',').map(parseFloat)
+}
 
 function finish() {
-  if (indexes) {
-    const order = indexes.split(',').map(parseFloat)
-    lines = lines.map(function(line) {
-      const reordered = []
-      for (const i of order) {
-        reordered.push(line[i-1])
-      }
-      return reordered
-    })
-  }
-
   if (names) {
     lines.unshift(names.split(','))
   }
-
   console.log(mdtable(lines, {align}));
 }
 
 function add(str) {
   str.toString().split('\n').forEach(function(line) {
-    const cells = line.split(regex)
+    let cells = line.split(regex)
 
     if (!isNaN(strict) && (cells.length !== strict)) {
       return
     }
 
-    lines.push(cells.map(function(cell) {
-      return isNaN(truncate) ? cell : cell.slice(0,truncate)
-    }))
+    if (!isNaN(truncate)) {
+      cells = cells.map(function(cell) {
+         return cell.slice(0, truncate)
+      })
+    }
+
+    if (indexes) {
+      const reordered = []
+      for (const i of indexes) {
+        reordered.push(cells[i-1])
+      }
+      cells = reordered
+    }
+
+    lines.push(cells)
   })
 }
 
