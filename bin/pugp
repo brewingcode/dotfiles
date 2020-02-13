@@ -1,0 +1,9 @@
+#!/bin/bash
+
+pproot="$(dirname $(which pug-pack))/../lib/node_modules/pug-pack/src"
+
+case "$1" in
+  -l|--list|ls) shift; echo "$pproot"; ls $* "$pproot";;
+  "") echo "missing args: pugp [--list|-l|ls args_to_ls] [args_to_pug]";;
+  *) pug -b "$pproot" $*;;
+esac
