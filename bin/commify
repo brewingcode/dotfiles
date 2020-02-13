@@ -1,60 +1,68 @@
 #!/usr/bin/env node
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
 
-child = require 'child_process'
-comm = require '../lib/dist/commify'
+const child = require('child_process');
+const comm = require('../lib/dist/commify');
 
-# https://github.com/shrpne/from-exponential
-# ...install, minify, beautify, prune
-`
+// https://github.com/shrpne/from-exponential
+// ...install, minify, beautify, prune
+
 function r(r) {
-    return Array.isArray(r) ? r : String(r).split(/[eE]/)
+    return Array.isArray(r) ? r : String(r).split(/[eE]/);
 }
 function fromExp(e) {
-    var t = r(e);
+    const t = r(e);
     if (! function(e) {
-            var t = r(e);
-            return !Number.isNaN(Number(t[1]))
+            const t = r(e);
+            return !Number.isNaN(Number(t[1]));
         }(t)) return t[0];
-    var n = "-" === t[0][0] ? "-" : "",
-        u = t[0].replace(/^-/, "").split("."),
-        i = u[0],
-        f = u[1] || "",
-        o = Number(t[1]);
+    let n = "-" === t[0][0] ? "-" : "", u = t[0].replace(/^-/, "").split("."), i = u[0], f = u[1] || "", o = Number(t[1]);
     if (0 === o) return n + i + "." + f;
     if (o < 0) {
-        var s = i.length + o;
+        const s = i.length + o;
         if (s > 0) return n + i.substr(0, s) + "." + i.substr(s) + f;
-        var a = "0.";
+        let a = "0.";
         for (o += 1; o;) a += "0", o += 1;
-        return n + a + i + f
+        return n + a + i + f;
     }
-    var c = f.length - o;
+    const c = f.length - o;
     if (c > 0) {
-        var p = f.substr(o);
-        return n + i + f.substr(0, o) + "." + p
+        const p = f.substr(o);
+        return n + i + f.substr(0, o) + "." + p;
     }
     for (var b = -c, d = ""; b;) d += "0", b -= 1;
-    return n + i + f + d
+    return n + i + f + d;
 }
-`
 
-json = null
-process.argv.slice(2).forEach (x) ->
-    if x is '-j'
-        json = []
-        return
-    if x is '-p'
-        x = child.execSync 'pbpaste'
 
-    # https://stackoverflow.com/a/2901298/2926055
-    num = comm fromExp x
-    if json
-        json.push
-            title: num
-            arg: num
-            text: largetype: num
-    else
-        console.log num
+let json = null;
+process.argv.slice(2).forEach(function(x) {
+    if (x === '-j') {
+        json = [];
+        return;
+    }
+    if (x === '-p') {
+        x = child.execSync('pbpaste');
+    }
 
-if json
-    console.log JSON.stringify items:json
+    // https://stackoverflow.com/a/2901298/2926055
+    const num = comm(fromExp(x));
+    if (json) {
+        return json.push({
+            title: num,
+            arg: num,
+            text: { largetype: num
+        }
+        });
+    } else {
+        return console.log(num);
+    }
+});
+
+if (json) {
+    console.log(JSON.stringify({items:json}));
+}
