@@ -1,0 +1,61 @@
+#!/usr/bin/env perl
+
+
+use strict;
+use warnings;
+use Getopt::Std;
+
+my $usage = <<'EOF';
+Replaces all GUIDs in input with short names, via the `word` util, and sends
+to stdout. Optionally, stdout can instead be:
+  - each GUID, in order (-g)
+  - the name for each GUID, in order (-n)
+  - both of the above, separated by colon (-gn)
+EOF
+
+if (grep {/^(-h|--help)/} @ARGV) {
+  print $usage;
+  exit();
+}
+my %args;
+my %guids;
+my %names;
+
+getopts('gn', \%args) or die "invalid arguments, see --help\n";
+
+sub lookup {
+  my ($guid) = @_;
+  $guid = lc($guid);
+
+  my @out;
+  if ($args{g}) {
+    push(@out, $guid);
+  }
+
+  my $name;
+  if ($guids{$guid}) {
+    $name = $guids{$guid};
+  }
+  else {
+    do {
+      chomp($name = `word`);
+    } while ($name and $names{$name});
+    $names{$name} = 0;
+    $guids{$guid} = $name;
+  }
+
+  $names{$name}++;
+  if ($args{n}) {
+    push(@out, $name);
+  }
+
+  if (@out > 0) {
+    print join(':', @out) . "\n";
+  }
+  return $guids{$guid};
+}
+
+while (<>) {
+  s/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/lookup($1)/eg;
+  print unless ($args{g} or $args{n});
+}
