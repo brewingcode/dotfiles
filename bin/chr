@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [[ "$1" =~ http* ]]; then
+  url="$1"
+else
+  case "$1" in
+    n|nf|netflix) url=https://netflix.com ;;
+    *) url=https://plex.tv/web ;;
+  esac
+fi
+
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --app="$url"
