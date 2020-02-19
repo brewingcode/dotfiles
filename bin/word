@@ -1,29 +1,47 @@
 #!/usr/bin/env perl
 
-# ./mnemonic [n]
-#
-# print one (or n) random words from a list of words that are:
-#   * 4-7 letters
-#   * phonetically different
-#   * not terribly complicated
-#
-# http://web.archive.org/web/20090918202746/http://tothink.com/mnemonic/wordlist.html
-# http://web.archive.org/web/20091003023412/http://tothink.com/mnemonic/wordlist.txt
-
 use strict;
 use warnings;
+use Getopt::Std;
+
+my $usage = <<'EOF';
+usage: ./word [-c N] [-f] [-a] [-d] [-n]
+
+Print N (default: 1) random words from a list of words that are:
+  * 4-7 letters
+  * phonetically different
+  * not terribly complicated
+
+Optionally, uppercase the (f)irst letter or (a)ll letters. You can also put
+(d)ashes or (n)ewlines between the words.
+
+http://web.archive.org/web/20090918202746/http://tothink.com/mnemonic/wordlist.html
+http://web.archive.org/web/20091003023412/http://tothink.com/mnemonic/wordlist.txt
+EOF
+
+if (grep {/^(--help|-h)/i} @ARGV) {
+  print $usage;
+  exit;
+}
+
+my %args;
+getopts('c:fadnh', \%args) or die "invalid arguments, see --help\n";
 
 my %words;
 while (<DATA>) {
   $words{$_} = 1 for split;
 }
 
-my $i = @ARGV ? int($ARGV[0]) : 1;
+my $i = $args{c} ? int($args{c}) : 1;
+my @out;
 while ($i-- > 0) {
-  my $k = (keys %words)[rand keys %words] || die "no more words!";
+  my $k = (keys %words)[rand keys %words] || die "ran out of words!\n";
   delete $words{$k};
-  print "$k\n";
+  push(@out, $args{f} ? ucfirst($k) : $args{a} ? uc($k) : $k);
 }
+
+my $sep = $args{d} ? '-' : $args{n} ? "\n" : '';
+print join($sep, @out);
 
 __DATA__
   acrobat  africa   alaska   albert   albino   album    
