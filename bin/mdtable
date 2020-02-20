@@ -45,7 +45,7 @@ if (indexes && exclude) {
 }
 
 if (indexes) {
-  indexes = indexes.split(',').map(parseFloat)
+  indexes = indexes.toString().split(',').map(parseFloat)
 }
 if (exclude) {
   exclude = exclude.toString().split(',').map(parseFloat)
@@ -53,7 +53,7 @@ if (exclude) {
 
 function finish() {
   if (names) {
-    lines.unshift(names.split(','))
+    lines.unshift(names.toString().split(','))
   }
   console.log(mdtable(lines, {align}));
 }
