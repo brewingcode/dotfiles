@@ -72,21 +72,29 @@ function add(str) {
       })
     }
 
+    const reordered = []
     if (indexes) {
-      const reordered = []
-      for (const i of indexes) {
-        reordered.push(cells[i-1])
+      for (let i of indexes) {
+        i = i < 0 ? cells.length + i : i - 1
+        reordered.push(cells[i])
       }
-      cells = reordered
     }
-
     if (exclude) {
-      for (const i of exclude) {
-        cells.splice(i-1, 1)
+      for (let i = 0; i < cells.length; i++) {
+        let keep = true
+        for (let e of exclude) {
+          e = e < 0 ? cells.length + e : e - 1
+          if (i === e) {
+            keep = false
+          }
+        }
+        if (keep) {
+          reordered.push(cells[i])
+        }
       }
     }
 
-    lines.push(cells)
+    lines.push(reordered.length ? reordered : cells)
   })
 }
 
