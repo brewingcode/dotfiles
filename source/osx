@@ -48,6 +48,7 @@ function recurl {
     s/^curl ('\''.*?'\'')/curl /;
     $_ .= " \\\n $1";
     s/ -H/ \\\n  -H/g;
+    s/ --(\S+)/ \\\n  --$1/g;
   '
 }
 
