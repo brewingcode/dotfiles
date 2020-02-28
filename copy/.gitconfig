@@ -1,51 +1,69 @@
 [core]
-  autocrlf = input
   whitespace = fix,space-before-tab,tab-in-indent,trailing-space
-  excludesfile = ~/.gitignore_global
-[apply]
-  whitespace = fix
-[alias]
-  # "pretty log"
-  plog = log --pretty=format:'%C(yellow)%h %Cred%ai%Creset %s%Cgreen%d%Creset --%C(cyan)%an %Creset'
-  plog2 = log --pretty=format:'%C(yellow)%h %Cred%ai%Creset %s%Cgreen%d%Creset --%C(cyan)%an %Creset%n%-b%-n'
+  excludesfile = $HOME/.gitignore_global
+  pager = diff-so-fancy | less --tabs=4 -RFX
+  quotepath = false
 
-  # "clean log"
+[alias]
+  # "pretty log" one-per-line
+  plog = log --pretty=format:'%C(yellow)%h %Cred%ai%Creset %s%Cgreen%d%Creset --%C(cyan)%an %Creset'
+
+  # plog + full commit message
+  plog2 = log --pretty=format:'%C(yellow)%h %Cred%ai%Creset %s%Cgreen%d%Creset --%C(cyan)%an %Creset%n%-b%-n'G
+
+  # "clean log", plog without color
   clog = log --pretty=format:'%h %ai %s --%an'
 
-  # "fancy log"
+  # "fancy log", terminal graph with colors
   flog = log --color --graph --pretty=format:'%h %ai%Cgreen%d%Creset %s --%an'
+
+  # "summary log", heavily summarized yet full log
+  slog = log --pretty='%n%Cgreen%h%Creset %s%Cgreen%d%Creset%n%b' --name-status
+
 [color]
   ui = auto
+
 [color "branch"]
   current = yellow reverse
   local = yellow
   remote = green
+
 [color "diff"]
   meta = yellow bold
   frag = magenta bold
   old = red bold
   new = green bold
+
 [color "status"]
   added = yellow
   changed = green
   untracked = cyan
+
 [merge]
   log = true
-[rerere]
-  enabled = 1
+  conflictstyle = diff3
 
-# from my original .gitconfig
 [credential]
   helper = osxkeychain
   useHttpPath = true
+
 [help]
   autocorrect = 1
+
 [rebase]
   autosquash = true
+
 [push]
   default = simple
-[diff "nodiff"]
-	command = /usr/bin/true
+
+[pack]
+  windowmemory = 1g
+
+[filter "lfs"]
+  process = git-lfs filter-process
+  required = true
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
 
 [include]
   path = .gitconfig.local
