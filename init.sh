@@ -40,7 +40,7 @@ for f in *; do
   fi
 done
 
-# make sure files have been copied, but only if they don't exists already
+# make sure files have been copied, but only if they don't exist already
 cd "$DOTFILES/copy" || exit 4
 for f in *; do
   if [ ! -e "$HOME/$f" ] || [ -n "$RECOPY_DOTFILES" ]; then
@@ -50,4 +50,3 @@ done
 
 eval "$shoptions"
 cd "$initial_dir"
-
