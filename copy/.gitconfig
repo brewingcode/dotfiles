@@ -1,6 +1,3 @@
-[user]
-  name = Alex
-  email = EMAIL
 [core]
   autocrlf = input
   whitespace = fix,space-before-tab,tab-in-indent,trailing-space
@@ -50,3 +47,5 @@
 [diff "nodiff"]
 	command = /usr/bin/true
 
+[include]
+  path = .gitconfig.local
