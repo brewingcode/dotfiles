@@ -44,7 +44,7 @@ function finds {
 findt() {
   find=gfind
   gfind --help > /dev/null || find=find
-  $find $* -printf "%T+\t%p\n" | sort
+  $find "$@" -printf "%T+\t%p\n" | sort
 }
 
 # truncate stdin exactly to term width
@@ -79,8 +79,9 @@ function hex2bin {
   ' "$@"
 }
 
+# vim minimal (no rc file)
 function vimm {
-  vim -u /dev/null $*
+  vim -u /dev/null "$@"
 }
 
 # days_since YYYY M D
@@ -245,7 +246,7 @@ ces() {
   fi
 
   # run the actual command
-  coffee --transpile $*
+  coffee --transpile "$@"
   rc=$?
 
   # cleanup

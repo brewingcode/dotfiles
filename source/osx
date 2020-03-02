@@ -34,7 +34,7 @@ function launchds {
   find /Library/Launch* /System/Library/Launch* $HOME/Library/Launch* -ls | perl -lpe 's/^\d+\s+\d+\s+//'
 }
 
-code () { VSCODE_CWD="$PWD" open -n -b "com.microsoft.VSCode" --args $* ;}
+code () { VSCODE_CWD="$PWD" open -n -b "com.microsoft.VSCode" --args "$@" ;}
 
 # prettify Chrome's "copy as curl" command line
 function recurl {
@@ -68,7 +68,7 @@ newchr() {
   user_dir="/tmp/$(openssl rand -hex 5)"
   mkdir -p "$user_dir"
   echo "temporary user data dir: $user_dir"
-  open -na 'Google Chrome' --args --user-data-dir="$user_dir" $*
+  open -na 'Google Chrome' --args --user-data-dir="$user_dir" "$@"
 }
 
 # filter output of `log` for human readability
