@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# swaps the nearest .npmrc file with a store of them
+
+store="$HOME/.npm/_rcs"
+mkdir -p "$store"
+! [ -f "$store/empty" ] && cat /dev/null > "$store/empty"
+
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+i=0
+while [ ! -f "$(pwd)/.npmrc" ]; do
+  [[ "$(pwd)" == "/" ]] && { echo "no .npmrc found above us" >&2; exit 1; }
+  cd ..
+  i=$((i+1))
+  here="$(pwd)"
+done
+
+echo "found $here/.npmrc $i directories above you"
+
+swaprc() {
+  echo "swapping with $store/$1"
+  cp "$here/.npmrc" "$store/$(date +%Y-%m-%d-%H%M%S)"
+  cp "$store/$1" "$here/.npmrc"
+}
+
+if [[ "$1" =~ ^(prev|last|undo)$ ]]; then
+  swaprc "$(cd "$store" && ls -1t | head -1)"
+elif [ -n "$1" ]; then
+  [ -f "$store/$1" ] || { echo "$1 not found in $store" >&2; exit 2; }
+  swaprc "$1"
+else
+  cd "$store"
+  PS3="Pick a file by index: "
+  select f in *;
+  do
+    [ -z "$f" ] && echo "'$REPLY' is invalid" && continue
+    swaprc "$f"
+    break
+  done
+fi
