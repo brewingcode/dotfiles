@@ -1,12 +1,21 @@
 #!/bin/bash
 
-# swaps the nearest .npmrc file with a store of them
+# Swaps the nearest .npmrc file with one from a central store. Does slightly
+# different things depending on $1:
+#
+# no argument:      select() the file to swap from a list
+# only digits:      echo the found .npmrc file, and $1 of the most recently
+#                   stored files (no changes are made)
+# "prev|last|undo": swap the most recently stored file
+# anything else:    swap the file named $1
+#
+# Note that there is always a file named "empty".
 
 store="$HOME/.npm/_rcs"
 mkdir -p "$store"
 ! [ -f "$store/empty" ] && cat /dev/null > "$store/empty"
 
-here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+here="$(pwd)"
 i=0
 while [ ! -f "$(pwd)/.npmrc" ]; do
   [[ "$(pwd)" == "/" ]] && { echo "no .npmrc found above us" >&2; exit 1; }
@@ -15,16 +24,10 @@ while [ ! -f "$(pwd)/.npmrc" ]; do
   here="$(pwd)"
 done
 
-swaprc() {
-  echo "found rc file: $here/.npmrc ($i directories above you)"
-  echo "swapping with: $store/$1"
-  cp "$here/.npmrc" "$store/$(date +%Y-%m-%d-%H%M%S)"
-  cp "$store/$1" "$here/.npmrc"
-}
+echo "## found .npmrc: $here/.npmrc ($i directories above you)"
 
-if [[ "$1" =~ ^(prev|last|undo)$ ]]; then
-  swaprc "$(cd "$store" && ls -1t | head -1)"
-elif [[ "$1" =~ ^[0-9]+$ ]]; then
+if [[ "$1" =~ ^[0-9]+$ ]]; then
+  printf "%s\n\n" "$(cat "$here/.npmrc")"
   cd "$store"
   i="$1"
   [ $i -eq 0 ] && i=-1
@@ -38,6 +41,17 @@ elif [[ "$1" =~ ^[0-9]+$ ]]; then
     i=$(( i - 1 ))
     [ $i -eq 0 ] && break
   done
+  exit
+fi
+
+swaprc() {
+  echo "## swapping with: $store/$1"
+  cp "$here/.npmrc" "$store/$(date +%Y-%m-%d-%H%M%S)"
+  cp "$store/$1" "$here/.npmrc"
+}
+
+if [[ "$1" =~ ^(prev|last|undo)$ ]]; then
+  swaprc "$(cd "$store" && ls -1t | head -1)"
 elif [ -n "$1" ]; then
   [ -f "$store/$1" ] || { echo "$1 not found in $store" >&2; exit 2; }
   swaprc "$1"
@@ -47,7 +61,7 @@ else
   files=($(cd "$store" && ls -1t))
   select f in "${files[@]}";
   do
-    [ -z "$f" ] && echo "'$REPLY' is invalid" && continue
+    [ -z "$f" ] && echo "'$REPLY' is invalid" >&2 && continue
     swaprc "$f"
     break
   done
