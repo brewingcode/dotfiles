@@ -102,3 +102,14 @@ tmlog() {
   log stream --predicate 'subsystem == "com.apple.TimeMachine"' --info                | tmlog_filter
 }
 
+# "sshfs mount"
+#   smnt on|off HOST:REMOTE_DIR LOCAL_DIR [SSH_OPTS]
+smnt() {
+  opts="noappledouble"
+  [[ -n "$4" ]] && opts="$opts,$4"
+  case $1 in
+    on ) mkdir -p "$3"; sshfs -o "$opts" "$2" "$3" ;;
+    off) sudo diskutil unmount force "$3" ;;
+    *) { echo "nothing to do: need 'on' or 'off'" >&2; } ;;
+  esac
+}
