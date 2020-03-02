@@ -24,6 +24,20 @@ swaprc() {
 
 if [[ "$1" =~ ^(prev|last|undo)$ ]]; then
   swaprc "$(cd "$store" && ls -1t | head -1)"
+elif [[ "$1" =~ ^[0-9]+$ ]]; then
+  cd "$store"
+  i="$1"
+  [ $i -eq 0 ] && i=-1
+  ls -1t | while read -r f; do
+    printf "## $(wc -l "$f")\n"
+    if [ -s "$f" ]; then
+      printf "%s\n\n" "$(cat "$f")"
+    else
+      printf "\n"
+    fi
+    i=$(( i - 1 ))
+    [ $i -eq 0 ] && break
+  done
 elif [ -n "$1" ]; then
   [ -f "$store/$1" ] || { echo "$1 not found in $store" >&2; exit 2; }
   swaprc "$1"
