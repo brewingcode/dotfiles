@@ -15,10 +15,9 @@ while [ ! -f "$(pwd)/.npmrc" ]; do
   here="$(pwd)"
 done
 
-echo "found $here/.npmrc $i directories above you"
-
 swaprc() {
-  echo "swapping with $store/$1"
+  echo "found rc file: $here/.npmrc ($i directories above you)"
+  echo "swapping with: $store/$1"
   cp "$here/.npmrc" "$store/$(date +%Y-%m-%d-%H%M%S)"
   cp "$store/$1" "$here/.npmrc"
 }
@@ -29,9 +28,10 @@ elif [ -n "$1" ]; then
   [ -f "$store/$1" ] || { echo "$1 not found in $store" >&2; exit 2; }
   swaprc "$1"
 else
-  cd "$store"
   PS3="Pick a file by index: "
-  select f in *;
+  COLUMNS=1 # can be anything, really
+  files=($(cd "$store" && ls -1t))
+  select f in "${files[@]}";
   do
     [ -z "$f" ] && echo "'$REPLY' is invalid" && continue
     swaprc "$f"
