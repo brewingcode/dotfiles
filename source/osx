@@ -46,26 +46,13 @@ function recurl {
   '
 }
 
+# "copy last command"
 alias clc="fc -ln -1 | awk '{\$1=\$1}1' | pbcopy"
-
-function vjq {
-  tmp=/tmp/$(openssl rand -hex 16)
-  pbpaste > $tmp
-  vim $tmp
-  echo "wrote json to $tmp"
-  jq . < $tmp
-}
 
 # switch java versions via OSX's java_home
 jvm() {
   version=${1:-1.6}
   export JAVA_HOME=$(/usr/libexec/java_home -v $version)
-}
-
-# open a url in Chrome with minimal UI
-minchr() {
-  [ -z "$1" ] && { echo "url required" >&2; return 1; }
-  /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --app="$1"
 }
 
 # copies the latest jquery into clipboard, so you can then paste it into a
