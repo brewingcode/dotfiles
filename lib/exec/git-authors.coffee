@@ -1,5 +1,3 @@
-#!/usr/bin/env coffee
-
 { spawnSync } = require 'child_process'
 _ = require 'lodash'
 

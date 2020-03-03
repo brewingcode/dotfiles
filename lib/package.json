@@ -20,5 +20,14 @@
     "request": "^2.88.0",
     "request-debug": "^0.2.0",
     "request-promise": "^4.2.4"
-  }
+  },
+  "scripts": {
+    "build": "./build-bins",
+    "dev": "nodemon -w exec -e '*' -x ./build-bins",
+    "postinstall": "./build-bins"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
+  },
+  "license": "MIT"
 }

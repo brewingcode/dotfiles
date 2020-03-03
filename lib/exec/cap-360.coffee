@@ -1,5 +1,3 @@
-#!/usr/bin/env coffee
-
 # prints a JSON string of your account at Capital One 360
 #   $ CAPITAL_CREDS=,username,password ./cap-360
 #   {"customerReferenceId:"b933YCI3DPHkKB54ozkcoA==","accountDetails:{"subCat...

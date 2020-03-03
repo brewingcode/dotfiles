@@ -1,5 +1,3 @@
-#!/usr/bin/env coffee
-
 ###
 This script is a shortcut to generate and open google searches without the
 following annoyances:

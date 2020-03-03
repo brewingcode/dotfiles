@@ -11,3 +11,11 @@ link/.vim/plugged
 # some vim booger
 link/.vim/.netrwhist
 
+/bin/cap-360
+/bin/g
+/bin/git-authors
+/bin/pup
+/bin/reap
+/bin/s3png
+/bin/table2json
+/bin/url

@@ -1,5 +1,3 @@
-#!/usr/bin/env coffee
-
 # url parse (default), encode, or decode
 
 url = require 'url'

@@ -1,5 +1,3 @@
-#!/usr/bin/env coffee
-
 pr = require 'bluebird'
 request = require 'request-promise'
 proc = pr.promisifyAll require 'child_process'

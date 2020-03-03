@@ -1,0 +1,17 @@
+#!/bin/bash
+
+[ -d exec ] || exit 1
+[ -d ../bin ] || exit 2
+
+cd exec
+
+for f in *; do
+  tmp="/tmp/build-bins.$$"
+  printf '#!/usr/bin/env node\n\n' > "$tmp"
+  coffee -bp $opts "$f" >> "$tmp"
+  chmod +x "$tmp"
+  dest="../../bin/${f%.*}"
+  [ -n "$(diff -q "$tmp" "$dest" 2>&1)" ] && mv "$tmp" "$dest"
+done
+
+true

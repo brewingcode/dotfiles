@@ -1,5 +1,3 @@
-#!/usr/bin/env coffee
-
 fs = require('fs')
 jsdom = require('jsdom')
 minimist = require('minimist')

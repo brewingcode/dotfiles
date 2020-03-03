@@ -1,5 +1,3 @@
-#!/usr/bin/env coffee
-
 # Print process groups containing COMMAND that are older than AGE.
 # Pass --kill to kill them off, too.
 
