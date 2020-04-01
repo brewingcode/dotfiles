@@ -61,27 +61,26 @@ sql() {
 main() {
     LABELS=''
     CLIPBOARD=''
+    images=()
     while [ $# -gt 0 ];do
-    case "$1" in
-        -h|--help)
-            usage;
-            exit 0;;
-        -l|--labels)
-            shift;
-            LABELS=$1
-            ;;
-        -c|--clipboard)
-            CLIPBOARD=1
-            ;;
-        -v|--vertical)
-            VERTICAL=1
-            ;;
-        --)
-            shift;
-            break
-            ;;
-    esac
-    shift
+        case "$1" in
+            -h|--help)
+                usage;
+                exit 0;;
+            -l|--labels)
+                LABELS=$1
+                ;;
+            -c|--clipboard)
+                CLIPBOARD=1
+                ;;
+            -v|--vertical)
+                VERTICAL=1
+                ;;
+            *)
+                images+=("$1")
+                ;;
+        esac
+        shift
     done
 
     if [[ -n "$CLIPBOARD" ]]; then
@@ -90,11 +89,13 @@ main() {
         exit 0
     fi
 
-    if (( $# != 2 )); then
+    if (( "${#images[@]}" != 2 )); then
+        echo "error: missing two filenames"
         usage
-        exit 0
+        exit 1
     fi
 
-    imgimg "$@"
+    imgimg "${images[0]}" "${images[1]}"
 }
+
 main "$@"
