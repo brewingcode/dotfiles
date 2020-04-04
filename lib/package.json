@@ -10,7 +10,7 @@
     "html-entities": "^1.2.1",
     "jsdom": "^16.2.0",
     "lodash": "^4.17.15",
-    "minimist": "^1.2.0",
+    "minimist": "^1.2.3",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.28",
     "parse-domain": "^2.3.4",
