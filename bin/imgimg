@@ -39,7 +39,7 @@ imgimg() {
     local LABEL2=`echo ${LABELS##*,}`
     local IMG1_BORDER=$(add_border_caption "$IMG1" "$LABEL1" Khaki)
     local IMG2_BORDER=$(add_border_caption "$IMG2" "$LABEL2" Plum)
-    local OUT=$(mktemp /tmp/tmp.XXXXX).tiff
+    local OUT=$(mktemp /tmp/tmp.XXXXX).png
 
     if [ -n "$VERTICAL" ]; then
         cmd='-append -gravity west'
