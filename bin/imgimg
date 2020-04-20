@@ -13,6 +13,7 @@ and the image itself is copied to the pasteboard.
 OPTIONS
   -l,  --labels     Add labels separated by comma. eg: before,after
   -c,  --clipboard  Use most recent images from Alfred Clipboard history
+  -C,  --clipswap   --clipboard the images in the opposite order
   -v,  --vertical   Combine images vertically instead of horizontally"
 }
 
@@ -61,6 +62,7 @@ sql() {
 main() {
     LABELS=''
     CLIPBOARD=''
+    CLIPSWAP=''
     images=()
     while [ $# -gt 0 ];do
         case "$1" in
@@ -72,6 +74,9 @@ main() {
                 ;;
             -c|--clipboard)
                 CLIPBOARD=1
+                ;;
+            -C|--clipswap)
+                CLIPSWAP=1
                 ;;
             -v|--vertical)
                 VERTICAL=1
@@ -85,7 +90,11 @@ main() {
 
     if [[ -n "$CLIPBOARD" ]]; then
         alf="$HOME/Library/Application Support/Alfred 3/Databases"
-        imgimg "$(sql "$alf" 0)" "$(sql "$alf" 1)"
+        if [[ -n "$CLIPSWAP" ]]; then
+            imgimg "$(sql "$alf" 0)" "$(sql "$alf" 1)"
+        else
+            imgimg "$(sql "$alf" 1)" "$(sql "$alf" 0)"
+        fi
         exit 0
     fi
 
