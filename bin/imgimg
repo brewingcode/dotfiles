@@ -76,6 +76,7 @@ main() {
                 CLIPBOARD=1
                 ;;
             -C|--clipswap)
+                CLIPBOARD=1
                 CLIPSWAP=1
                 ;;
             -v|--vertical)
