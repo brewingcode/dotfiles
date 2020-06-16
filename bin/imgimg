@@ -14,7 +14,14 @@ OPTIONS
   -l,  --labels     Add labels separated by comma. eg: before,after
   -c,  --clipboard  Use most recent images from Alfred Clipboard history
   -C,  --clipswap   --clipboard the images in the opposite order
-  -v,  --vertical   Combine images vertically instead of horizontally"
+  -v,  --vertical   Combine images vertically instead of horizontally
+
+The default order of --clipboard is:
+
+    Horizontal: [ second most recent ] [ most recent]
+
+    Vertical:   [ second most recent ]
+                [ most recent ]"
 }
 
 add_border_caption() {
