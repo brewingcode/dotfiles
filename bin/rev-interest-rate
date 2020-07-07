@@ -1,0 +1,16 @@
+#!/usr/bin/env coffee
+
+# given HTML from the Capital One account transactions page on stdin,
+# calculate the annual APR interest rate on each monthly interest deposit
+
+cheerio = require 'cheerio'
+fs = require 'fs'
+
+$ = cheerio.load fs.readFileSync "/dev/stdin", "utf8"
+
+$("div.bank-transaction").each (i, el) ->
+  return unless $(el).find('.transaction-category').text() is 'Interest'
+  [date, amount, balance] = "date,amount,balance".split(",").map (k) ->
+     $(el).find(".transaction-#{k}").text().replace(/[\r\n\$,]/g, '').trim()
+  rate = 100 * 12 * ( +balance / (+balance - +amount) - 1)
+  console.log [date, amount, balance, rate.toFixed(2)].join '\t'
