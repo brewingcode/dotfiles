@@ -270,3 +270,6 @@ tld-backup() {
   echo "$savefile backed up"
 }
 
+rebash() {
+  env -i bash --noprofile --norc
+}
