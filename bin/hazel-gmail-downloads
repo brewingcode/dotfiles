@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# External script for use with Hazel that will move files downloaded from a
+# particular google account into a custom directory. Create a config file at
+# $HOME/.hazel-gmail-downloads.json:
+#     { "dest": "/tmp/downloads-for-foo", "user_index": 1 }
+# ...where "user_index" is the number in your gmail url that comes after
+# "/u/".
+
+export HOME="/Users/$(whoami)"  # strangely, Hazel does not provide this env var
+
+command -v jq > /dev/null || { echo "missing jq command" >&2; exit 1; }
+command -v sqlite3 > /dev/null || { echo "missing sqlite3 command" >&2; exit 2; }
+
+[ -f "$HOME/.hazel-gmail-downloads.json" ] || { echo "missing $HOME/.hazel-gmail-downloads.json config file" >&2; exit 3; }
+
+# ignore temp download fragments
+f="$1"
+[[ "$f" =~ crdownload$ ]] && exit 0
+
+# get required values from config file
+dest="$(jq -r .dest "$HOME/.hazel-gmail-downloads.json")"
+user_index="$(jq -r .user_index "$HOME/.hazel-gmail-downloads.json")"
+[ -d "$dest" ] || { echo "'$dest' is not a directory" >&2; exit 4; }
+[[ "$user_index" =~ ^[0-9]+$ ]] || { echo "'$user_index' must be a number" >&2; exit 5; }
+
+query="
+select url
+from (
+  select uc.url, max(uc.chain_index)
+  from downloads_url_chains uc
+  left join downloads d on d.id = uc.id
+  where d.target_path = \"$f\"
+  group by d.id
+)
+"
+
+# read `History` database after a delay, we cannot read it directly because it is locked
+sleep 15 
+tmpdb=/tmp/$$.sqlite
+cp "/$HOME/Library/Application Support/Google/Chrome/Default/History" "$tmpdb"
+url=$(sqlite3 "$tmpdb" "$query")
+rm "$tmpdb"
+
+if echo "$url" | grep "https://mail-attachment.googleusercontent.com/attachment/u/$user_index/"; then
+  echo "moving $f to $dest"
+  mv "$f" "$dest"
+else
+  echo "not moving $f"
+fi
+
+# To help debugging, enable it by holding "option" key in the "Info" tab of the prefpane
+# 
+# tail -F ~/Library/Logs/Hazel/Hazel.log | \
+#   perl -ne '$x = 1 if /== script output ==/; print if $x; $x = 0 if /== End script output ==/'
