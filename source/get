@@ -22,7 +22,7 @@ get_nvm() {
 get_brew() {
   command -v brew && { echo "error: brew already exists"; return 1; }
   if ! [ -d /usr/local/Cellar ]; then
-    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
   fi
 }
 
