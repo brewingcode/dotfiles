@@ -113,3 +113,6 @@ smnt() {
     *) { echo "nothing to do: need 'on' or 'off'" >&2; } ;;
   esac
 }
+
+# Catalina onwards
+export BASH_SILENCE_DEPRECATION_WARNING=1
