@@ -186,9 +186,8 @@ flip_tables() {
 }
 
 dockwipe() {
-  docker rm -f $(docker ps -a -q)
-  docker rmi -f $(docker images -q)
-  find "$HOME/Library/Containers/com.docker.docker/Data" -name '*qcow*' -ls
+  docker stop $(docker ps -a -q)
+  docker system prune -a
 }
 
 dumbtext() {
