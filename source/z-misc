@@ -188,6 +188,7 @@ flip_tables() {
 dockwipe() {
   docker stop $(docker ps -a -q)
   docker system prune -a
+  docker volume rm $(docker volume ls -q)
 }
 
 dumbtext() {
