@@ -1,0 +1,17 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+# from Andrew Johnson <ajohnson@gpu.srv.ualberta.ca>
+sub commify {
+    my $input = shift;
+    $input = reverse $input;
+    $input =~ s<(\d\d\d)(?=\d)(?!\d*\.)><$1,>g;
+    return reverse $input;
+}
+
+while (<>) {
+    print scalar commify($_)
+}
+
