@@ -187,8 +187,17 @@ flip_tables() {
 
 dockwipe() {
   docker stop $(docker ps -a -q)
+  docker rm -f $(docker ps -a -q)
+}
+
+docknuke() {
+  docker stop $(docker ps -a -q)
   docker system prune -af
-  docker volume rm $(docker volume ls -q)
+  docker volume rm -f $(docker volume ls -q)
+}
+
+docklogs() {
+  docker ps -q | xargs -L 1 -P "$(docker ps -q | wc -l)" docker logs "$@"
 }
 
 dumbtext() {
