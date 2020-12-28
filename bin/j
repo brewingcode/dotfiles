@@ -1,0 +1,57 @@
+#!/usr/bin/env perl
+
+# opens jira tickets based on config file in $HOME/.config/jira-ticket.txt,
+# args are handled in order left-to-right
+#
+#     j 100            # opens ticket 100 in the default project
+#
+#     j 200 foo 300    # opens ticket 200 in the default project, switches
+#                      # default to first project starting with "foo", then
+#                      # opens ticket 300 in that project
+#
+# options
+#
+#     -l, --list      list configured projects with the default project
+#                     first, then the root jira url
+#     -p, --print     print urls instead of opening them
+
+use strict;
+use warnings;
+
+my $f = "$ENV{HOME}/.config/jira-ticket.txt";
+open my $fh, $f or die "error: need a config file at $f\n";
+chomp(my @lines = grep { /^\s*\w/ } <$fh>);
+my $root = shift @lines; # first line is the root url for viewing jira tickets
+my $key = $lines[0];     # rest of the lines are jira project keys, with first one being our default
+my $open = 1;
+
+while ($_ = shift @ARGV) {
+    if (/^\d/) {
+        my $url = "$root/" . uc($key) . "-$_";
+        if ($open) {
+            system "open '$url'";
+        }
+        else {
+            print "$url\n";
+        }
+    }
+    elsif (/^(-l|--list)/) {
+        print "@lines $root\n";
+    }
+    elsif (/^(-p|--print)/) {
+        $open = 0;
+    }
+    else {
+        my $re = qr/^\Q$_/i;
+        my @hits = grep { $_ =~ $re } @lines;
+        if (@hits == 1) {
+            $key = $hits[0];
+        }
+        elsif (@hits == 0) {
+            die "'$_' doesn't match any projects: @lines\n";
+        }
+        else {
+            die "'$_' matches more than one project: @hits\n";
+        }
+    }
+}
