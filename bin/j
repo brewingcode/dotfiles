@@ -9,6 +9,8 @@
 #                      # default to first project starting with "foo", then
 #                      # opens ticket 300 in that project
 #
+#     j me             # open JQL for your tickets
+#
 # options
 #
 #     -l, --list      list configured projects with the default project
@@ -25,21 +27,28 @@ my $root = shift @lines; # first line is the root url for viewing jira tickets
 my $key = $lines[0];     # rest of the lines are jira project keys, with first one being our default
 my $open = 1;
 
+sub handle_url {
+    my ($url) = @_;
+    if ($open) {
+        system "open '$url'";
+    }
+    else {
+        print "$url\n";
+    }
+}
+
 while ($_ = shift @ARGV) {
     if (/^\d/) {
-        my $url = "$root/" . uc($key) . "-$_";
-        if ($open) {
-            system "open '$url'";
-        }
-        else {
-            print "$url\n";
-        }
+        handle_url("$root/browse/" . uc($key) . "-$_");
     }
     elsif (/^(-l|--list)/) {
         print "@lines $root\n";
     }
     elsif (/^(-p|--print)/) {
         $open = 0;
+    }
+    elsif (/^me$/i) {
+        handle_url($root . '/issues/?jql=watcher%20%3D%20currentUser()%20or%20assignee%20%3D%20currentUser()%20or%20reporter%20%3D%20currentUser()%20order%20by%20updated%20DESC');
     }
     else {
         my $re = qr/^\Q$_/i;
