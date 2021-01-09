@@ -1,0 +1,11 @@
+#!/bin/bash
+
+[ -d .git ] || { echo "error: you must be in the root of a git repo" >&2; exit 1; }
+t=$(mktemp -d /tmp/git-share-XXXXX)
+git --bare clone . "$t"
+cd "$t/.git"
+git --bare update-server-info
+mv hooks/post-update{.sample,}
+echo "serving repo at $(hostname -I), make sure your git url includes the trailing slash"
+python3 -m http.server
+rm -rf "$t"
