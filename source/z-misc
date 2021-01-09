@@ -272,13 +272,7 @@ stripshell() {
 }
 export BASH_SILENCE_DEPRECATION_WARNING=1
 
-tld-backup() {
-  cd ~/.local/share/Hinterland/TheLongDark
-  savefile=$(ls -1t sandbox* | head -1)
-  cp "$savefile" "backups/$(date '+%Y-%m-%d %H.%M.%S')-$savefile.backup"
-  echo "$savefile backed up"
-}
-
 rebash() {
   env -i bash --noprofile --norc
 }
+

@@ -1,0 +1,73 @@
+is_wsl || return 1
+
+sync_exists() {
+  [ -d "$SYNC_DIR" ] && return 0
+  echo "SYNC_DIR env var must be set to a directory"
+  return 1
+}
+
+
+tld() {
+  case "$1" in
+    '') cd "${WINHOME}/AppData/Local/Hinterland/TheLongDark" ;;
+    backup)
+      tld
+      sync_exists || return 1
+      rsync -aP --delete ./ "$SYNC_DIR/TheLongDark"
+      savefile=$(ls -1t --color=never sandbox* | head -1)
+      mkdir -p "$SYNC_DIR/tld-backups/$savefile"
+      cp -v "$savefile" "$SYNC_DIR/tld-backups/$savefile/$(date '+%Y-%m-%d %H.%M.%S')"
+      ;;
+    restore)
+      sync_exists || return 1
+      bd="$SYNC_DIR/tld-backups"
+      cd "$bd"
+      if [ -z "$2" ]; then
+        savefile=$(ls -1t --color=never | head -1)
+      else
+        savefile="$2"
+      fi
+      cd "$bd/$savefile" || { echo "missing save file directory to restore: $bd/$savefile" >&2; exit 2; }
+      version=$(ls -1t --color=never | head -1)
+      tld
+      cp -v "$bd/$savefile/$version" "$savefile"
+      ;;
+  esac
+}
+
+steam() {
+  cd "$STEAM_DIR"
+}
+
+hades() {
+  case "$1" in
+    '') cd "$WINHOME/Documents/Saved Games/Hades" ;;
+    backup)
+      hades
+      sync_exists || return 1
+      rsync -aP --delete ./ "$SYNC_DIR/Hades"
+      ;;
+    restore)
+      hades
+      sync_exists || return 1
+      rsync -aP --delete "$SYNC_DIR/Hades/" .
+      ;;
+  esac
+}
+
+subn() {
+  case "$1" in
+    '') cd "$STEAM_DIR/Subnautica/SNAppData/SavedGames" ;;
+    backup)
+      subn
+      sync_exists || return 1
+      rsync -aP --delete ./ "$SYNC_DIR/Subnautica"
+      ;;
+    restore)
+      subn
+      sync_exists || return 1
+      rsync -aP --delete "$SYNC_DIR/Subnautica/" .
+      ;;
+  esac
+}
+
