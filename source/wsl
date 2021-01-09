@@ -2,3 +2,4 @@ is_wsl || return 1
 
 export WINUSER="$(cmd.exe /c 'echo %USERNAME%' 2>/dev/null | sed 's/\r//')"
 export WINHOME="/mnt/c/Users/$WINUSER"
+export STEAM_DIR="/mnt/c/Program Files (x86)/Steam/steamapps/common"
