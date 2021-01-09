@@ -15,7 +15,11 @@ export DOTFILES=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 is_osx() {
   [[ "$OSTYPE" =~ ^darwin ]] || return 1
 }
+is_wsl() {
+  [ -d /mnt/c ]
+}
 is_ubuntu() {
+  is_wsl && return 1
   [[ "$(cat /etc/issue 2> /dev/null)" =~ Ubuntu ]] || return 1
 }
 

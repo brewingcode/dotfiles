@@ -1,0 +1,4 @@
+is_wsl || return 1
+
+export WINUSER="$(cmd.exe /c 'echo %USERNAME%' 2>/dev/null)"
+export WINHOME="/mnt/c/Users/$WINUSER"
