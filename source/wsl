@@ -1,5 +1,16 @@
 is_wsl || return 1
 
-export WINUSER="$(cmd.exe /c 'echo %USERNAME%' 2>/dev/null | sed 's/\r//')"
+winvar() {
+  [ -z "$1" ] && { echo 'error: winvar: missing variable name' >&2; return 1; }
+  val=$(cmd.exe /c 'echo %'"$1"'%' 2>/dev/null | sed 's/\r//')
+  [[ "$val" =~ ^%.*%$ ]] && { echo "error: winvar: $1 is not defined" >&2; return 2; }
+  if [[ "$val" =~ ^[cC]:\\ ]]; then
+    wslpath -a "$val"
+  else
+    echo "$val"
+  fi
+}
+
+export WINUSER=$(winvar username)
 export WINHOME="/mnt/c/Users/$WINUSER"
 export STEAM_DIR="/mnt/c/Program Files (x86)/Steam/steamapps/common"
