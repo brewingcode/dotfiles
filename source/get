@@ -14,7 +14,7 @@ get_rvm() {
 get_nvm() {
   command -v nvm && { echo "error: nvm already exists"; return 1; }
   if ! [ -d "$HOME/.nvm" ]; then
-    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash
+    curl -o- https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
   fi
   . "$HOME/.nvm/nvm.sh"
 }
