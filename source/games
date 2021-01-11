@@ -71,3 +71,18 @@ subn() {
   esac
 }
 
+hk() {
+  case "$1" in
+    '') cd "$(winvar appdata)/../LocalLow/Team Cherry/Hollow Knight" ;;
+    backup)
+      hk
+      sync_exists || return 1
+      rsync -aP --delete ./ "$SYNC_DIR/Hollow Knight"
+      ;;
+    restore)
+      hk
+      sync_exists || return 1
+      rsync -aP --delete "$SYNC_DIR/Hollow Knight/" .
+      ;;
+  esac
+}
