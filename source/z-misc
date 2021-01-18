@@ -276,3 +276,6 @@ rebash() {
   env -i bash --noprofile --norc
 }
 
+redot() {
+  . "$DOTFILES/init.sh"
+}
