@@ -135,6 +135,7 @@ gittail() {
   git for-each-ref --sort=committerdate refs/"$refs" \
     --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))' \
     | tail -n "$count"
+  echo
 }
 
 # summary of local and remote branches
@@ -201,6 +202,7 @@ gitsca() {
   git stash && git checkout "${1:-master}" && git stash apply
 }
 
+# only tags
 gittags() {
   git for-each-ref --sort=taggerdate --format '%(refname) %(taggerdate)' refs/tags
 }
@@ -211,8 +213,29 @@ _gitum() {
     --no-merged
 }
 
+# git un merged branches, local
 gitum() { _gitum refs/heads; }
+
+# git un merged branches, origin or any other remote
 gitrum() {
   remote="${1:-origin}"
   _gitum "refs/remotes/$remote"
+}
+
+# git status against origin/master
+gitsu() {
+  curr=$(git rev-parse --abbrev-ref HEAD@{upstream} 2>/dev/null)
+
+  upstream="${GITUP:-origin/master}"
+  git branch -u "$upstream" >/dev/null || return 1
+  git status "$@"
+
+  upref="$upstream ($(git rev-parse --short $upstream))"
+  if [ -z "$curr" ]; then
+    echo "removing $upref as upstream tracking"
+    git branch --unset-upstream >/dev/null
+  else
+    echo "restoring upstream to $curr ($(git rev-parse --short $curr)), it was $upref"
+    git branch -u "$curr" >/dev/null
+  fi
 }
