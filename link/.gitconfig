@@ -20,6 +20,9 @@
   # "summary log", heavily summarized yet full log
   slog = log --pretty='%n%Cgreen%h%Creset %s%Cgreen%d%Creset%n%b' --name-status
 
+  # "hash log", just hashes, commit subject, and author name (no dates, no branch or tag)
+  hlog = log --pretty='%h %s --%an'
+
 [color]
   ui = auto
 
