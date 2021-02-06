@@ -279,3 +279,7 @@ rebash() {
 redot() {
   . "$DOTFILES/init.sh"
 }
+
+sus() {
+  sort | uniq -c | sort -n "$@"
+}
