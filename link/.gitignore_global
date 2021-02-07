@@ -61,3 +61,6 @@ Desktop.ini
 .swo
 .*.swp
 .*.swo
+
+# VSCode workspace config
+.vscode
