@@ -280,6 +280,12 @@ redot() {
   . "$DOTFILES/init.sh"
 }
 
+# sort-uniq-sort
 sus() {
   sort | uniq -c | sort -n "$@"
+}
+
+# csv transpose
+csvt() {
+    ruby -rcsv -e 'puts CSV.parse(STDIN).transpose.map &:to_csv'
 }
