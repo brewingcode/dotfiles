@@ -1,4 +1,8 @@
-is_wsl || return 1
+if is_wsl; then
+  export STEAM_DIR="/mnt/c/Program Files (x86)/Steam/steamapps/common"
+else
+  export STEAM_DIR="$HOME/Library/Application Support/Steam/steamapps/common"
+fi
 
 sync_exists() {
   [ -d "$SYNC_DIR" ] && return 0
@@ -6,10 +10,15 @@ sync_exists() {
   return 1
 }
 
-
 tld() {
   case "$1" in
-    '') cd "${WINHOME}/AppData/Local/Hinterland/TheLongDark" ;;
+    '')
+      if is_wsl; then
+        cd "${WINHOME}/AppData/Local/Hinterland/TheLongDark"
+      else
+        cd "$HOME/.local/share/Hinterland/TheLongDark"
+      fi
+      ;;
     backup)
       tld
       sync_exists || return 1
@@ -41,7 +50,14 @@ steam() {
 
 hades() {
   case "$1" in
-    '') cd "$WINHOME/Documents/Saved Games/Hades" ;;
+
+    '')
+      if is_wsl; then
+        cd "$WINHOME/Documents/Saved Games/Hades"
+      else
+        cd "$HOME/Library/Application Support/Supergiant Games/Hades"
+      fi
+      ;;
     backup)
       hades
       sync_exists || return 1
@@ -57,7 +73,13 @@ hades() {
 
 subn() {
   case "$1" in
-    '') cd "$STEAM_DIR/Subnautica/SNAppData/SavedGames" ;;
+    '')
+      if is_wsl; then
+        cd "$STEAM_DIR/Subnautica/SNAppData/SavedGames"
+      else
+        cd "$HOME/Library/Application Support/unity.Unknown Worlds.Subnautica/Subnautica/SavedGame"
+      fi
+      ;;
     backup)
       subn
       sync_exists || return 1
@@ -73,7 +95,13 @@ subn() {
 
 hk() {
   case "$1" in
-    '') cd "$(winvar appdata)/../LocalLow/Team Cherry/Hollow Knight" ;;
+    '')
+      if is_wsl; then
+        cd "$(winvar appdata)/../LocalLow/Team Cherry/Hollow Knight"
+      else
+        cd "$HOME/Library/Application Support/unity.Team Cherry.Hollow Knight"
+      fi
+      ;;
     backup)
       hk
       sync_exists || return 1
