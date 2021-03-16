@@ -10,6 +10,14 @@ sync_exists() {
   return 1
 }
 
+most_recent() {
+  ls=ls
+  if command -v gls >/dev/null 2>&1; then
+    ls=gls
+  fi
+  $ls -1t --color=never sandbox* | head -1
+}
+
 tld() {
   case "$1" in
     '')
@@ -23,7 +31,7 @@ tld() {
       tld
       sync_exists || return 1
       rsync -aP --delete ./ "$SYNC_DIR/TheLongDark"
-      savefile=$(ls -1t --color=never sandbox* | head -1)
+      savefile=$(most_recent)
       mkdir -p "$SYNC_DIR/tld-backups/$savefile"
       cp -v "$savefile" "$SYNC_DIR/tld-backups/$savefile/$(date '+%Y-%m-%d %H.%M.%S')"
       ;;
@@ -32,12 +40,12 @@ tld() {
       bd="$SYNC_DIR/tld-backups"
       cd "$bd"
       if [ -z "$2" ]; then
-        savefile=$(ls -1t --color=never | head -1)
+        savefile=$(most_recent)
       else
         savefile="$2"
       fi
       cd "$bd/$savefile" || { echo "missing save file directory to restore: $bd/$savefile" >&2; exit 2; }
-      version=$(ls -1t --color=never | head -1)
+      version=$(most_recent)
       tld
       cp -v "$bd/$savefile/$version" "$savefile"
       ;;
