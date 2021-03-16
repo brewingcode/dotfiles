@@ -116,3 +116,8 @@ smnt() {
 
 # Catalina onwards
 export BASH_SILENCE_DEPRECATION_WARNING=1
+
+# brew outdated leaves
+brew-ol() {
+  (printf 'installed\toutdated\tboth\n' && comm <(brew leaves) <(brew outdated | cut -f 1)) | gridify
+}
