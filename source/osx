@@ -121,3 +121,9 @@ export BASH_SILENCE_DEPRECATION_WARNING=1
 brew-ol() {
   (printf 'installed\toutdated\tboth\n' && comm <(brew leaves) <(brew outdated | cut -f 1)) | gridify
 }
+
+# default iterm profile
+dp() {
+  echo -e "\033]50;SetProfile=Default\a"
+  export ITERM_PROFILE=Default
+}
