@@ -85,7 +85,8 @@ subn() {
       if is_wsl; then
         cd "$STEAM_DIR/Subnautica/SNAppData/SavedGames"
       else
-        cd "$HOME/Library/Application Support/unity.Unknown Worlds.Subnautica/Subnautica/SavedGame"
+        echo "not supported in non-wsl" >&2
+        return 2
       fi
       ;;
     backup)
