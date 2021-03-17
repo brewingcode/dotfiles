@@ -123,3 +123,26 @@ hk() {
       ;;
   esac
 }
+
+subbz() {
+  case "$1" in
+    '')
+      if is_wsl; then
+        cd "$STEAM_DIR/SubnauticaZero/SNAppData/SavedGames"
+      else
+        echo "not supported in non-wsl" >&2
+        return 2
+      fi
+      ;;
+    backup)
+      subbz
+      sync_exists || return 1
+      rsync -aP --delete ./ "$SYNC_DIR/SubnauticaZero"
+      ;;
+    restore)
+      subbz
+      sync_exists || return 1
+      rsync -aP --delete "$SYNC_DIR/SubnauticaZero/" .
+      ;;
+  esac
+}
