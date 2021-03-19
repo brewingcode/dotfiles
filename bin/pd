@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+
+# parse a Python dictionary from its printed string into json
+
+import sys, re, ast, json
+s = sys.stdin.read()
+s2 = re.sub(r'(<.*? object at 0x\w+>)', "'\\1'", s) # wrap `<foo.type object at 0x1>` with quotes so they are parsed like strings
+tree = ast.literal_eval(s2)
+print(json.dumps(tree))
