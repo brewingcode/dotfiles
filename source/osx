@@ -4,8 +4,6 @@ is_osx || return 1
 # https://unix.stackexchange.com/a/221988
 ulimit -n 10000
 
-export PATH="/usr/local/bin:/usr/local/opt/python2/libexec/bin:$PATH"
-
 # Trim new lines and copy to clipboard
 alias c="tr -d '\n' | pbcopy"
 
