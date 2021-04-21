@@ -68,6 +68,14 @@ while () {
         # shortcut to just add a command
         add_cmd();
     }
+    elsif ($?>>8 == 102) {
+        pop(@cmds) if @cmds;
+        to_less();
+    }
+    elsif ($?>>8 == 103) {
+        @cmds = ();
+        to_less();
+    }
     else {
         $| = 1;
         print 'gless ['.scalar(@cmds).']: ';
@@ -131,6 +139,8 @@ w   Write the current content of less to a file.
 
 Inside less:
 e   Evaluate another command and immediately re-less.
+p   Pop previous command and immediately re-less.
+c   Clear all commands and immediately re-less.
 q   Quit to gless command line.
 
 HELP
@@ -150,6 +160,8 @@ sub less_keybinds {
     my $lesskeyfile = $tmp->filename;
     open my $fh, "|lesskey -o $lesskeyfile -" or die $!;
     print $fh "e quit e\n"; # 'e' == dec 101 return code
+    print $fh "p quit f\n"; # 102
+    print $fh "c quit e\n"; # 103
     close $fh;
     return ($lesskeyfile, $tmp);
 }
