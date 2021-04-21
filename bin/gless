@@ -174,7 +174,7 @@ sub to_less {
     # invoke less
     open(STDIN, '<', $fh) or die $!;
     open(STDOUT, '>&', $stdout) or die $!;
-    my $rc = system "less -k$lesskeyfile -";
+    my $rc = system "less -k$lesskeyfile -n -";
 
     restore_std();
 }
