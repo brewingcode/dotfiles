@@ -29,7 +29,9 @@ if (exists($o{init}) and not $o{init}) {
 
 # magic slurp input to temp file
 my $stdin = File::Temp->new;
+my $in_lines = 0;
 while (<>) {
+    $in_lines++;
     print $stdin $_;
 }
 
@@ -68,7 +70,6 @@ while () {
     }
     else {
         $| = 1;
-        count_lines();
         print 'gless ['.scalar(@cmds).']: ';
         ReadMode(3);
         my $key = ReadKey(0);
@@ -95,9 +96,12 @@ while () {
             @cmds = ();
         }
         elsif (lc($key) eq 's') {
+            my $c = commify($in_lines);
+            print " 0: (input) # $c lines\n";
             if (@cmds) {
                 for (my $i = 0; $i < @cmds; $i++) {
-                    printf "%2d: $cmds[$i][0]\n", $i;
+                    $c = commify($cmds[$i][2]);
+                    printf "%2d: $cmds[$i][0] # $c lines\n", $i+1;
                 }
             }
             else {
@@ -175,19 +179,23 @@ sub add_cmd {
     # get our filehandle which we're going to STDIN to <command>
     my $fh = @cmds ? $cmds[-1][1] : $stdin;
     seek($fh, 0, 0);
-    open(STDIN, '<', $fh) or die $!;
-
-    # get a filehandle for <command>'s STDOUT
     my $new = File::Temp->new;
-    open(STDOUT, '>', $new) or die $!;
+    my $n = 0;
+    my $rc = undef;
 
-    # invoke the command
-    my $rc = system $expr;
-    restore_std();
+    $rc = open(my $cmd, 'cat '.$fh->filename." | $expr |");
+    if ($rc) {
+        while ($_ = <$cmd>) {
+            $n++;
+            print $new $_;
+        }
+
+        $rc = close($cmd);
+    }
 
     # successful command dumps us back into less, otherwise we say what happened
-    if ($rc>>8 == 0) {
-        push @cmds, [$expr, $new];
+    if ($rc and $rc>>8 == 0) {
+        push @cmds, [$expr, $new, $n];
         if (@_ == 0) {
             to_less();
         }
@@ -229,10 +237,9 @@ sub restore_std {
     open(STDOUT, '>&', $stdout) or die $!;
 }
 
-sub count_lines {
-    # print out linecount of the most recent handle
-    my $fh = @cmds ? $cmds[-1][1] : $stdin;
-    seek($fh, 0, 0);
-    my @lines = <$fh>;
-    print "(".@lines." lines)\n";
+sub commify {
+    my ($input) = @_;
+    $input = reverse "$input";
+    $input =~ s<(\d\d\d)(?=\d)(?!\d*\.)><$1,>g;
+    return reverse $input;
 }
