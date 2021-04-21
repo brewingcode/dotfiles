@@ -11,12 +11,9 @@ use strict;
 # run the output of each command through more commands. At each level of the
 # stack, you can use less to browse the output.
 #
-# --config <file> will use <file> to load/save the command stack (default:
-#   $ENV{HOME}/.gless
+# --init [file] will use [file] to initialize/persist the command stack,
+# default is $ENV{HOME}/.gless
 #
-# --noload will inhibit loading the contents of the config file at the start
-#
-# --nosave will inhibit writing the config file at the end
 
 use File::Temp;
 use Term::ReadKey;
@@ -24,10 +21,11 @@ use Term::ReadLine;
 use Getopt::Long;
 use Cwd;
 
-my %o = (
-    config => $ENV{HOME}.'/.gless',
-);
-GetOptions(\%o, 'noload', 'nosave', 'config=s');
+my %o = ();
+GetOptions(\%o, 'init');
+if (exists($o{init}) and not $o{init}) {
+    $o{init} = "$ENV{HOME}/.gless";
+}
 
 # magic slurp input to temp file
 my $stdin = File::Temp->new;
@@ -47,9 +45,9 @@ my $term = Term::ReadLine->new('gless');
 my $lesskeyfile = less_keybinds();
 
 # this holds the stack between calls to gless
-my $config = $o{config};
-if (not defined $ENV{NO_GLESS_HISTORY} and not $o{noload}) {
-    if (open my $fh, $config) {
+my $init = $o{init};
+if ($init and not defined $ENV{NO_GLESS_HISTORY}) {
+    if (open my $fh, $init) {
         while (<$fh>) {
             chomp;
             print "gless initial command: $_\n";
@@ -137,8 +135,8 @@ HELP
 }
 
 # dump the stack to file
-if (not defined $ENV{NO_GLESS_HISTORY} and not $o{nosave}) {
-    open my $fh, '>', $config or die $!;
+if ($o{init} and not defined $ENV{NO_GLESS_HISTORY}) {
+    open my $fh, '>', $init or die $!;
     print $fh "$_->[0]\n" foreach @cmds;
 }
 
