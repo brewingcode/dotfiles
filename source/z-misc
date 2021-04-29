@@ -282,7 +282,7 @@ redot() {
 
 # sort-uniq-sort
 sus() {
-  sort | uniq -c | sort -n "$@"
+  sort "$@" | uniq -c | sort -n
 }
 
 # csv transpose
@@ -291,3 +291,23 @@ csvt() {
 }
 
 sl() { echo $SHLVL; }
+
+# splits stdin on whitespace, and prints 1-based indices separated by tabs
+# eg:    f 2    f 3,2,-1    f 4-7    f 2,1,5-6
+f() {
+  perl -ls -F/\\s+/ -e '
+    BEGIN {
+      foreach (split(/,/, $i)) {
+        if (/^(\d+)\-(\d+)/) {
+          foreach ($1 .. $2) {
+            push @i, $_ < 1 ? $_ : $_-1;
+          }
+        }
+        else {
+          push @i, $_ < 1 ? $_ : $_-1;
+        }
+      }
+    }
+    chomp; 
+    print join "\t", @F[@i]
+' -- -i="$1" ; }
