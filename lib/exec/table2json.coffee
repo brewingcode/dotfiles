@@ -5,7 +5,7 @@ path = require('path')
 coffeescript = require('coffeescript')
 
 args = minimist process.argv.slice(2),
-  boolean: ['ignoreEmptyRows', 'allowHTML', 'arrays', 'help', 'h']
+  boolean: ['ignoreEmptyRows', 'allowHTML', 'arrays', 'stripEmpty', 'help', 'h']
 
 if args.help or args.h
   console.log """
@@ -23,8 +23,11 @@ CoffeeScript instead of JavaScript. For example:
 
     --extractor '(i, $cell) -> $cell.text().toUpperCase()'
 
-Additional option `--arrays` will output plain arrays for each row, instead
-of an object for each row.
+Additional options not in table-to-json:
+
+    --arrays             output rows as arrays instead of objects
+    --ignoreInitial N    ignore first N rows
+    --stripEmpty         strip empty rows from output (--ignoreInitial first)
   """
   process.exit(0)
 
@@ -54,6 +57,13 @@ plugin = path.join(__dirname, '../lib/jquery.tabletojson.js')
 eval fs.readFileSync(plugin, 'utf8')
 
 table = $(selector).tableToJSON(args)
+
+if args.ignoreInitial
+  table.splice(0, args.ignoreInitial)
+
+if args.stripEmpty
+  table = table.filter (row) -> Object.values(row).join('').search(/\S/)
+
 if args.arrays
   table = table.map (row) -> Object.values(row)
 
