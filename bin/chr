@@ -5,8 +5,11 @@ if [[ "$1" =~ http* ]]; then
 else
   case "$1" in
     n|nf|netflix) url=https://netflix.com ;;
+    xb|xbox|gp|gamepass) url='https://docs.google.com/spreadsheets/d/1kspw-4paT-eE5-mrCrc4R9tg70lH2ZTFrJOUmOtOytg/htmlview#' ;;
     *) url=https://plex.tv/web ;;
   esac
 fi
 
-/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --app="$url"
+shift
+
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --app="$url" "$@"
