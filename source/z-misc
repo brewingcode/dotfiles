@@ -311,3 +311,12 @@ f() {
     shift @F if @F[0] =~ /^\S*$/;
     print join "\t", @F[@i]
 ' -- -i="$1" ; }
+
+cap() {
+  mkdir -p /tmp/capret
+  tee /tmp/capret/$$
+}
+
+ret() {
+  cat /tmp/capret/$$
+}
