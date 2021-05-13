@@ -5,7 +5,8 @@ is_osx || return 1
 ulimit -n 10000
 
 # Trim new lines and copy to clipboard
-alias c="tr -d '\n' | pbcopy"
+alias c=pbcopy
+alias e=pbpaste # i have conflicts with p, a, s, and t if you can believe it
 
 # Make 'less' more.
 [[ "$(type -P lesspipe.sh)" ]] && eval "$(lesspipe.sh)"
