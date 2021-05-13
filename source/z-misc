@@ -308,6 +308,6 @@ f() {
         }
       }
     }
-    chomp; 
+    shift @F if @F[0] =~ /^\S*$/;
     print join "\t", @F[@i]
 ' -- -i="$1" ; }
