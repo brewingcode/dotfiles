@@ -1,16 +1,13 @@
 #!/usr/bin/env coffee
 
-# given HTML from the Capital One account transactions page on stdin,
+# given CSV from the Capital One account transactions page on stdin,
 # calculate the annual APR interest rate on each monthly interest deposit
 
-cheerio = require 'cheerio'
+csvparse = require 'csv-parse/lib/sync'
 fs = require 'fs'
 
-$ = cheerio.load fs.readFileSync "/dev/stdin", "utf8"
-
-$("div.bank-transaction").each (i, el) ->
-  return unless $(el).find('.transaction-category').text() is 'Interest'
-  [date, amount, balance] = "date,amount,balance".split(",").map (k) ->
-     $(el).find(".transaction-#{k}").text().replace(/[\r\n\$,]/g, '').trim()
+csvparse(fs.readFileSync('/dev/stdin')).forEach (row) ->
+  return unless row[4].match(/monthly interest/i)
+  [acct, date, amount, type, note, balance] = row
   rate = 100 * 12 * ( +balance / (+balance - +amount) - 1)
   console.log [date, amount, balance, rate.toFixed(2)].join '\t'
