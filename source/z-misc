@@ -308,7 +308,7 @@ f() {
         }
       }
     }
-    shift @F if @F[0] =~ /^\S*$/;
+    shift @F if @F[0] =~ /^\s*$/;
     print join "\t", @F[@i]
 ' -- -i="$1" ; }
 
