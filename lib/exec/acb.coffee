@@ -3,6 +3,7 @@
 # even selectively zero out entries.
 
 sqlite3 = require('sqlite3')
+fs = require 'fs'
 argv = require('minimist') process.argv.slice(2),
   boolean: ['h', 'help', 's', 'short', 'e', 'erase']
 
@@ -38,7 +39,10 @@ alf = "#{process.env.HOME}/Library/Application Support/Alfred 3/Databases"
 db = new sqlite3.Database("#{alf}/clipboard.alfdb")
 
 if argv.erase or argv.e
-    db.run "update clipboard set item = '' order by ts desc limit #{limit} offset #{offset}", [], console.error
+    db.get "select ts, dataHash from clipboard order by ts desc limit #{limit} offset #{offset}", (err, row) ->
+        db.run "update clipboard set item = '' where ts = ?", [row.ts], console.error
+        if row.dataHash
+            fs.unlinkSync("#{alf}/clipboard.alfdb.data/#{row.dataHash}")
 else
     if argv.short or argv.s
         # first 70 chars, minus newlines
