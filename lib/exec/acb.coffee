@@ -6,7 +6,7 @@ sqlite3 = require('sqlite3')
 argv = require('minimist') process.argv.slice(2),
   boolean: ['h', 'help', 's', 'short', 'e', 'erase']
 
-usage = ->
+if argv.help or argv.h
     console.log """
 usage: acb [LIMIT]
        acb [--limit LIMIT] [--offset OFFSET] [--from FROM] [--short] [--erase]
@@ -23,23 +23,22 @@ available as a variant of OFFSET: it is simply OFFSET + 1. For example:
 You can also erase the specified entry(s) with --erase.
 
 Note that binary items will have their size printed.
-"""
-
-if argv.help or argv.h
-    usage()
+    """
     process.exit()
 
 limit = argv.limit or argv.l or 1
 offset = argv.offset or argv.o or 0
-if from = argv.from or argv.f
-    offset = from - 1
-if argv._
+if argv.from or argv.f
+    n = argv.from or argv.f
+    offset = n - 1
+if argv._.length
     limit = argv._[0]
 
-db = new sqlite3.Database("#{process.env.HOME}/Library/Application Support/Alfred 3/Databases/clipboard.alfdb")
+alf = "#{process.env.HOME}/Library/Application Support/Alfred 3/Databases"
+db = new sqlite3.Database("#{alf}/clipboard.alfdb")
 
 if argv.erase or argv.e
-    db.run "update clipboard set item = '' order by ts desc limit #{limit} offset #{offset}"
+    db.run "update clipboard set item = '' order by ts desc limit #{limit} offset #{offset}", [], console.error
 else
     if argv.short or argv.s
         # first 70 chars, minus newlines
@@ -47,5 +46,12 @@ else
     else
         col="item"
 
-    db.each "select #{col} from clipboard where dataHash is null order by ts desc limit #{limit} offset #{offset}", (err, row) ->
-        console.log row.item
+    db.each "select #{col}, dataHash from clipboard order by ts desc limit #{limit} offset #{offset}", (err, row) ->
+        if err
+            console.error(err)
+            return
+        if row.dataHash
+            path = "#{alf}/clipboard.alfdb.data/#{row.dataHash}"
+            console.log row.item, "file://#{path}"
+        else
+            console.log row.item
