@@ -1,22 +1,22 @@
 {
   "dependencies": {
-    "@babel/core": "^7.8.6",
-    "@babel/node": "^7.8.4",
+    "@babel/core": "^7.14.3",
+    "@babel/node": "^7.14.2",
     "@babel/polyfill": "^7.8.3",
-    "@babel/preset-env": "^7.8.6",
+    "@babel/preset-env": "^7.14.2",
     "bluebird": "^3.7.2",
-    "cheerio": "^1.0.0-rc.3",
+    "cheerio": "^1.0.0-rc.9",
     "coffeescript": "^2.5.1",
     "csv-parse": "^4.15.4",
-    "html-entities": "^1.2.1",
-    "jsdom": "^16.2.0",
-    "lodash": "^4.17.19",
-    "minimist": "^1.2.3",
-    "moment": "^2.24.0",
-    "moment-timezone": "^0.5.28",
-    "parse-domain": "^2.3.4",
+    "html-entities": "^2.3.2",
+    "jsdom": "^16.6.0",
+    "lodash": "^4.17.21",
+    "minimist": "^1.2.5",
+    "moment": "^2.29.1",
+    "moment-timezone": "^0.5.33",
+    "parse-domain": "^3.0.3",
     "pretty": "^2.0.0",
-    "puppeteer": "^2.1.1",
+    "puppeteer": "^9.1.1",
     "rc": "^1.2.8",
     "request": "^2.88.2",
     "request-debug": "^0.2.0",
@@ -29,7 +29,7 @@
     "postinstall": "./build-bins"
   },
   "devDependencies": {
-    "nodemon": "^2.0.2"
+    "nodemon": "^2.0.7"
   },
   "license": "MIT"
 }
