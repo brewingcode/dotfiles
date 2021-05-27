@@ -46,7 +46,8 @@ for k in ['ignoreColumns', 'onlyColumns', 'headings']
   if (k of args) and (typeof args[k] isnt 'object')
     args[k] = [args[k]]
 
-html = fs.readFileSync('/dev/stdin', 'utf8')
+html = fs.readFileSync('/dev/stdin', 'utf8').replace(/<style>[\s\S]+?<\/style>/, '')
+
 { window } = new jsdom.JSDOM(html)
 
 # jquery
