@@ -5,7 +5,7 @@ usage = """
 usage: pup URL [-d URLDATA] [-H HEADER ...]
 
 Prints the final DOM of a page after a full navigation. Default HTTP method is
-a GET, use `-d URLDATA` to do a POST with URLDATA instead. Use -H to send 
+a GET, use `-d URLDATA` to do a POST with URLDATA instead. Use -H to send
 additional HTTP request headers.
 """
 
@@ -58,7 +58,7 @@ do ->
         [ 'webdriver', false ]
       ]
 
-    await page.goto url
+    await page.goto url, waitUntil:'networkidle0'
     console.log await page.content()
     await browser.close()
   catch e
