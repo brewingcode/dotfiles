@@ -4,8 +4,7 @@ url = require 'url'
 minimist = require 'minimist'
 fs = require 'fs'
 pd = require 'parse-domain'
-Entities = require('html-entities').AllHtmlEntities
-entities = new Entities()
+{ encode, decode } = require('html-entities')
 
 argv = minimist process.argv.slice(2),
     boolean: ['e', 'encode', 'd', 'decode', 'E', 'enc-ent', 'D', 'dec-ent',
