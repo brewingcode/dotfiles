@@ -8,7 +8,12 @@ pd = require 'parse-domain'
 
 argv = minimist process.argv.slice(2),
     boolean: ['e', 'encode', 'd', 'decode', 'E', 'enc-ent', 'D', 'dec-ent',
-        'tld', 'domain', 'fulldomain']
+        'tld', 'domain', 'fulldomain', 'defrag' ]
+
+qs = (parts, indent) ->
+    if parts.query and Object.keys(parts.query).length
+        return ( "#{k}=#{v}" for k,v of parts.query ).join "#{indent}&"
+    return ''
 
 handle = (s) ->
     try
@@ -38,9 +43,15 @@ handle = (s) ->
             out += p.pathname if p.pathname
             if p.query and Object.keys(p.query).length
                 out += '\n  ?'
-                out += ( "#{k}=#{v}" for k,v of p.query ).join '\n  &'
+                out += qs(p, '\n  ')
             if p.hash
-                out += "\n  #{p.hash}"
+                if argv.defrag
+                    frag = p.hash.match(/^#(.*)/).slice(1)
+                    q = url.parse "http://foo.com?#{frag}", true
+                    out += '\n  #'
+                    out += qs(q, '\n    ')
+                else
+                    out += "\n  #{p.hash}"
             console.log out
 
 if argv._.length
