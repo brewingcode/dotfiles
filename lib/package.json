@@ -14,7 +14,7 @@
     "minimist": "^1.2.5",
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.33",
-    "parse-domain": "^3.0.3",
+    "parse-domain": "2.3.4",
     "pretty": "^2.0.0",
     "puppeteer": "^9.1.1",
     "rc": "^1.2.8",
