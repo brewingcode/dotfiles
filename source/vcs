@@ -6,8 +6,8 @@ alias gitra='git rebase --abort'
 
 gitre() { git rebase -i "$(git merge-base HEAD "${1:-master}")"; }
 
-# git-fixup-to-commit
-gitfc() {
+# git-commit-and-fixup
+gitcf() {
   ref="$1"
   shift
   ref=$(git rev-parse "$ref")
@@ -21,7 +21,7 @@ gitfc() {
 
 # git-fixup-to-previous
 gitfp() {
-  gitfc HEAD "$@"
+  gitcf HEAD "$@"
 }
 
 
@@ -247,3 +247,12 @@ git-author-rebase() {
   git rebase -i "$1" -x "git commit --amend --author '$2' -CHEAD"
 }
 
+# list files by first author time (ie, creation)
+gitfc() {
+  git ls-files -z -- "$@" | xargs -0 -n1 -I{} sh -c "git log --diff-filter=A --follow --author-date-order --format='%ai {}' -- {} | tail -1" | sort
+}
+
+# list files by latest author time (ie, last-modified)
+gitfm() {
+  git ls-files -z -- "$@" | xargs -0 -n1 -I{} git log -1 --author-date-order --format="%ai {}" -- {} | sort
+}
