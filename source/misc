@@ -297,6 +297,11 @@ csvfc() {
     ruby -rcsv -e 'CSV.parse(STDIN).each do |r| puts r[0] end'
 }
 
+# skip first line (I can never remember this exact syntax/offset)
+sf() {
+    head -n +2
+}
+
 sl() { echo $SHLVL; }
 
 # splits stdin on whitespace, and prints 1-based indices separated by tabs
