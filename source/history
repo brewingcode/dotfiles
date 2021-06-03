@@ -12,8 +12,8 @@ export HISTFILE=~/.bash_eternal_history
 
 # Force prompt to write history after every command.
 # http://superuser.com/questions/20900/bash-history-loss
-PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
 shopt -s histappend
+PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 stophistory () {
   PROMPT_COMMAND="prompt_command"
   echo 'History recording stopped. Make sure to `kill -9 $$` at the end of the session.'
@@ -21,3 +21,4 @@ stophistory () {
 
 # Easily re-execute the last history command.
 alias r="fc -s"
+
