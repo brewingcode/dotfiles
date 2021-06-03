@@ -290,6 +290,13 @@ csvt() {
     ruby -rcsv -e 'puts CSV.parse(STDIN).transpose.map &:to_csv'
 }
 
+# csv first column: print the first column straight-out, NOT as csv with all its encoding crap
+# use as filter from output of `csvcut -c <your column> | csvfc`
+# note: couldn't find an easier way to do this, is this really best?
+csvfc() {
+    ruby -rcsv -e 'CSV.parse(STDIN).each do |r| puts r[0] end'
+}
+
 sl() { echo $SHLVL; }
 
 # splits stdin on whitespace, and prints 1-based indices separated by tabs
