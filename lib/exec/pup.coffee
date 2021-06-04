@@ -1,5 +1,6 @@
 puppeteer = require 'puppeteer'
 argv = require('minimist') process.argv.slice(2)
+pr = require 'bluebird'
 
 usage = """
 usage: pup URL [-d URLDATA] [-H HEADER ...]
@@ -13,9 +14,8 @@ if argv.h or argv.help
   console.log usage
   process.exit()
 
-[ url ] = argv._
-if not url
-  console.error "error: no url given"
+if not argv._.length
+  console.error "error: no urls given"
   process.exit 1
 
 debug = false
@@ -58,8 +58,9 @@ do ->
         [ 'webdriver', false ]
       ]
 
-    await page.goto url, waitUntil:'networkidle0'
-    console.log await page.content()
+    await pr.each argv._, (url) ->
+      await page.goto url, waitUntil:'networkidle0'
+      console.log await page.content()
     await browser.close()
   catch e
     console.error e.message
