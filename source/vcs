@@ -247,12 +247,21 @@ git-author-rebase() {
   git rebase -i "$1" -x "git commit --amend --author '$2' -CHEAD"
 }
 
+# git list file filter
+_gitffilter() {
+  sort | perl -lnF'\t' -e 'if ($F[2] =~ /^(\d+\+)?(.+?)\@.*github.com$/) { $F[2] = "$2\@github" } print join "\t\t", @F' | mdtable -pr '\t'
+}
+
 # list files by first author time (ie, creation)
 gitfc() {
-  git ls-files -z -- "$@" | xargs -0 -n1 -I{} sh -c "git log --diff-filter=A --follow --author-date-order --format='%ai {}' -- {} | tail -1" | sort
+  git ls-files -z -- "$@" \
+    | xargs -0 -n1 -I{} sh -c "git log --diff-filter=A --follow --author-date-order --format='%aI%x09%h%x09%ae%x09{}' -- {} | tail -1" \
+    | _gitffilter
 }
 
 # list files by latest author time (ie, last-modified)
 gitfm() {
-  git ls-files -z -- "$@" | xargs -0 -n1 -I{} git log -1 --author-date-order --format="%ai {}" -- {} | sort
+  git ls-files -z -- "$@" \
+    | xargs -0 -n1 -I{} git log -1 --author-date-order --format="%aI%x09%h%x09%ae%x09{}" -- {} \
+    | _gitffilter
 }
