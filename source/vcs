@@ -93,7 +93,7 @@ githeads() {
     echo "refspec: $refspec"
     git for-each-ref --sort=-committerdate \
       --format='%(committerdate)%09%(refname)%09%(objectname:short)%09%(committername)%09%(contents:subject)' \
-      "$refspec" | perl -pe 's,refs/\S+/(\S+)\t,$1\t,' | gridify -t 50
+      "$refspec" | perl -pe 's,refs/\S+/(\S+)\t,$1\t,' | mdtable -t 50
   fi
 }
 
