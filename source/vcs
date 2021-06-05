@@ -255,13 +255,13 @@ _gitffilter() {
 # list files by first author time (ie, creation)
 gitfc() {
   git ls-files -z -- "$@" \
-    | xargs -0 -n1 -I{} sh -c "git log --diff-filter=A --follow --author-date-order --format='%aI%x09%h%x09%ae%x09{}' -- {} | tail -1" \
+    | xargs -0 -n1 -I{} sh -c "git log --diff-filter=A --follow --author-date-order --format='%aI%x09%h%x09{}' -- {} | tail -1" \
     | _gitffilter
 }
 
 # list files by latest author time (ie, last-modified)
 gitfm() {
   git ls-files -z -- "$@" \
-    | xargs -0 -n1 -I{} git log -1 --author-date-order --format="%aI%x09%h%x09%ae%x09{}" -- {} \
+    | xargs -0 -n1 -I{} git log -1 --author-date-order --format="%aI%x09%h%x09{}" -- {} \
     | _gitffilter
 }
