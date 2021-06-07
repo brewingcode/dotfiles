@@ -27,7 +27,7 @@ do ->
     browser = await puppeteer.launch
       headless: not debug
       defaultViewport:
-        width: 600
+        width: 1200
         height: 2000
       devtools: debug
 
