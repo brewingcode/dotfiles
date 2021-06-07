@@ -1,5 +1,7 @@
 puppeteer = require 'puppeteer'
-argv = require('minimist') process.argv.slice(2)
+argv = require('minimist') process.argv.slice(2),
+  boolean: ['ignore-nav-fail']
+
 pr = require 'bluebird'
 
 usage = """
@@ -59,7 +61,11 @@ do ->
       ]
 
     await pr.each argv._, (url) ->
-      await page.goto url, waitUntil:'networkidle0'
+      try
+        await page.goto url, waitUntil:'networkidle0'
+      catch e
+        if not argv['ignore-nav-fail']
+          throw e
       console.log await page.content()
     await browser.close()
   catch e
