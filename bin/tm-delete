@@ -1,0 +1,8 @@
+
+#!/bin/bash
+latest=$(sudo tmutil latestbackup)
+sudo tmutil listbackups | while read backup; do
+    if [[ "$backup" != "$latest" ]]; then
+        echo sudo tmutil delete "$backup"
+    fi
+done
