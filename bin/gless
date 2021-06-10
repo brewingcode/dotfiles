@@ -179,7 +179,7 @@ sub to_less {
     # invoke less
     open(STDIN, '<', $fh) or die $!;
     open(STDOUT, '>&', $stdout) or die $!;
-    my $rc = system "less -k$lesskeyfile -n -";
+    my $rc = system "less -k$lesskeyfile -nS -";
 
     restore_std();
 }
@@ -228,11 +228,11 @@ sub write_file {
     print "current directory: " . getcwd() . "\n";
     my $out = $term->readline('filename: ');
     $term->addhistory($out);
-    
+
     if (not $out =~ /^\s*\//) {
         $out = getcwd() . "/$out";
     }
-    
+
     if (open my $fh, $access, $out) {
         my $i = 0;
         my $cur = @cmds ? $cmds[-1][1] : $stdin;
