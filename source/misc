@@ -324,11 +324,16 @@ f() {
     print join "\t", @F[@i]
 ' -- -i="$1" ; }
 
-cap() {
+cap() { # capture
   mkdir -p /tmp/capret
   tee /tmp/capret/$$
 }
 
-ret() {
+ret() { # return
   cat /tmp/capret/$$
 }
+
+ut() { # un-truncate
+  tr -d '\n'
+}
+
