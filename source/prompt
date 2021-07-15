@@ -119,6 +119,7 @@ function titlebar() {
 
 function prompt_command() {
   local exit_code=$?
+  [ -n "$DOTFILES_HISTORY" ] && { history -a; history -c; history -r; }
   # If the first command in the stack is prompt_command, no command was run.
   # Set exit_code to 0 and reset the stack.
   [[ "${prompt_stack[0]}" == "prompt_command" ]] && exit_code=0

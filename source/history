@@ -13,9 +13,9 @@ export HISTFILE=~/.bash_eternal_history
 # Force prompt to write history after every command.
 # http://superuser.com/questions/20900/bash-history-loss
 shopt -s histappend
-PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+export DOTFILES_HISTORY=1
 stophistory () {
-  PROMPT_COMMAND="prompt_command"
+  export DOTFILES_HISTORY=
   echo 'History recording stopped. Make sure to `kill -9 $$` at the end of the session.'
 }
 
