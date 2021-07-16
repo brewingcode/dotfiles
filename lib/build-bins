@@ -11,7 +11,7 @@ for f in *; do
   coffee -bp $opts "$f" >> "$tmp"
   chmod +x "$tmp"
   dest="../../bin/${f%.*}"
-  [ -n "$(diff -q "$tmp" "$dest" 2>&1)" ] && mv "$tmp" "$dest"
+  [ -n "$(diff -q "$tmp" "$dest" 2>&1)" ] && mv -v "$tmp" "$dest"
 done
 
 true
