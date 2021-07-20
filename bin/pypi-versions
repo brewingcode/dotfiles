@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# dumps all release of a package from pypi in date order
+
+[ -n "$1" ] || { echo "package name required" >&2; exit 1; }
+
+curl -qsSL "https://pypi.org/pypi/$1/json" | jq -r '
+  .releases | to_entries[] | select(.value[0]) | "\(.value[0].upload_time)\t\(.key)"
+' | sort
+
