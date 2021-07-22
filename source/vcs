@@ -3,6 +3,7 @@
 alias gitcd='git rev-parse 2>/dev/null && cd "./$(git rev-parse --show-cdup)"'
 alias gitrc='git rebase --continue'
 alias gitra='git rebase --abort'
+alias gittags='git tag --sort=committerdate --format="%(refname:strip=2) %(objectname:short) %(subject)"'
 
 gitre() { git rebase -i "$(git merge-base HEAD "${1:-master}")"; }
 
@@ -23,7 +24,6 @@ gitcf() {
 gitfp() {
   gitcf HEAD "$@"
 }
-
 
 gitup() {
   remote="${1:-origin}"
@@ -202,11 +202,6 @@ gitsca() {
   git stash && git checkout "${1:-master}" && git stash apply
 }
 
-# only tags
-gittags() {
-  git for-each-ref --sort=taggerdate --format '%(refname) %(taggerdate)' refs/tags
-}
-
 _gitum() {
   git for-each-ref --sort=committerdate "$1" \
     --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))' \
@@ -265,3 +260,4 @@ gitfm() {
     | xargs -0 -n1 -I{} git log -1 --author-date-order --format="%aI%x09%h%x09{}" -- {} \
     | _gitffilter
 }
+
