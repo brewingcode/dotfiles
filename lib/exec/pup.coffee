@@ -1,28 +1,17 @@
 puppeteer = require 'puppeteer'
-argv = require('minimist') process.argv.slice(2),
-  boolean: ['ignore-nav-fail']
-
 pr = require 'bluebird'
 
 usage = """
-usage: pup URL [-d URLDATA] [-H HEADER ...]
+usage: pup [-d URLDATA] [-H HEADER ...] URL [more urls...]
 
 Prints the final DOM of a page after a full navigation. Default HTTP method is
 a GET, use `-d URLDATA` to do a POST with URLDATA instead. Use -H to send
 additional HTTP request headers.
 """
 
-if argv.h or argv.help
-  console.log usage
-  process.exit()
-
-if not argv._.length
-  console.error "error: no urls given"
-  process.exit 1
-
 debug = false
 
-do ->
+get = (argv) ->
   try
     browser = await puppeteer.launch
       headless: not debug
@@ -60,14 +49,33 @@ do ->
         [ 'webdriver', false ]
       ]
 
+    content = []
     await pr.each argv._, (url) ->
       try
         await page.goto url, waitUntil:'networkidle0'
       catch e
         if not argv['ignore-nav-fail']
           throw e
-      console.log await page.content()
+      content.push await page.content()
     await browser.close()
+    return content
   catch e
     console.error e.message
     process.exit(2)
+
+unless module.parent
+  do ->
+    argv = require('minimist') process.argv.slice(2),
+      boolean: ['ignore-nav-fail']
+
+    if argv.h or argv.help
+      console.log usage
+      process.exit()
+
+    if not argv._.length
+      console.error "error: no urls given"
+      process.exit 1
+
+    console.log (await get(argv)).join('\n')
+
+module.exports = { get }
