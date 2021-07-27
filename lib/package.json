@@ -21,6 +21,7 @@
     "request": "^2.88.2",
     "request-debug": "^0.2.0",
     "request-promise": "^4.2.5",
+    "rss-generator": "^0.0.3",
     "sqlite3": "^5.0.2"
   },
   "scripts": {
