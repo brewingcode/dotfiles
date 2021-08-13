@@ -11,11 +11,7 @@ sync_exists() {
 }
 
 most_recent() {
-  ls=ls
-  if command -v gls >/dev/null 2>&1; then
-    ls=gls
-  fi
-  $ls -1t --color=never | head -1
+  "$(command -v gls || echo ls)" -1t --color=never | head -1
 }
 
 tld() {
