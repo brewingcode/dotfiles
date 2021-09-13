@@ -303,18 +303,21 @@ sf() {
 sl() { echo $SHLVL; }
 
 # splits stdin on whitespace, and prints 1-based indices separated by tabs
-# eg:    f 2    f 3,2,-1    f 4-7    f 2,1,5-6
+# eg:    f 2    f 3,2,-1    f 4..7    f 2,1,4..6    f -4..-1
 f() {
   perl -ls -F/\\s+/ -e '
     BEGIN {
       foreach (split(/,/, $i)) {
-        if (/^(\d+)\-(\d+)/) {
+        if (/^(-?\d+)\.\.(-?\d+)/) {
           foreach ($1 .. $2) {
             push @i, $_ < 1 ? $_ : $_-1;
           }
         }
-        else {
+        elsif (/^-?\d+$/) {
           push @i, $_ < 1 ? $_ : $_-1;
+        }
+        else {
+          die "invalid expr: $_";
         }
       }
     }
