@@ -51,14 +51,14 @@ By default, BODY is the Earth. ORBIT can be things like:
 Pass "list" to list known bodies."""
 
 if len(sys.argv) < 2 or '--help' in sys.argv:
-    print usage
+    print(usage)
     sys.exit(1)
 
 if sys.argv[1].lower() == 'list':
     fmt = '{: <8} {: <8} {: <8}'
-    print fmt.format('NAME', 'RADIUS', 'SGP')
+    print(fmt.format('NAME', 'RADIUS', 'SGP'))
     for k in sorted(radii, key=radii.get):
-        print fmt.format(k, radii[k], sgp[k])
+        print(fmt.format(k, radii[k], sgp[k]))
     sys.exit(0)
 
 ap = None
@@ -135,9 +135,9 @@ if pe > ap:
 
 sma = ( ap + pe ) / 2
 
-print "orbit:    {}km x {}km around {}".format(ap, pe, body)
-print "ap speed: {} ({})".format(vel(sma, ap), vel(sma, ap, 'hour'))
-print "pe speed: {} ({})".format(vel(sma, pe), vel(sma, pe, 'hour'))
-print "period:   {}".format(sec_to_string(period(sma)))
-print "eccentr:  {:.4f}".format(eccentricity(ap, pe))
+print("orbit:    {}km x {}km around {}".format(ap, pe, body))
+print("ap speed: {} ({})".format(vel(sma, ap), vel(sma, ap, 'hour')))
+print("pe speed: {} ({})".format(vel(sma, pe), vel(sma, pe, 'hour')))
+print("period:   {}".format(sec_to_string(period(sma))))
+print("eccentr:  {:.4f}".format(eccentricity(ap, pe)))
 
