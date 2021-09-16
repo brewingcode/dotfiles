@@ -25,3 +25,7 @@ get_brew() {
   fi
 }
 
+get_utils() {
+  brew install coreutils dateutils diffutils findutils jq less ncdu watch wget
+}
+
