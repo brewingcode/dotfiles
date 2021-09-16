@@ -138,12 +138,12 @@ function prompt_command() {
   PS1="$PS1$(titlebar)"
 
   if [[ -z "$faster_prompt" ]]; then
-    # svn: [repo:lastchanged]
-    PS1="$PS1$(prompt_svn)"
     # git: [branch:flags]
     PS1="$PS1$(prompt_git)"
-    # hg:  [branch:flags]
-    PS1="$PS1$(prompt_hg)"
+    # # svn: [repo:lastchanged]
+    # PS1="$PS1$(prompt_svn)"
+    # # hg:  [branch:flags]
+    # PS1="$PS1$(prompt_hg)"
   fi
 
   if [[ -z "$timestamp_only_prompt" ]]; then
