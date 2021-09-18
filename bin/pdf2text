@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # pdf2text: uses OSX built-in pdf extraction
 # todo: this is NOT the same as Automator's PDF extract to text
@@ -30,7 +30,7 @@ def main():
     if len(args) == 0:
         cmdparser.print_usage()
         return
-      
+
     for filename in args:
         url = NSURL.fileURLWithPath_(filename)
         doc = PDFDocument.alloc().initWithURL_(url)

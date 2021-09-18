@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 # adapted from http://zeflo.com/2015/the-reddit-button/
 

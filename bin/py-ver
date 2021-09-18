@@ -1,0 +1,19 @@
+#!/bin/bash
+
+pyver() {
+  v=$( ( $1 -V 2>&1 | perl -lne 'print $1 if /^Python (\S+)/'; which $1 2>&1 ) | tr '\n' ' ' )
+  echo "$1: $v"
+}
+
+pipver() {
+  v=$( ( $1 -V 2>&1 | perl -lne 'print $1 if /^pip (\S+) from/'; which $1 2>&1 ) | tr '\n' ' ' )
+  echo "$1: $v"
+}
+
+echo "venv: $VIRTUAL_ENV"
+pyver python
+pyver python2
+pyver python3
+pipver pip
+pipver pip2
+pipver pip3

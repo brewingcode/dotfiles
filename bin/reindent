@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # call as:
 #   reindent <from width> <to width> [<filename1> [<filename2> ...]]
@@ -32,7 +32,7 @@ def rewrite(filename):
 if len(sys.argv) <= 1:
   # simply read stdin, print to stdout
   for line in sys.stdin:
-    print re.sub(regex, reindent, line.rstrip())
+    print(re.sub(regex, reindent, line.rstrip()))
 else:
   # update each file in turn
   for filename in sys.argv[1:]:

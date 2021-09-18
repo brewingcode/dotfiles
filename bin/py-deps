@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# install my dotfiles' requirements.txt, optionally with non-standard `pip`
+main() {
+    pip="${1:-pip}"
+    command "$pip" >/dev/null 2>&1 || { echo "installing pip with: python -m ensurepip"; python -m ensurepip; }
+    [ $? -eq 0 ] || { echo "error: could not find or install pip" >&2; return 1; }
+    cd "$DOTFILES/lib" && "$pip" install -r requirements.txt
+}
+main "$@"

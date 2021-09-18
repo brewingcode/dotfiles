@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # calculate apoapsis/periapsis speed and orbital period for small body
 # orbiting a large body in an elliptical orbit (not para/hyperbolic)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #
 # CVE-2014-6271 cgi-bin reverse shell
 # https://news.ycombinator.com/item?id=8361574

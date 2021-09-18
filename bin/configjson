@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # reads ConfigParser file, assumed to be in super basic format of:
 #     [section]

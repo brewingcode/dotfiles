@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 # save top 10 google image search results to current directory
 # https://developers.google.com/custom-search/json-api/v1/using_rest

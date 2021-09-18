@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 
 # pyobjc example for calling NSWorkspace.typeOfFile:error:, like so:
 #   NSWorkspace *ws = [NSWorkspace sharedWorkspace];

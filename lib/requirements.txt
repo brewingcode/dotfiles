@@ -1,0 +1,7 @@
+arrow
+requests
+git+https://github.com/wieden-kennedy/haikus#egg=haikus
+beautifulsoup4
+websocket-client
+tabulate
+pyobjc
