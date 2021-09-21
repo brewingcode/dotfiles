@@ -1,0 +1,62 @@
+#!/usr/bin/env python
+
+# takes csv assumed to be the output of `psql --csv -c "select ..."` and
+# prints it vertically while attempting to decode both json and EWKB strings
+
+# any arguments are assumed to be columns that will NOT be printed, either:
+# - column names
+# - postive indexes are 1-based ("2" is the 3rd column)
+# - negative indexes per python rules ("-1" is the last column)
+
+import csv, sys, re, json
+from shapely import wkb
+from tabulate import tabulate
+
+rows = [ x for x in csv.reader(sys.stdin.readlines()) ]
+in_headers = rows.pop(0)
+
+show = []
+for i,h in enumerate(in_headers):
+    keep = True
+    for arg in sys.argv[1:]:
+        if re.match(r'^\-?\d+$', arg):
+            val = int(arg)
+            pos_index = (val-1 if val > 0 else val) % len(in_headers)
+            print(f'{arg} {pos_index}')
+            if pos_index == i:
+                keep = False
+        elif arg == h:
+            keep = False
+
+    if keep:
+        show.append(i)
+
+out_headers = [ in_headers[i] for i in list(dict.fromkeys(show)) ]
+out_headers.insert(0, '(count)')
+def prettywkt(s):
+    # neither shapely nor osgeo do something like this, WTF?
+    s = re.sub(r'(\(+)', r'\1\n', s)
+    s = re.sub(r'(\)+)', r'\n\1', s)
+    s = re.sub(r',', r',\n', s)
+    return s
+
+def trunc(p):
+    # truncate each line in a paragraph
+    return '\n'.join([ l[:80] for l in p.split('\n') ])
+
+for count, row in enumerate(rows):
+    row = [ row[i] for i in show ]
+    for i, cell in enumerate(row):
+        if re.match(r'^[{\[].*[}\]]$', cell):
+            row[i] = json.dumps(json.loads(cell), indent=4)
+        elif re.match(r'^01[a-f0-9]+$', cell, flags=re.I):
+            try:
+                shape = wkb.loads(bytes.fromhex(cell))
+                row[i] = prettywkt(shape.wkt)
+            except e:
+                sys.stderr.write(e.message + '\n')
+
+        row[i] = trunc(row[i])
+
+    row.insert(0, count+1)
+    print(tabulate(list(zip(*[out_headers,row])), tablefmt='psql'))
