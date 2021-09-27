@@ -244,13 +244,15 @@ git-author-rebase() {
 
 # git list file filter
 _gitffilter() {
-  sort | perl -lnF'\t' -e 'if ($F[2] =~ /^(\d+\+)?(.+?)\@.*github.com$/) { $F[2] = "$2\@github" } print join "\t\t", @F' | mdtable -pr '\t'
+  sort | perl -lnF'\t' -e \
+    'if ($F[2] =~ /^(\d+\+)?(.+?)\@.*github.com$/) { $F[2] = "$2\@github" } print join "  ", @F'
 }
 
 # list files by first author time (ie, creation)
 gitfc() {
   git ls-files -z -- "$@" \
-    | xargs -0 -n1 -I{} sh -c "git log --diff-filter=A --follow --author-date-order --format='%aI%x09%h%x09{}' -- {} | tail -1" \
+    | xargs -0 -n1 -I{} sh -c \
+      "git log --diff-filter=A --follow --author-date-order --format='%aI%x09%h%x09{}' -- {} | tail -1" \
     | _gitffilter
 }
 
