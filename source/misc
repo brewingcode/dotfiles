@@ -338,7 +338,15 @@ ut() { # un-truncate
   tr -d '\n'
 }
 
-mkchvim() {
+mkchvim() { # mkdir touch chown vim
   mkdir -p "$(dirname "$1")" && echo '#!/bin/bash' >> "$1" && chmod +x "$1" && vim "$1"
 }
 
+n() { # print n-th line
+  # note that `sed -n Np` also works, but for huge files, sed reads the entire
+  # file even after printing the line you want
+  [ -n "$1" ] || { echo "missing line number" >&2; return 1; }
+  num="$1"
+  shift
+  perl -ne '$. == '$num' and print and last' -- "$@"
+}
