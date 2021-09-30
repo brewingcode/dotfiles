@@ -3,22 +3,28 @@
 cd /tmp
 
 while true; do
-  now="$(gdate -uIs)"
-  curl 'https://atp.fm:8443/listen' \
-    -H 'Connection: keep-alive' \
-    -H 'Pragma: no-cache' \
-    -H 'Cache-Control: no-cache' \
-    -H 'sec-ch-ua: "Google Chrome";v="93", " Not;A Brand";v="99", "Chromium";v="93"' \
-    -H 'sec-ch-ua-mobile: ?0' \
-    -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36' \
-    -H 'sec-ch-ua-platform: "macOS"' \
-    -H 'Accept: */*' \
-    -H 'Sec-Fetch-Site: same-site' \
-    -H 'Sec-Fetch-Mode: no-cors' \
-    -H 'Sec-Fetch-Dest: audio' \
-    -H 'Referer: https://atp.fm/' \
-    -H 'Accept-Language: en-US,en;q=0.9' \
-    -H 'Range: bytes=0-' \
-    --compressed --verbose > "atp-$now.mp3"
-  done
+    now="$(gdate -uIs)"
+    curl 'https://atp.fm:8443/listen' \
+        -H 'Connection: keep-alive' \
+        -H 'Pragma: no-cache' \
+        -H 'Cache-Control: no-cache' \
+        -H 'sec-ch-ua: "Google Chrome";v="93", " Not;A Brand";v="99", "Chromium";v="93"' \
+        -H 'sec-ch-ua-mobile: ?0' \
+        -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36' \
+        -H 'sec-ch-ua-platform: "macOS"' \
+        -H 'Accept: */*' \
+        -H 'Sec-Fetch-Site: same-site' \
+        -H 'Sec-Fetch-Mode: no-cors' \
+        -H 'Sec-Fetch-Dest: audio' \
+        -H 'Referer: https://atp.fm/' \
+        -H 'Accept-Language: en-US,en;q=0.9' \
+        -H 'Range: bytes=0-' \
+        --compressed --verbose > "atp-$now.mp3"
 
+    # remove and wait if we wrote less than 200 bytes
+    [ $(stat -f%z "atp-$now.mp3") -lt 200 ] && rm "atp-$now.mp3" && sleep 5
+
+    # finish if we wrote more than 1 MB
+    [ $(stat -f%z "atp-$now.mp3") -gt 1000000 ] && break
+
+done
