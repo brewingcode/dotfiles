@@ -1,6 +1,13 @@
 #!/bin/bash
 
-# echo a gfycat.com-style identifier
+
+for arg in "$@"; do
+  [ "$arg" == "-h" -o "$arg" == "--help" ] && cat <<EOF && exit
+echo a gfycat.com-style identifier: adjective-noun-noun
+  -u/--upper: upcase first letter of each word
+  -n/--no-dash: remove dashes
+EOF
+done
 
 shuf=shuf
 command -v "$shuf" > /dev/null || shuf=gshuf
@@ -8,8 +15,13 @@ command -v "$shuf" > /dev/null || shuf=gshuf
 [ -f /tmp/gfy-adjs.txt ] || curl -qso /tmp/gfy-adjs.txt http://assets.gfycat.com/adjectives
 [ -f /tmp/gfy-nouns.txt ] || curl -qso /tmp/gfy-nouns.txt http://assets.gfycat.com/animals
 
-adjs=$($shuf -n 2 < /tmp/gfy-adjs.txt | perl -pe 's/^(.)/uc($1)/e; s/\s//g' | paste -s -)
-noun=$($shuf -n 1 < /tmp/gfy-nouns.txt | perl -pe 's/^(.)/uc($1)/e; s/\s//g')
+s=$($shuf -n 1 < /tmp/gfy-adjs.txt | perl -pe 's/\W//g')
+s="$s-$($shuf -n 2 < /tmp/gfy-nouns.txt | perl -lpe 's/\W//g' | paste -d - -s -)"
 
-echo "$adjs$noun"
+for arg in "$@"; do
+  [ "$arg" == "-u" -o "$arg" == "--upper" ] && s=$(echo "$s" | perl -pe 's/\b(\w)/uc($1)/eg')
+  [ "$arg" == "-n" -o "$arg" == "--no-dash" ] && s=$(echo "$s" | perl -pe 's/-//g')
+done
+
+echo "$s"
 
