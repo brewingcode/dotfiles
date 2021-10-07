@@ -47,7 +47,6 @@
   conflictstyle = diff3
 
 [credential]
-  helper = osxkeychain
   useHttpPath = true
 
 [help]
