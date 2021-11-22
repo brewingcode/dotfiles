@@ -1,0 +1,6 @@
+#!/bin/bash
+
+[ -z "$1" ] && { echo "error: human-readable app name required" >&2; exit 1; }
+name="${1//\"/\\\"}"
+osascript -e 'id of app "'"$name"'"'
+
