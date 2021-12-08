@@ -47,8 +47,12 @@ def trunc(p):
 for count, row in enumerate(rows):
     row = [ row[i] for i in show ]
     for i, cell in enumerate(row):
-        if re.match(r'^[{\[].*[}\]]$', cell):
-            row[i] = json.dumps(json.loads(cell), indent=4)
+        if re.match(r'^[{\[](\s*?=").*[}\]]$', cell):
+            try:
+                row[i] = json.dumps(json.loads(cell), indent=4)
+            except Exception as e:
+                sys.stderr.write(f'{e}: {cell}\n')
+                row[i] = cell
         elif re.match(r'^01[a-f0-9]+$', cell, flags=re.I):
             try:
                 shape = wkb.loads(bytes.fromhex(cell))
