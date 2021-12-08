@@ -342,6 +342,10 @@ mkchvim() { # mkdir touch chown vim
   mkdir -p "$(dirname "$1")" && echo '#!/bin/bash' >> "$1" && chmod +x "$1" && vim "$1"
 }
 
+mkchsu() { # mkdir touch chown subl
+  mkdir -p "$(dirname "$1")" && echo '#!/bin/bash' >> "$1" && chmod +x "$1" && subl "$1"
+}
+
 n() { # print n-th line
   # note that `sed -n Np` also works, but for huge files, sed reads the entire
   # file even after printing the line you want
