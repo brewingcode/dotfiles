@@ -11,7 +11,8 @@ sync_exists() {
 }
 
 most_recent() {
-  "$(command -v gls || echo ls)" -1t --color=never | head -1
+  regex="${1:-.}"
+  "$(command -v gls || echo ls)" -1t --color=never | grep -E "$regex" | head -1
 }
 
 tld() {
@@ -27,7 +28,7 @@ tld() {
       tld
       sync_exists || return 1
       rsync -aP --delete ./ "$SYNC_DIR/TheLongDark"
-      savefile=$(most_recent)
+      savefile=$(most_recent ^sandbox)
       mkdir -p "$SYNC_DIR/tld-backups/$savefile"
       cp -v "$savefile" "$SYNC_DIR/tld-backups/$savefile/$(date '+%Y-%m-%d %H.%M.%S')"
       ;;
