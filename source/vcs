@@ -4,6 +4,7 @@ alias gitcd='git rev-parse 2>/dev/null && cd "./$(git rev-parse --show-cdup)"'
 alias gitrc='git rebase --continue'
 alias gitra='git rebase --abort'
 alias gittags='git tag --sort=committerdate --format="%(refname:strip=2) %(objectname:short) %(subject)"'
+alias gg='git grep --heading --break -n -p'
 
 gitre() { git rebase -i "$(git merge-base HEAD "${1:-master}")"; }
 
