@@ -239,7 +239,7 @@ gitsu() {
 git-author-rebase() {
   [ -z "$1" ] && { echo "first arg must be a refspec" >&2; return 1; }
   [ -z "$2" ] && { echo "second arg must be a full name+email ID string" >&2; return 2; }
-  git rebase -i "$1" -x "git commit --amend --author '$2' -CHEAD"
+  git rebase -i "$1"^ -x "git commit --amend --author '$2' -CHEAD"
 }
 
 # git list file filter
