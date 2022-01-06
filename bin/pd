@@ -4,6 +4,13 @@
 
 import sys, re, ast, json
 s = sys.stdin.read()
-s2 = re.sub(r'(<.*? object at 0x\w+>)', "'\\1'", s) # wrap `<foo.type object at 0x1>` with quotes so they are parsed like strings
+# wrap `<foo.type object at 0x1>` with quotes so they are parsed like strings
+# .... unless they already have a quote
+s2 = re.sub(r'''
+    (?<!'|")
+    (
+        <\S+?\s+object\s+at\s+0x\w+>
+    )
+    ''', "'\\1'", s, flags=re.X)
 tree = ast.literal_eval(s2)
 print(json.dumps(tree))
