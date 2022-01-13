@@ -2,8 +2,9 @@
 
 # parse a Python dictionary from its printed string into json
 
-import sys, re, ast, json
+import sys, re, ast, json, datetime
 s = sys.stdin.read()
+
 # wrap `<foo.type object at 0x1>` with quotes so they are parsed like strings
 # .... unless they already have a quote
 s2 = re.sub(r'''
@@ -12,5 +13,18 @@ s2 = re.sub(r'''
         <\S+?\s+object\s+at\s+0x\w+>
     )
     ''', "'\\1'", s, flags=re.X)
-tree = ast.literal_eval(s2)
+
+# expand datetime.datetime
+def dt(m):
+    iso = datetime.datetime(*ast.literal_eval(m.group(1)))
+    return f"'{iso}'"
+
+s3 = re.sub(r'''
+    (?<!'|")
+    datetime\.datetime\(
+        (.*?)
+    \)
+    ''', dt, s2, flags=re.X)
+
+tree = ast.literal_eval(s3)
 print(json.dumps(tree))
