@@ -354,3 +354,15 @@ n() { # print n-th line
   shift
   perl -ne '$. == '$num' and print and last' -- "$@"
 }
+
+faketime() {
+  export DYLD_FORCE_FLAT_NAMESPACE=1
+  export DYLD_INSERT_LIBRARIES=/usr/local/Cellar/libfaketime/0.9.9/lib/faketime/libfaketime.1.dylib
+  if [ -z "$1" ]; then
+    echo "set FAKETIME env var"
+  else
+    export FAKETIME="$1"
+  fi
+  echo "https://github.com/wolfcw/libfaketime/blob/master/README.OSX"
+}
+
