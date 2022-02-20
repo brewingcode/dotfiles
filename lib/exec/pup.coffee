@@ -1,17 +1,34 @@
 puppeteer = require 'puppeteer'
 pr = require 'bluebird'
+fs = require 'fs'
 
 usage = """
-usage: pup [-d URLDATA] [-H HEADER ...] URL [more urls...]
+usage: pup [options] URL [more urls...]
 
-Prints the final DOM of a page after a full navigation. Default HTTP method is
-a GET, use `-d URLDATA` to do a POST with URLDATA instead. Use -H to send
-additional HTTP request headers.
+Prints the final DOM of a page after a full navigation via Puppeteer.
+
+OPTIONS
+
+-d URLDATA  Change GET to POST, and send URLDATA
+-H HEADER   Add HEADER (should be "name:value") to request
+-c FILE     Set cookies from FILE, should be JSON array of objects
+-f REGEX    Filter requests via host matching REGEX. Add another `-f FLAGS`
+            to set regex flags like "i" for case-insensitive
+-i          Ignore navigation failures, log anyway
+-v          Verbose
+
+API
+
+    pup = require 'pup'
+    argv = pup.parse_args()
+    [ browser, page ] = await pup.page(argv)
+    console.log await page.evaluate 'document.documentElement.outerHTML'
+    await browser.close()
 """
 
 debug = false
 
-log = (x...) -> console.log new Date(), x...
+log = (x...) -> console.warn(new Date(), x...) if debug
 
 page = (argv) ->
   browser = await puppeteer.launch
@@ -29,18 +46,16 @@ page = (argv) ->
       [k,v] = h.match(/^([^:]+):\s*(.*)/).slice(1)
       headers[k] = v
 
-
   if argv.d or headers
     await page.setRequestInterception(true)
     page.once 'request', (req) ->
-      console.log "setting #{req.url()} to POST"
+      log "setting #{req.url()} to POST"
       req.continue
         method: 'POST'
         postData: argv.d
         headers: {
           ...req.headers()
           ...headers
-          ...(if argv.d then 'Content-type': 'application/x-www-form-urlencoded' else null)
         }
 
   if argv.c
@@ -52,10 +67,11 @@ page = (argv) ->
     re = if typeof argv.f is 'string' then new RegExp(argv.f) else new RegExp(...argv.f)
     page.on 'request', (req) ->
       { host } = new URL req.url()
-      log host
       if host.match re
+        log 'yes:', host
         req.continue()
       else
+        log 'no:', host
         req.abort()
 
   await page.setUserAgent 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36'
@@ -86,8 +102,10 @@ get = (argv) ->
     process.exit(2)
 
 parse_args = ->
-  require('minimist') process.argv.slice(2),
-    boolean: ['i', 'ignore-nav-fail', 'v', 'verbose']
+  argv = require('minimist') process.argv.slice(2),
+    boolean: ['i', 'v']
+  debug = true if argv.v
+  return argv
 
 unless module.parent
   do ->
@@ -96,7 +114,7 @@ unless module.parent
       console.log usage
       process.exit()
 
-    if argv.v or argv.verbose
+    if argv.v
       debug = true
 
     if not argv._.length
@@ -105,4 +123,4 @@ unless module.parent
 
     console.log (await get(argv)).join('\n')
 
-module.exports = { page, parse_args, get }
+module.exports = { page, parse_args, get, log }
