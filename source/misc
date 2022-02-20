@@ -33,7 +33,7 @@ fi
 export ANSIBLE_NOCOWS=1
 
 export PYTHONPATH=$DOTFILES/lib
-export NODE_PATH="$DOTFILES/lib/node_modules:$NODE_PATH"
+export NODE_PATH="$DOTFILES/lib/exec:$DOTFILES/lib/node_modules:$NODE_PATH"
 
 # find, and then sum the size of everything in KB
 function finds {
