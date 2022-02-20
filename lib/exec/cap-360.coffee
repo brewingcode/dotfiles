@@ -2,38 +2,21 @@
 #   $ CAPITAL_CREDS=,username,password ./cap-360
 #   {"customerReferenceId:"b933YCI3DPHkKB54ozkcoA==","accountDetails:{"subCat...
 
-puppeteer = require 'puppeteer'
+pup = require 'pup'
 pr = require 'bluebird'
 fs = require 'fs'
-debug = false
 
 pr.try ->
   [user, pass] = process.env.CAPITAL_CREDS.match(/^(.)([^\1]+)\1(.*)/).slice(2)
 
-  browser = await puppeteer.launch
+  argv = pup.parse_args()
+  argv.f = ['(myaccounts|verified).capitalone.com', 'i']
+  [ browser, page ] = await pup.page(argv)
     headless: not debug
     defaultViewport:
       width: 600
       height: 2000
     devtools: debug
-
-  page = (await browser.pages())[0]
-  await page.setUserAgent 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36'
-  await page.evaluateOnNewDocument ->
-    Object.defineProperty navigator, i[0], i[1] for i in [
-      [ 'languages', [ 'en-US', 'en', 'mt' ] ]
-      [ 'plugins', [ 1, 2, 3 ] ]
-      [ 'webdriver', false ]
-    ]
-
-  await page.setRequestInterception true
-  page.on 'request', (req) ->
-    { host } = new URL req.url()
-    console.warn host if debug
-    if host.match /(myaccounts|verified).capitalone.com/i
-      req.continue()
-    else
-      req.abort()
 
   waitClick = (sel) ->
     try
