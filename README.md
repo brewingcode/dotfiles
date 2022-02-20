@@ -1,16 +1,21 @@
 # Dotfiles
 
-My OSX / Ubuntu dotfiles.
+My OSX / Ubuntu / WSL dotfiles.
 
 ## How to use
 
-Clone this repo somewhere (we will assume `~/.dotfiles`) and then add the
-following to your shell initialization file. If you run bash, this is
-`.bashrc`. If you run some other shell, god help you.
+Clone this repo somewhere (eg `~/.dotfiles`) and then source `init.sh`.
 
     source ~/.dotfiles/init.sh
 
-To update your current shell, simply re-run your shell initialization (`.
-~/.bashrc`). Any future shells you open will automatically pick up these
-changes.
+## `lib` usage
 
+This is a lib for multiple purposes:
+
+1. Javascript packages `cd lib && yarn` and the `NODE_PATH` env var.
+
+2. Python packages via `cd lib && pip install -r requirements.txt` and PYTHONPATH` env
+   var. Note: venv interop is still TBD.
+
+3. Coffeescripts that are built once to javascript to avoid the coffeescript
+   runtime penalty. `cd lib && ./build-bins`, or use `yarn build` and `yarn dev`.
