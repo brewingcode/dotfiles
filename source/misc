@@ -42,7 +42,7 @@ function finds {
 
 # find, sort by time
 findt() {
-  "$(command -v gfind || echo find)" "$@" -printf "%T+\t%p\n" | sort
+  "$(command -v gfind || echo find)" "$@" -printf "%T+\t%s\t%p\n" | sort
 }
 
 # truncate stdin exactly to term width
