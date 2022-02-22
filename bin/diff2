@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# diffs two files run through the same pipeline
+
+left="$1"
+right="$2"
+cmd="$3"
+
+[ -e "$left" ]  || { echo "invalid left-side file: $left" >&2; exit 1; }
+[ -e "$right" ] || { echo "invalid right-side file: $right" >&2; exit 2; }
+[ -z "$cmd" ]   && cmd=sort
+
+diff -u0 <(cat "$left" | eval "$cmd") <(cat "$right" | eval "$cmd") \
+  | $(brew --prefix git)/share/git-core/contrib/diff-highlight/diff-highlight \
+  | grep -vE '^(---|\+\+\+|@@)\s'
