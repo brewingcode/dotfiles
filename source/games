@@ -143,3 +143,24 @@ subbz() {
       ;;
   esac
 }
+
+oni() {
+  case "$1" in
+    '')
+      if is_wsl; then
+        cd "$(winvar userprofile)/Documents/Klei/OxygenNotIncluded"
+      else
+        cd "$HOME/Library/Application Support/unity.Klei.Oxygen Not Included"
+      fi
+      ;;
+    backup)
+      oni
+      sync_exists || return 1
+      rsync -aP ./ "$SYNC_DIR/ONI"
+      ;;
+    restore)
+      echo "not implemented" >&2
+      return 1
+      ;;
+  esac
+}
