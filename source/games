@@ -10,11 +10,6 @@ sync_exists() {
   return 1
 }
 
-most_recent() {
-  regex="${1:-.}"
-  "$(command -v gls || echo ls)" -1t --color=never | grep -E "$regex" | head -1
-}
-
 tld() {
   case "$1" in
     '')

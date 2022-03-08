@@ -1,0 +1,4 @@
+#!/bin/bash
+
+source "$DOTFILES/source/utils"
+cd ~/Downloads && echo "$HOME/Downloads/$(most_recent)"

@@ -33,10 +33,10 @@ shopt -s dotglob nullglob
 # source all the things....but source some things after others
 cd "$DOTFILES/source" || exit 2
 for f in *; do
-  #[[ ! "$f" =~ ^(misc|prompt|history)$ ]] && echo "$f" && time source "$f"
-  [[ ! "$f" =~ ^(misc|prompt|history)$ ]] && source "$f"
+  #[[ ! "$f" =~ ^(misc|prompt|history|games)$ ]] && echo "$f" && time source "$f"
+  [[ ! "$f" =~ ^(misc|prompt|history|games)$ ]] && source "$f"
 done
-for f in misc prompt history; do
+for f in misc prompt history games; do
   #echo "$f" && time source "$f"
   source "$f"
 done
