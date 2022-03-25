@@ -7,7 +7,6 @@
 
 import sys
 import re
-import tempfile
 import shutil
 
 old_indent = int(sys.argv.pop(1))
@@ -19,15 +18,20 @@ def reindent(m):
   return ' ' * new_indent * depth
 
 def rewrite(filename):
-  tmp = tempfile.NamedTemporaryFile(delete=False, mode='w')
+  tmp = '/tmp/' + filename + '.tmp'
+  bak = '/tmp/' + filename + '.bak'
+
+  shutil.copy(filename, tmp) # use .copy to preserve permissions
+
   fh = open(filename)
-
+  tmp_fh = open(tmp, 'w')
   for line in fh:
-    tmp.write(re.sub(regex, reindent, line))
-  tmp.close()
+    tmp_fh.write(re.sub(regex, reindent, line))
+  fh.close()
+  tmp_fh.close()
 
-  shutil.move(filename, filename + '.bak')
-  shutil.move(tmp.name, filename)
+  shutil.move(filename, bak)
+  shutil.move(tmp, filename)
 
 if len(sys.argv) <= 1:
   # simply read stdin, print to stdout
