@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# takes json objects and makes them a csv structure:
+#    [{foo:1, bar:2}, {foo:3,bar:4}]
+#        ...would become:
+#    [
+#      ['foo', 'bar']
+#      [    1,    2 ]
+#      [    3,    4 ]
+#    ]
+# additional args are passed to jq, such as -s if your input is newline-sep json objects
+# add `jq @csv` to acutally turn this into valid CSV
+
+jq "$@" -r '(map(keys_unsorted) | add | unique) as $cols | map(. as $row | $cols | map($row[.])) as $rows | $cols, $rows[]'
