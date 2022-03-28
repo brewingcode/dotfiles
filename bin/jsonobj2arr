@@ -11,4 +11,4 @@
 # additional args are passed to jq, such as -s if your input is newline-sep json objects
 # add `jq @csv` to acutally turn this into valid CSV
 
-jq "$@" -r '(map(keys_unsorted) | add | unique) as $cols | map(. as $row | $cols | map($row[.])) as $rows | $cols, $rows[]'
+jq "$@" -r '(.[0] | keys_unsorted) as $cols | map(. as $row | $cols | map($row[.])) as $rows | $cols, $rows[]'
