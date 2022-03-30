@@ -24,7 +24,7 @@ is_ubuntu() {
 }
 
 # add binaries into the path
-export PATH="$DOTFILES/bin:$HOME/.cargo/bin:$PATH"
+export PATH="$DOTFILES/bin:/usr/local/opt/sqlite/bin:$HOME/.cargo/bin:$PATH"
 
 # make splat smarter
 shoptions=$(shopt -p)
