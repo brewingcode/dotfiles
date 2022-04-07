@@ -15,6 +15,9 @@ alias v=pbpaste # wait, ctrl-c and ctrl-v are pretty much universal, so just c a
 # Start ScreenSaver. This will lock the screen if locking is enabled.
 alias ss="open /System/Library/Frameworks/ScreenSaver.framework/Versions/A/Resources/ScreenSaverEngine.app"
 
+# APFS blends two volumes into one, we don't need to crawl Data
+alias ncdu_osx='sudo ncdu --exclude /System/Volumes/Data -x /'
+
 # restart wifi
 function rswifi {
   ifc="${1:-en0}"
