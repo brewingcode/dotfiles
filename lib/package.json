@@ -12,7 +12,7 @@
     "jsdom": "^16.6.0",
     "lodash": "^4.17.21",
     "minimist": "^1.2.5",
-    "moment": "^2.29.1",
+    "moment": "^2.29.2",
     "moment-timezone": "^0.5.33",
     "parse-domain": "2.3.4",
     "pretty": "^2.0.0",
