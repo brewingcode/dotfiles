@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# comms two files run through the same pipeline
+
+left="$1"
+right="$2"
+cmd="$3"
+args="$4"
+
+[ -e "$left" ]  || { echo "invalid left-side file: $left" >&2; exit 1; }
+[ -e "$right" ] || { echo "invalid right-side file: $right" >&2; exit 2; }
+[ -z "$cmd" ]   && cmd=cat
+
+comm $args <(cat "$left" | eval "$cmd") <(cat "$right" | eval "$cmd")
