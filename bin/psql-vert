@@ -5,7 +5,8 @@
 
 # any arguments are assumed to be columns that will NOT be printed, either:
 # - column names
-# - postive indexes are 1-based ("2" is the 3rd column)
+# - postive indexes are 1-based ("2" is the 2nd column, ignoring the first
+#   "(count)" column)
 # - negative indexes per python rules ("-1" is the last column)
 
 import csv, sys, re, json
@@ -22,7 +23,7 @@ for i,h in enumerate(in_headers):
         if re.match(r'^\-?\d+$', arg):
             val = int(arg)
             pos_index = (val-1 if val > 0 else val) % len(in_headers)
-            print(f'{arg} {pos_index}')
+            #print(f'{arg} {pos_index}')
             if pos_index == i:
                 keep = False
         elif arg == h:
@@ -47,11 +48,11 @@ def trunc(p):
 for count, row in enumerate(rows):
     row = [ row[i] for i in show ]
     for i, cell in enumerate(row):
-        if re.match(r'^[{\[](\s*?=").*[}\]]$', cell):
+        if re.match(r'^\{\s*".*\}$', cell) or re.match(r'^\[.*\]$', cell):
             try:
                 row[i] = json.dumps(json.loads(cell), indent=4)
             except Exception as e:
-                sys.stderr.write(f'{e}: {cell}\n')
+                sys.stderr.write(f'json parse failure: {e}: {cell}\n')
                 row[i] = cell
         elif re.match(r'^01[a-f0-9]+$', cell, flags=re.I):
             try:
