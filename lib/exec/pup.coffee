@@ -103,7 +103,7 @@ get = (argv) ->
 
 parse_args = ->
   argv = require('minimist') process.argv.slice(2),
-    boolean: ['i', 'v']
+    boolean: ['i', 'v', 'ignore-nav-fail']
   debug = true if argv.v
   return argv
 
