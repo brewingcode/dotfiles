@@ -14,7 +14,7 @@ new_indent = int(sys.argv.pop(1))
 regex = r'^( +)'
 
 def reindent(m):
-  depth = int(len(m.group(1)) / old_indent)
+  depth = int(len(m.group(1)) / old_indent) if old_indent else 0
   return ' ' * new_indent * depth
 
 def rewrite(filename):
