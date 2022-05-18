@@ -1,0 +1,34 @@
+#!/bin/bash
+
+dotest() {
+    x=$(jq -rn "$1")
+    [[ "$x" == "$2" ]] || { echo "failed: '$1' does not evaulate to '$2' it is '$x' instead" >&2; return 1; }
+}
+
+main() {
+    pass=0
+    total=0
+
+    while IFS='=' read -r cmd output; do ((total++)); dotest "$cmd" "$output" && ((pass++)); done <<EOF
+    30 | tohms             ="00:00:30"
+    90 | tohms             ="00:01:30"
+    605 | tohms            ="00:10:05"
+    -4000 | tohms          ="-01:06:40"
+    500000 | tohms         ="138:53:20"
+    "3" | fromhms          =3
+    "03" | fromhms         =3
+    "0:04" | fromhms       =4
+    "-05" | fromhms        =-5
+    "1:2:3" | fromhms      =3723
+    "01:02:03" | fromhms   =3723
+    30.1 | tohms           ="00:00:30.1"
+    -4000.234234 | tohms   ="-01:06:40.234234"
+    "3.1" | fromhms        =3.1
+    "00:30.2342" | fromhms =30.2342
+EOF
+
+    echo "$pass / $total passed"
+    [ $pass -eq $total ]
+}
+
+main
