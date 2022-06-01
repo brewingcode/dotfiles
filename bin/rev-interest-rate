@@ -3,7 +3,7 @@
 # given CSV from the Capital One account transactions page on stdin,
 # calculate the annual APR interest rate on each monthly interest deposit
 
-csvparse = require 'csv-parse/lib/sync'
+csvparse = require 'csv-parse/sync'
 fs = require 'fs'
 
 csvparse(fs.readFileSync('/dev/stdin')).forEach (row) ->
