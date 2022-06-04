@@ -101,8 +101,8 @@ tmlog_filter() {
 # tail the time machine system messages
 tmlog() {
   last="${1:-2h}"
-  log show   --predicate 'subsystem == "com.apple.TimeMachine"' --info --last "$last" | tmlog_filter
-  log stream --predicate 'subsystem == "com.apple.TimeMachine"' --info                | tmlog_filter
+  log show   --predicate 'subsystem == "com.apple.TimeMachine"' --info --debug --last "$last" | tmlog_filter
+  log stream --predicate 'subsystem == "com.apple.TimeMachine"' --info --debug                | tmlog_filter
 }
 
 # "sshfs mount"
