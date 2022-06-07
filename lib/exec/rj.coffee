@@ -2,7 +2,8 @@
 
 fs = require 'fs'
 argv = require('minimist') process.argv.slice(2),
-    boolean: ['h', 'help', 'd', 'detached']
+    boolean: ['h', 'help', 'd', 'detached', 't', 'tail',
+    'r', 'running']
 sqlite = require 'sqlite-async'
 child = require 'child_process'
 
@@ -20,13 +21,14 @@ of the job.
 With ACTION, perform operations on the queue.
 
 OPTIONS
--d/--detached      detach job from rj process
+-d/--detached      detach job from rj process and return immediately
 -t/--tail          tail -f instead of print with -o/-e
 
 ACTIONS
--k/--kill ROWID    kill ROWID
--o/--out ROWID     print stdout of ROWID to stdout
--e/--err ROWID     print stderr of ROWID to stderr
+kill ROWID     sigkill ROWID
+out  ROWID     print stdout of ROWID to stdout
+err  ROWID     print stderr of ROWID to stderr
+running        print jobs currently running
     """
     process.exit()
 
@@ -54,11 +56,12 @@ run = (rowID) ->
     proc = child.spawn cmd[0], cmd.slice(1),
         stdio: ['ignore', fs.openSync(job_dir+'/out.txt', 'w'), fs.openSync(job_dir+'/err.txt', 'w')]
     proc.on 'error', console.error
+    await sql (db) -> db.run "update jobs set status = ?, ended = strftime('%Y-%m-%d %H:%M:%f', 'now') where id = ?", [proc.exitCode, rowID]
+
     await new Promise (res) ->
         proc.on 'exit', res
         proc.on 'close', res
 
-    await sql (db) -> db.run "update jobs set status = ?, ended = strftime('%Y-%m-%d %H:%M:%f', 'now') where id = ?", [proc.exitCode, rowID]
     return proc.exitCode
 
 fork = ->
@@ -87,7 +90,10 @@ print = (rowID, which) ->
     row = await sql (db) -> db.get "select * from jobs where id = ?", [rowID]
     path = data_dir + "/#{rowID}/#{which}.txt"
     if argv.t or argv.tail
-        child.spawn 'tail', ['-f', path]
+        await new Promise (res) ->
+            proc = child.spawn 'tail', ['-f', path], stdio: 'inherit'
+            proc.on 'exit', res
+
     else
         data = fs.readFileSync(path).toString()
         if which is 'out'
@@ -95,15 +101,35 @@ print = (rowID, which) ->
         else
             console.error(data)
 
+running = ->
+    pids = {}
+    proc = child.spawnSync('pgrep', ['-fl', '.'])
+    proc.stdout.toString().split(/\n/).forEach (line) ->
+        if m = line.match(/^(\d+)\s+/)
+            pids[m[1]] = 1
+
+    rows = await sql (db) -> db.all "select pid, id, cmd from jobs where pid  is not null"
+
+    active = rows
+        .filter (r) -> pids[r.pid]
+        .map (r) ->
+             pid: r.pid
+             rowid: r.id
+             cmd: JSON.parse(r.cmd)
+
+    console.log JSON.stringify active
+
 main = ->
     if c = argv.c or argv.child
         await run(c)
-    else if k = argv.k or argv.kill
-        await kill(k)
-    else if o = argv.o or argv.out
-        await print(o, 'out')
-    else if e = argv.e or argv.err
-        await print(e, 'err')
+    else if argv.kill
+        await kill(argv.kill)
+    else if argv.out
+        await print(argv.out, 'out')
+    else if argv.err
+        await print(argv.err, 'err')
+    else if argv.running
+        await running()
     else
         if argv._.length is 0
             process.stderr.write("error: command required, see --help\n")
