@@ -9,7 +9,7 @@
 
 initial_dir=$(pwd)
 
-export DOTFILES=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+export DOTFILES=$(cd "$(dirname -- "${BASH_SOURCE[0]:-${(%):-%N}}")" && pwd)
 [ -d "$DOTFILES" ] || { printf "DOTFILES=%s does not point to a directory" "$DOTFILES" 1>&2; exit 1; }
 
 is_osx() {
