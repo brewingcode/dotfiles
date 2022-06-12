@@ -9,7 +9,7 @@
 
 initial_dir=$(pwd)
 
-export DOTFILES=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+export DOTFILES=$(cd "$(dirname -- "${BASH_SOURCE[0]:-${(%):-%N}}")" && pwd)
 [ -d "$DOTFILES" ] || { printf "DOTFILES=%s does not point to a directory" "$DOTFILES" 1>&2; exit 1; }
 
 is_osx() {
@@ -26,9 +26,13 @@ is_ubuntu() {
 # add binaries into the path
 export PATH="$DOTFILES/bin:/usr/local/opt/sqlite/bin:$HOME/.cargo/bin:$PATH"
 
-# make splat smarter
-shoptions=$(shopt -p)
-shopt -s dotglob nullglob
+if [ -n "$BASH_VERSION" ]; then
+  shoptions=$(shopt -p)
+  shopt -s dotglob nullglob
+else
+  shoptions=$(setopt -p)
+  setopt GLOB_DOTS NULL_GLOB
+fi
 
 # source all the things....but source some things after others
 cd "$DOTFILES/source" || exit 2
@@ -58,4 +62,5 @@ for f in *; do
 done
 
 eval "$shoptions"
+
 cd "$initial_dir"

@@ -1,3 +1,5 @@
+[ -z "$BASH_VERSION" ] && return
+
 # Eternal bash history.
 # https://github.com/fotinakis/bashrc/blob/master/init.sh
 # ---------------------

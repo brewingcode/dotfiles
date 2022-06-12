@@ -1,4 +1,7 @@
 #!bash
+
+[ -n "$ZSH_VERSION" ] && return
+
 #
 # bash/zsh completion support for core Git.
 #

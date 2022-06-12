@@ -10,7 +10,7 @@ alias e=pbpaste # i have conflicts with p, a, s, and t if you can believe it
 alias v=pbpaste # wait, ctrl-c and ctrl-v are pretty much universal, so just c and v are good
 
 # Make 'less' more.
-[[ "$(type -P lesspipe.sh)" ]] && eval "$(lesspipe.sh)"
+[[ "$(command -v lesspipe.sh > /dev/null 2>&1)" ]] && eval "$(lesspipe.sh)"
 
 # Start ScreenSaver. This will lock the screen if locking is enabled.
 alias ss="open /System/Library/Frameworks/ScreenSaver.framework/Versions/A/Resources/ScreenSaverEngine.app"
