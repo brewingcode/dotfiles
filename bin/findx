@@ -1,0 +1,20 @@
+#!/usr/bin/perl
+
+# find in current dir while excluding directories: pass directory names,
+# terminated by "-true", or any other find predicates you want.
+
+use strict;
+use warnings;
+
+my @args = ('find', '.', '-type', 'd', '(');
+while ($_ = shift @ARGV) {
+    if (/^-/) {
+        unshift @ARGV, $_;
+        last;
+    }
+    push @args, ("-name", $_, '-o');
+}
+pop @args  if $args[-1] eq '-o';
+push @args, (')', '-prune', '-o', @ARGV);
+#print "@args";
+exec @args;
