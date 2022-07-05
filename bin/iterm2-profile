@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+
+# set iTerm2 profile
+
+import iterm2, sys
+
+async def main(connection):
+    try:
+        profile = sys.argv[1]
+        assert profile
+    except:
+        sys.stderr.write('error: missing or empty first argument, must be an iTerm2 profile name\n')
+        return 1
+
+    app = await iterm2.async_get_app(connection)
+    # Query for the list of profiles so we can search by name. This returns a
+    # subset of the full profiles so it's fast.
+    partialProfiles = await iterm2.PartialProfile.async_query(connection)
+    # Iterate over each partial profile
+    for partial in partialProfiles:
+        if partial.name == profile:
+            # This is the one we're looking for. Change the current session's
+            # profile.
+            full = await partial.async_get_full_profile()
+            await app.current_terminal_window.current_tab.current_session.async_set_profile(full)
+            return
+
+    sys.stderr.write(f'error: did not find profile {profile}\n')
+    return 1
+
+sys.exit(iterm2.run_until_complete(main))

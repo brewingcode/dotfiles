@@ -6,4 +6,5 @@ websocket-client
 tabulate
 pyobjc
 shapely
+iterm2
 
