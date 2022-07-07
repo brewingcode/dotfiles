@@ -281,3 +281,5 @@ set backspace=indent,eol,start
 
 autocmd FileType crontab setlocal nobackup nowritebackup
 
+map Q :qa!<CR>
+
