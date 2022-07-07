@@ -38,14 +38,6 @@ set nowrap " Do not wrap lines.
 set noshowmode " Don't show the current mode (airline.vim takes care of us)
 set laststatus=2 " Always show status line
 
-" Toggle between absolute and relative line numbers
-augroup relative_numbers
-  autocmd!
-  " Show absolute numbers in insert mode
-  autocmd InsertEnter * :set norelativenumber
-  autocmd InsertLeave * :set relativenumber
-augroup END
-
 " Make it obvious where 80 characters is
 "set textwidth=80
 "set colorcolumn=+1
