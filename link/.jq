@@ -58,14 +58,14 @@ def toepoch: toepoch(.) ;
 
 def dur($t; $ref):
     # get number of seconds between $t and $ref ($ref is `now` by default)
-    toepoch($t) - toepoch(if $ref then $ref else now end) | fabs
+    toepoch($t|fabs) - toepoch(if $ref then ($ref|fabs) else now end) | fabs
 ;
 def dur($t): dur($t; now) ;
 def dur:     dur(.; now) ;
 
 def within($a; $b; $x):
     # check if $a and $b are within $x of each other
-    dur($a;$b) < ($x|fromhms)
+    dur($a;$b) < (if ($x|type) == "number" then $x else ($x|fromhms) end)
 ;
 def within($b; $x): within(.; $b; $x) ;
 def within($x):     within(.; now; $x) ;
