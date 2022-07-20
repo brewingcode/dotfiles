@@ -12,10 +12,12 @@ main() {
     while IFS='=' read -r cmd output; do ((total++)); dotest "$cmd" "$output" && ((pass++)); done <<EOF
     30 | tohms             ="00:00:30"
     90 | tohms             ="00:01:30"
+    tohms(90)              ="00:01:30"
     605 | tohms            ="00:10:05"
     -4000 | tohms          ="-01:06:40"
     500000 | tohms         ="138:53:20"
     "3" | fromhms          =3
+    fromhms("3")           =3
     "03" | fromhms         =3
     "0:04" | fromhms       =4
     "-05" | fromhms        =-5

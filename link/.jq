@@ -20,6 +20,7 @@ def fromhms:
     # negate the final number if the original string had a negative sign
     if ($r.prefix == "-") then -. else . end
 ;
+def fromhms($x): $x | fromhms ;
 
 def tohms:
     # convert to string to handle numbers and strings, then regex
@@ -35,6 +36,7 @@ def tohms:
     # re-adding the decimal numbers
     "\($r.prefix // "")\([$h,$m,$s] | map(pad_left(2; "0")) | join(":"))\($r.d // "")"
 ;
+def tohms($x): $x | tohms ;
 
 def toepoch($t):
     # make sure . is a number, otherwise convert it as an iso8601 string
