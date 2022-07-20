@@ -1,7 +1,7 @@
 #!/bin/bash
 
 dotest() {
-    x=$(jq -rn "$1")
+    x=$(jq -n "$1")
     [[ "$x" == "$2" ]] || { echo "failed: '$1' does not evaulate to '$2' it is '$x' instead" >&2; return 1; }
 }
 
