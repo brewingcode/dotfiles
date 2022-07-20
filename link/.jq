@@ -35,3 +35,35 @@ def tohms:
     # re-adding the decimal numbers
     "\($r.prefix // "")\([$h,$m,$s] | map(pad_left(2; "0")) | join(":"))\($r.d // "")"
 ;
+
+def toepoch($t):
+    # make sure . is a number, otherwise convert it as an iso8601 string
+    if ($t|type) == "number" then $t else (
+        # remove timezone at end, we will put it back on
+        $t | sub("(Z|[\\+\\-]\\d\\d:?\\d\\d)$"; "") |
+
+        # get the bits on both sides of the period, if it exists
+        capture("^(?<n>([^\\.]+))(\\.(?<d>\\d+))?") as $m |
+
+        # convert from iso8601
+        "\($m.n)Z" | fromdateiso8601 as $ts |
+
+        # if $t had a decimal part, put that back on
+        if $m.d then ("\($ts).\($m.d)" | tonumber) else $ts end
+    ) end
+;
+def toepoch: toepoch(.) ;
+
+def dur($t; $ref):
+    # get number of seconds between $t and $ref ($ref is `now` by default)
+    toepoch($t) - toepoch(if $ref then $ref else now end) | fabs
+;
+def dur($t): dur($t; now) ;
+def dur:     dur(.; now) ;
+
+def within($a; $b; $x):
+    # check if $a and $b are within $x of each other
+    dur($a;$b) < ($x|fromhms)
+;
+def within($b; $x): within(.; $b; $x) ;
+def within($x):     within(.; now; $x) ;
