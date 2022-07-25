@@ -56,9 +56,9 @@ def toepoch($t):
 ;
 def toepoch: toepoch(.) ;
 
-def dur($t; $ref):
-    # get number of seconds between $t and $ref ($ref is `now` by default)
-    toepoch($t|fabs) - toepoch(if $ref then ($ref|fabs) else now end) | fabs
+def dur($a; $b):
+    # get number of seconds between $a and $b
+    ( ($a|toepoch|fabs) - ($b|toepoch|fabs) ) | fabs
 ;
 def dur($t): dur($t; now) ;
 def dur:     dur(.; now) ;
