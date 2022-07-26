@@ -44,6 +44,9 @@ def toepoch($t):
         # remove timezone at end, we will put it back on
         $t | sub("(Z|[\\+\\-]\\d\\d:?\\d\\d)$"; "") |
 
+        # add "T" if needed
+        sub("(?<a>\\d\\d) (?<b>\\d\\d)"; "\(.a)T\(.b)") |
+
         # get the bits on both sides of the period, if it exists
         capture("^(?<n>([^\\.]+))(\\.(?<d>\\d+))?") as $m |
 
