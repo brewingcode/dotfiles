@@ -66,9 +66,9 @@ def dur($a; $b):
 def dur($t): dur($t; now) ;
 def dur:     dur(.; now) ;
 
-def within($a; $b; $x):
+def within($x; $a; $b):
     # check if $a and $b are within $x of each other
     dur($a;$b) < (if ($x|type) == "number" then $x else ($x|fromhms) end)
 ;
-def within($b; $x): within(.; $b; $x) ;
-def within($x):     within(.; now; $x) ;
+def within($x; $b): ($b|toepoch) as $c | within($x; $c; .) ;
+def within($x): within($x; .) ;
