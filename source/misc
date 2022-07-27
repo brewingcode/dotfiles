@@ -373,3 +373,24 @@ faketime() {
 perllib() {
   cpanm --local-lib="$DOTFILES/perl5" local::lib && eval $(perl -I "$DOTFILES/perl5/lib/perl5/" -Mlocal::lib="$DOTFILES/perl5")
 }
+
+py()  {
+  d="$DOTFILES/venv"
+  [ -e bin/activate ] && d="$(pwd)"
+  case "$1" in
+    on)
+      [ -z "$VIRTUAL_ENV" ] || { echo "already in $VIRTUAL_ENV, aborting" >&2; return 1; }
+      [ -d "$d" ] || python3 -m venv "$d"
+      . "$d/bin/activate"
+      ;;
+    off)
+      [ -z "$VIRTUAL_ENV" ] && { echo "not in a virtual env, aborting" >&2; return 1; }
+      deactivate
+      ;;
+    *)
+      echo 'unknown command: use "on" or "off"' >&2
+      return 1
+      ;;
+  esac
+}
+

@@ -12,6 +12,7 @@ link/.vim/plugged
 link/.vim/.netrwhist
 
 /perl5/
+/venv/
 
 /bin/cap-360
 /bin/g
