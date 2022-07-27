@@ -370,3 +370,6 @@ faketime() {
   echo "https://github.com/wolfcw/libfaketime/blob/master/README.OSX"
 }
 
+perllib() {
+  cpanm --local-lib="$DOTFILES/perl5" local::lib && eval $(perl -I "$DOTFILES/perl5/lib/perl5/" -Mlocal::lib="$DOTFILES/perl5")
+}

@@ -11,6 +11,8 @@ link/.vim/plugged
 # some vim booger
 link/.vim/.netrwhist
 
+/perl5/
+
 /bin/cap-360
 /bin/g
 /bin/git-authors
