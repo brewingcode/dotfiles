@@ -130,3 +130,8 @@ dp() {
   iterm2-profile Default
   export ITERM_PROFILE=Default
 }
+
+reset-activity-monitor() {
+  rm ~/Library/Preferences/com.apple.ActivityMonitor.plist*
+}
+
