@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# debian packages for running puppeteer
+
+echo "libnss3 libxss1 libasound2 libatk-bridge2.0-0 libgtk-3-0 libgbm-dev libxshmfence-dev"
