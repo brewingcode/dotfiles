@@ -301,7 +301,9 @@ csvfc() {
 
 # skip first line (I can never remember this exact syntax/offset)
 sf() {
-    head -n +2
+    n=2
+    [ -n "$1" ] && n=$((n + $1))
+    tail -n +$n
 }
 
 sl() { echo $SHLVL; }
