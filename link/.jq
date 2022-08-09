@@ -72,3 +72,14 @@ def within($x; $a; $b):
 ;
 def within($x; $b): ($b|toepoch) as $c | within($x; $c; .) ;
 def within($x): within($x; .) ;
+
+# chunk stream into $n-long arrays
+# https://stackoverflow.com/a/51413843
+def nwise(stream; $n):
+  foreach (stream, nan) as $x ([];
+    if length == $n then [$x] else . + [$x] end;
+    if (.[-1] | isnan) and length>1 then .[:-1]
+    elif length == $n then .
+    else empty
+    end);
+
