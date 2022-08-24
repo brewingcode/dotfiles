@@ -32,7 +32,33 @@ API
 
 debug = false
 
-cache = data_root + '/pup-cache'
+cachepath = (url) ->
+  h = crypto.createHash('sha1')
+  h.update(url)
+  sha1 = h.digest('hex')
+  dir = data_root + '/pup-cache/' + sha1.match(/\w{5}/g).join('/')
+  mkdirp.sync(dir)
+  "#{dir}/#{slugify(url)}".match(/^(.{0,250})/)[1]
+
+# returns content of a url if it is less than age seconds old
+getcache = (url, age) ->
+  file = cachepath(url)
+  console.warn "cachepath: #{file}" if debug
+  if fs.existsSync(file)
+    mtime = moment(fs.statSync(file).mtime)
+    dur = mtime.diff(moment())
+    if age <= 0 or Math.abs(dur/1000) < age
+      content = fs.readFileSync(file) or ''
+      age_ago = moment.duration(dur).humanize(true)
+      console.warn "cache hit: #{content.length} bytes from #{age_ago}" if debug
+  if not content and debug
+    console.warn "cache miss" if debug
+  return content
+
+setcache = (url, content) ->
+  file = cachepath(url)
+  fs.writeFileSync(file, content)
+  return file
 
 log = (x...) -> console.warn(new Date(), x...) if debug
 
@@ -90,30 +116,12 @@ _page = (argv) ->
 
   return [ browser, page ]
 
-cachepath = (url) ->
-  h = crypto.createHash('sha1')
-  h.update(url)
-  sha1 = h.digest('hex')
-  dir = "#{cache}/" + sha1.match(/\w{5}/g).join('/')
-  mkdirp.sync(dir)
-  "#{dir}/#{slugify(url)}"
-
 get = (argv) ->
   content = argv._.map -> null
 
   if argv.a?
     argv._.forEach (url, i) ->
-      file = cachepath(url)
-      console.warn "cachepath: #{file}" if debug
-      if fs.existsSync(file)
-        mtime = moment(fs.statSync(file).mtime)
-        dur = mtime.diff(moment())
-        if argv.a <= 0 or dur/1000 < argv.a
-          content[i] = fs.readFileSync(file)
-          age = moment.duration(dur).humanize(true)
-          console.warn "cache hit: #{content[i].length} bytes from #{age}"
-      if not content[i] and debug
-        console.warn "cache miss"
+      content[i] = getcache url, argv.a
 
   if content.filter(Boolean).length is content.length
     return content
@@ -131,7 +139,7 @@ get = (argv) ->
       content[i] = await page.content()
 
       if argv.a?
-        fs.writeFileSync(cachepath(url), content[i])
+        setcache(url, content[i])
 
     await browser.close()
     return content
@@ -161,4 +169,4 @@ unless module.parent
 
     console.log (await get(argv)).join('\n')
 
-module.exports = { page:_page, parse_args, get, log }
+module.exports = { page:_page, parse_args, get, log, getcache, setcache }
