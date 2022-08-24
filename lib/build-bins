@@ -4,14 +4,20 @@
 [ -d ../bin ] || exit 2
 
 cd exec
+tmp="/tmp/build-bins.$$"
+refresh() {
+  [ -n "$(diff -q "$tmp" "$1" 2>&1)" ] && mv -v "$tmp" "$1"
+}
 
 for f in *; do
-  tmp="/tmp/build-bins.$$"
   printf '#!/usr/bin/env node\n\n' > "$tmp"
   coffee -bp $opts "$f" >> "$tmp"
   chmod +x "$tmp"
-  dest="../../bin/${f%.*}"
-  [ -n "$(diff -q "$tmp" "$dest" 2>&1)" ] && mv -v "$tmp" "$dest"
+  refresh "../../bin/${f%.*}"
 done
+
+cd ../..
+coffee -p node-globals.coffee > "$tmp"
+refresh lib/node-globals.js
 
 true
