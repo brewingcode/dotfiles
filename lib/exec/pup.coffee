@@ -1,6 +1,8 @@
+require "#{process.env.DOTFILES}/lib/node-globals"
 puppeteer = require 'puppeteer'
-pr = require 'bluebird'
-fs = require 'fs'
+crypto = require 'crypto'
+mkdirp = require 'mkdirp'
+slugify = require 'slugify'
 
 usage = """
 usage: pup [options] URL [more urls...]
@@ -16,6 +18,8 @@ OPTIONS
             to set regex flags like "i" for case-insensitive
 -i          Ignore navigation failures, log anyway
 -v          Verbose
+-a NUM      Return cached content, unless it is older than NUM seconds. If
+            NUM is zero or less, always return cached content
 
 API
 
@@ -27,6 +31,8 @@ API
 """
 
 debug = false
+
+cache = data_root + '/pup-cache'
 
 log = (x...) -> console.warn(new Date(), x...) if debug
 
@@ -84,17 +90,49 @@ _page = (argv) ->
 
   return [ browser, page ]
 
+cachepath = (url) ->
+  h = crypto.createHash('sha1')
+  h.update(url)
+  sha1 = h.digest('hex')
+  dir = "#{cache}/" + sha1.match(/\w{5}/g).join('/')
+  mkdirp.sync(dir)
+  "#{dir}/#{slugify(url)}"
+
 get = (argv) ->
+  content = argv._.map -> null
+
+  if argv.a?
+    argv._.forEach (url, i) ->
+      file = cachepath(url)
+      console.warn "cachepath: #{file}" if debug
+      if fs.existsSync(file)
+        mtime = moment(fs.statSync(file).mtime)
+        dur = mtime.diff(moment())
+        if argv.a <= 0 or dur/1000 < argv.a
+          content[i] = fs.readFileSync(file)
+          age = moment.duration(dur).humanize(true)
+          console.warn "cache hit: #{content[i].length} bytes from #{age}"
+      if not content[i] and debug
+        console.warn "cache miss"
+
+  if content.filter(Boolean).length is content.length
+    return content
+
   try
     [browser, page] = await _page(argv)
-    content = []
-    await pr.each argv._, (url) ->
+    await pr.each argv._, (url, i) ->
+      return if content[i]
+      console.warn ".goto(url)" if debug
       try
         await page.goto url, waitUntil:'networkidle0'
       catch e
         if not argv['ignore-nav-fail']
           throw e
-      content.push await page.content()
+      content[i] = await page.content()
+
+      if argv.a?
+        fs.writeFileSync(cachepath(url), content[i])
+
     await browser.close()
     return content
   catch e
