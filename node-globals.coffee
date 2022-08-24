@@ -15,3 +15,9 @@ for x in ['www', 'data']
     global[key.toLowerCase()] = val
 
 global.die = die
+
+global.fs = fs
+global.moment = require 'moment'
+global.pr = require 'bluebird'
+global._ = require 'lodash'
+global.rp = require 'request-promise'
