@@ -30,7 +30,7 @@ debug = false
 
 log = (x...) -> console.warn(new Date(), x...) if debug
 
-page = (argv) ->
+_page = (argv) ->
   browser = await puppeteer.launch
     headless: not debug
     defaultViewport:
@@ -86,7 +86,7 @@ page = (argv) ->
 
 get = (argv) ->
   try
-    [browser, page] = await page(argv)
+    [browser, page] = await _page(argv)
     content = []
     await pr.each argv._, (url) ->
       try
@@ -123,4 +123,4 @@ unless module.parent
 
     console.log (await get(argv)).join('\n')
 
-module.exports = { page, parse_args, get, log }
+module.exports = { page:_page, parse_args, get, log }
