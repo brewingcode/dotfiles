@@ -18,4 +18,4 @@ This is a lib for multiple purposes:
    var. Note: venv interop is still TBD.
 
 3. Coffeescripts that are built once to javascript to avoid the coffeescript
-   runtime penalty. `cd lib && ./build-bins`, or use `yarn build` and `yarn dev`.
+   runtime penalty. `cd lib && ./build-coffee`, or use `yarn build` and `yarn dev`.

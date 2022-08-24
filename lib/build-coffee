@@ -4,7 +4,7 @@
 [ -d ../bin ] || exit 2
 
 cd exec
-tmp="/tmp/build-bins.$$"
+tmp="/tmp/build-coffee.$$"
 refresh() {
   [ -n "$(diff -q "$tmp" "$1" 2>&1)" ] && mv -v "$tmp" "$1"
 }
