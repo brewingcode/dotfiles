@@ -1,7 +1,6 @@
 [core]
   whitespace = fix,space-before-tab,tab-in-indent,trailing-space
   excludesfile = ~/.gitignore_global
-  pager = ( command -v diff-so-fancy >/dev/null 2>&1 && diff-so-fancy || cat) | less --tabs=4 -RFX
   quotepath = false
 
 [alias]
