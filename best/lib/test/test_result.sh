@@ -58,6 +58,7 @@
 #
 :PREFIX:skip() {
 	# shellcheck disable=SC2059
+    [[ "$UNSKIP" == "true" ]] && return
 	if [[ $# -gt 0 ]]; then
 		__best_test_abort "$__BEST_RESULT_ENUM_SKIP" "$(printf "$@")"
 	else

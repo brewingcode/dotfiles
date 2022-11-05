@@ -76,6 +76,8 @@ PARALLEL="auto"
 
 SUBCOMMAND='run'
 
+export TEST_ENV_UNSKIP=false
+
 OPT_SUITES=()
 OPT_ARGV=()
 while shiftopt; do
@@ -86,6 +88,7 @@ while shiftopt; do
 		'--VERBOSE')           VERBOSE=true; VERBOSE_EVERYTHING=true ;;
 		'--debug')             VERBOSE=true; DEBUG=true ;;
 		'--strict')            STRICT=true ;;
+		'--unskip')            export TEST_ENV_UNSKIP=true ;;
 		'--failed')            COMPACT=true ;;
 		'--porcelain')         PORCELAIN="${OPT_VAL:-true}" ;;
 		'--list')              SUBCOMMAND='list' ;;
