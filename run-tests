@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd "$(dirname "$0")"
+export TEST_ENV_DATA_ROOT=/tmp
+SNAPSHOT_DIR=test/snapshots best.sh "$@"
