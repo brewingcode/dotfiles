@@ -24,7 +24,7 @@ is_ubuntu() {
 }
 
 # add binaries into the path
-export PATH="$DOTFILES/bin:/usr/local/opt/sqlite/bin:$HOME/.cargo/bin:$PATH"
+export PATH="$DOTFILES/bin:$DOTFILES/best/bin:/usr/local/opt/sqlite/bin:$HOME/.cargo/bin:$PATH"
 
 if [ -n "$BASH_VERSION" ]; then
   shoptions=$(shopt -p)
