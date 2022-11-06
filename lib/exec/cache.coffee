@@ -41,8 +41,7 @@ get = (key) ->
         where key = ? and
             ( ttl = 0 or ? < ttl )
         ', [key, now]
-    return row.val if row
-    throw Error "no cache entry for #{key}"
+    return if row then row.val else undefined
 
 if module.parent
     module.exports = { get, set }
@@ -50,7 +49,12 @@ else
     pr.try ->
         [fn, args...] = process.argv.slice(2)
         if fn is 'get'
-            console.log await get args[0]
+            val = await get args[0]
+            if _.isUndefined(val)
+                console.warn "no value found for key: #{args[0]}"
+                process.exit 1
+            else
+                console.log val
         else if fn is 'set'
             [ key, val, ttl ] = args
             val = fs.readFileSync(0) if val is '-'
