@@ -140,3 +140,9 @@ dockpriv() {
   sudo rm -f /Library/LaunchDaemons/com.docker.vmnetd.plist
   sudo rm -f /Library/PrivilegedHelperTools/com.docker.vmnetd
 }
+
+recov() {
+  sudo nvram recovery-boot-mode=unused
+  echo "reboot when ready"
+}
+
