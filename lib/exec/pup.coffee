@@ -1,3 +1,8 @@
+# name conflict with pup css-based html reader:
+
+# https://news.ycombinator.com/item?id=33805732
+# https://github.com/ericchiang/pup
+
 require "#{process.env.DOTFILES}/lib/node-globals"
 puppeteer = require 'puppeteer'
 crypto = require 'crypto'
