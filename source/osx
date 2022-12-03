@@ -146,3 +146,5 @@ recov() {
   echo "reboot when ready"
 }
 
+alias tp='open -a TablePlus'
+
