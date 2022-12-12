@@ -23,9 +23,9 @@ tld() {
       tld
       sync_exists || return 1
       rsync -aP --delete ./ "$SYNC_DIR/TheLongDark"
-      savefile=$(most_recent ^sandbox)
+      savefile=$(cd Survival && most_recent ^sandbox)
       mkdir -p "$SYNC_DIR/tld-backups/$savefile"
-      cp -v "$savefile" "$SYNC_DIR/tld-backups/$savefile/$(date '+%Y-%m-%d %H.%M.%S')"
+      cp -v "Survival/$savefile" "$SYNC_DIR/tld-backups/$savefile/$(date '+%Y-%m-%d %H.%M.%S')"
       ;;
     restore)
       sync_exists || return 1
@@ -39,7 +39,7 @@ tld() {
       cd "$bd/$savefile" || { echo "missing save file directory to restore: $bd/$savefile" >&2; return 2; }
       version=$(most_recent)
       tld
-      cp -v "$bd/$savefile/$version" "$savefile"
+      cp -v "$bd/$savefile/$version" "Survival/$savefile"
       ;;
   esac
 }
