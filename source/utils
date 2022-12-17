@@ -6,3 +6,11 @@ most_recent() {
 ruler() {
   for s in '....^....|' '1234567890'; do w=${#s}; str=$( for (( i=1; $i<=$(( ($COLUMNS + $w) / $w )) ; i=$i+1 )); do echo -n $s; done ); str=$(echo $str | cut -c -$COLUMNS) ; echo $str; done;
 }
+
+tohevc() {
+  # https://stackoverflow.com/a/65523734
+  [ -e "$1" ] || { echo "error: $1 does not exist" >&2; return 1; }
+  [ -e "$2" ] && { echo "error: $2 already exists" >&2; return 2; }
+  ffmpeg -i "$1" -c:v libx265 -vtag hvc1 "$2"
+}
+
