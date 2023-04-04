@@ -1,0 +1,16 @@
+#!/bin/bash
+
+[ -e ~/.chrome-for.json ] || { echo '~/.chrome-for.json config file missing, create it with something like: {"port":9523,"profile":"Profile 1"}' >&2; exit 1; }
+
+t=$(mktemp -d)
+
+cd "$HOME/Library/Application Support/Google/Chrome"
+echo "$t"
+rsync -a "$(jq -r .profile ~/.chrome-for.json)/" "$t"
+
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+    --remote-debugging-port="$(jq -r .port ~/.chrome-for.json)" \
+    --user-data-dir="$t" \
+    --no-default-browser-check --no-first-run
+
+rm -rf "$t"
