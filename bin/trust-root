@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# https://apple.stackexchange.com/questions/422332/how-do-i-update-my-root-certificates-on-an-older-version-of-mac-os-e-g-el-capi
+
+DIR=${TMPDIR}/trustroot.$$
+mkdir -p ${DIR}
+trap "rm -rf ${DIR}" EXIT
+cat "$1" | (cd $DIR && /usr/bin/split -p '-----BEGIN CERTIFICATE-----' - cert- )
+for c in ${DIR}/cert-* ; do
+   security -v add-trusted-cert -d -r trustRoot -k "/Library/Keychains/System.keychain" "$c"
+done
+rm -rf ${DIR}
