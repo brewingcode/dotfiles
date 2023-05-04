@@ -9,6 +9,11 @@ crypto = require 'crypto'
 mkdirp = require 'mkdirp'
 slugify = require 'slugify'
 
+cache_path = process.env.PUP_CACHE
+if not fs.existsSync cache_path
+  console.error 'PUP_CACHE env var needs to be an existing file path'
+  process.exit 1
+
 usage = """
 usage: pup [options] URL [more urls...]
 
@@ -41,7 +46,7 @@ cachepath = (url) ->
   h = crypto.createHash('sha1')
   h.update(url)
   sha1 = h.digest('hex')
-  dir = data_root + '/pup-cache/' + sha1.match(/\w{5}/g).join('/')
+  dir = cache_path + '/' + sha1.match(/\w{5}/g).join('/')
   mkdirp.sync(dir)
   "#{dir}/#{slugify(url)}".match(/^(.{0,250})/)[1]
 
