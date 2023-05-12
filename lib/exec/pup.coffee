@@ -30,6 +30,7 @@ OPTIONS
 -v          Verbose
 -a NUM      Return cached content, unless it is older than NUM seconds. If
             NUM is zero or less, always return cached content
+-t NUM      Override timeouts to NUM ms (default: 30_000)
 
 API
 
@@ -115,6 +116,9 @@ _page = (argv) ->
       else
         log 'no:', host
         req.abort()
+
+  if argv.t
+    page.setDefaultTimeout(argv.t)
 
   await page.setUserAgent 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36'
   await page.evaluateOnNewDocument ->
