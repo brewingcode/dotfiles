@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if is_osx; then
+  pbpaste "$@"
+elif is_wsl; then
+  powershell.exe Get-Clipboard "$@"
+elif is_ubuntu; then
+  xclip -selection clipboard -o
+fi

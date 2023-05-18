@@ -23,6 +23,10 @@ is_ubuntu() {
   [[ "$(cat /etc/issue 2> /dev/null)" =~ Ubuntu ]] || return 1
 }
 
+export -f is_osx
+export -f is_wsl
+export -f is_ubuntu
+
 # add binaries into the path
 export PATH="$DOTFILES/bin:$DOTFILES/best/bin:/usr/local/opt/sqlite/bin:$HOME/.cargo/bin:$PATH"
 

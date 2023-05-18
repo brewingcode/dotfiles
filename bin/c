@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if is_osx; then
+  pbcopy
+elif is_wsl; then
+  clip.exe
+elif is_ubuntu; then
+  xclip -selection c
+fi
+

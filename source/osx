@@ -4,11 +4,6 @@ is_osx || return 1
 # https://unix.stackexchange.com/a/221988
 ulimit -n 10000
 
-# Trim new lines and copy to clipboard
-alias c=pbcopy
-alias e=pbpaste # i have conflicts with p, a, s, and t if you can believe it
-alias v=pbpaste # wait, ctrl-c and ctrl-v are pretty much universal, so just c and v are good
-
 # Make 'less' more.
 [[ "$(command -v lesspipe.sh > /dev/null 2>&1)" ]] && eval "$(lesspipe.sh)"
 
