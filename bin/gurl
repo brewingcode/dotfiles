@@ -1,0 +1,39 @@
+#!/usr/bin/env perl
+#
+# output url to current git repo
+
+use strict;
+use warnings;
+
+my @out = qx/git remote -v/;
+chomp @out;
+@out = grep { /push/ } @out;
+
+my $url;
+if (@ARGV) {
+    my @hits = grep { /\q$ARGV[0]/i } @out;
+    $url = $hits[0] or die "could not find remote for $ARGV[0]\n";
+}
+else {
+    $url = $out[0] or die "could not find a remote\n";
+
+}
+
+$url =~ s/^\S+\s*(.*)\s+\S+$/$1/;
+
+# https://github.com/user/repo
+# user@gitlab.com:user/repo
+# ssh-host:/path
+
+if ($url =~ /^http/) {
+    print $url;
+}
+elsif ($url =~ m,^(\S+):(/.*),) {
+    print qq/ssh $1 "cd '$2'"/;
+}
+elsif ($url =~ m,(git(hub|lab)\.com):(.*),i) {
+    print qq,https://$1/$3,;
+}
+else {
+    die "unexpected remote url format: $url\n";
+}

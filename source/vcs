@@ -31,17 +31,14 @@ gitup() {
   git push --set-upstream "$remote" "$(git rev-parse --abbrev-ref HEAD)"
 }
 
-# GitHub URL for current repo.
-gurl() {
-  local remotename="${@:-origin}"
-  local remote="$(git remote -v | awk '/^'"$remotename"'.*\(push\)$/ {print $2}')"
-  [[ "$remote" ]] || return
-  local user_repo="$(echo "$remote" | perl -pe 's/.*://;s/\.git$//')"
-  echo "https://github.com/$user_repo"
-}
+# web URL for current repo, including current branch + path.
+alias gurlp='echo $(gurl)/tree/$(git rev-parse --abbrev-ref HEAD)/$(git rev-parse --show-prefix)'
 
-# GitHub URL for current repo, including current branch + path.
-alias gurlp='echo $(gurl)/tree/$(gbs)/$(git rev-parse --show-prefix)'
+# web URL for commit
+gitc() {
+  url=$(gurl)
+  [[ "$url" =~ github.com ]] && echo "$url/commit/$1" || echo "$url/-/commit/$1"
+}
 
 # OSX-specific Git shortcuts
 if is_osx; then
