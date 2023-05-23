@@ -88,7 +88,6 @@ def get_playlist(playlist_id):
             v['title'] = stat['snippet']['title']
             v['duration'] = stat['contentDetails']['duration']
             v['likes'] = stat['statistics']['likeCount']
-            v['dislikes'] = stat['statistics']['dislikeCount']
             v['url'] = 'http://www.youtube.com/watch?v={}'.format(stat['id'])
 
             # convert duration from ISO8601 "PT<x>M<y>S" duration
@@ -192,7 +191,7 @@ def main():
 
     header = ['views', 'title', 'url']
     if opts.more:
-        for i in ['dislikes', 'likes', 'time', 'duration', 'published']:
+        for i in ['likes', 'time', 'duration', 'published']:
             header.insert(1, i)
 
     if opts.header:
