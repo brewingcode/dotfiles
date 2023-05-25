@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if is_osx; then
+  open . 
+elif is_wsl; then
+  explorer.exe "$(wslpath -w "$PWD")"
+else
+  xdg-open .
+fi
+
