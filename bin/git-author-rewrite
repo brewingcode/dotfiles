@@ -3,6 +3,7 @@
 export OLD_EMAIL="${OLD_EMAIL:-$1}"
 export NEW_EMAIL="${NEW_EMAIL:-$2}"
 export NEW_NAME="${NEW_NAME:-$3}"
+export REF="${4:-HEAD}"
 
 [ -z "$OLD_EMAIL" ] && { echo "define OLD_EMAIL and re-run" >&2; exit 1; }
 [ -z "$NEW_EMAIL" ] && { echo "define NEW_EMAIL and re-run" >&2; exit 3; }
@@ -22,5 +23,5 @@ then
     export GIT_AUTHOR_NAME="$NEW_NAME"
     export GIT_AUTHOR_EMAIL="$NEW_EMAIL"
 fi
-' --tag-name-filter cat -- --branches --tags
+' --tag-name-filter cat -- --branches --tags "$REF"
 
