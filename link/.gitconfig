@@ -4,10 +4,10 @@
 
 [alias]
   # "pretty log" one-per-line
-  plog = log --pretty=format:'%C(yellow)%h %Cred%ai%Creset %s%Cgreen%d%Creset --%C(cyan)%an %Creset'
+  plog = log --color=always --pretty=format:'%C(yellow)%h %Cred%ai%Creset %s%Cgreen%d%Creset --%C(cyan)%an %Creset'
 
   # plog + full commit message
-  plog2 = log --pretty=format:'%C(yellow)%h %Cred%ai%Creset %s%Cgreen%d%Creset --%C(cyan)%an %Creset%n%-b%-n'G
+  plog2 = log --color=always --pretty=format:'%C(yellow)%h %Cred%ai%Creset %s%Cgreen%d%Creset --%C(cyan)%an %Creset%n%-b%-n'G
 
   # "clean log", plog without color
   clog = log --pretty=format:'%h %ai %s --%an'
