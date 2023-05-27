@@ -1,8 +1,12 @@
-fs = require 'fs'
+pr = require 'bluebird'
+fs = pr.promisifyAll require 'fs'
+global.fs = fs
+global.pr = pr
 
 die = (args...) ->
     console.error args...
     process.exit 1
+global.die = die
 
 for x in ['www', 'data']
     key = "#{x}_root".toUpperCase()
@@ -14,11 +18,7 @@ for x in ['www', 'data']
 
     global[key.toLowerCase()] = val
 
-global.die = die
-
-global.fs = fs
 global.moment = require 'moment'
-global.pr = require 'bluebird'
 global._ = require 'lodash'
 global.rp = require 'request-promise'
 
