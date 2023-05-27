@@ -30,7 +30,7 @@
   },
   "scripts": {
     "build": "./build-coffee",
-    "dev": "nodemon -w exec -e '*' -x ./build-coffee",
+    "dev": "nodemon -w exec -w ../node-globals.coffee -e '*' -x ./build-coffee",
     "postinstall": "./build-coffee"
   },
   "devDependencies": {
