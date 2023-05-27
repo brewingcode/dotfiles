@@ -53,7 +53,8 @@ existingBranch = (branch, ref) ->
     return { commits, new:false }
 
 main = ->
-    for line in await lines 'cat /tmp/fetch.txt'
+    now = moment().toISOString()
+    for line in await lines "git fetch --all --tags 2>&1 | tee '/tmp/git-nc-#{now}'"
         if m = line.match /^From (\S+)/
             remote = m[1]
         else if m = line.match /// (\S+) \s+ \S+ \s+ -> \s+ (\S+) ///
