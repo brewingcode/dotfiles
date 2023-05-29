@@ -62,7 +62,7 @@ existingBranch = (branch, start, end) ->
 gitFetch = ->
     if process.stdin.isTTY
         now = moment().toISOString()
-        await lines "git fetch --all --tags 2>&1 | tee '/tmp/git-nc-#{now}'"
+        await lines "git fetch -v --all --tags 2>&1 | tee '/tmp/git-nc-#{now}'"
     else
         await lines()
 
