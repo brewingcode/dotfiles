@@ -32,12 +32,9 @@ commit = (sha) ->
             display: await execAsync "git log --color=always --pretty=format:'%C(magenta)%h %Cred%ai%Creset %s --%C(cyan)%an %Creset' -1 #{sha}"
     return commitCache[sha].contains
 
-newBranch = (branch) ->
-    # for a new branch, we walk the commits and consider each one as a new one, until we find a commit that either:
-    #   * exists in a "release branch" if that env var is set
-    #   * exists in more than one branch otherwise
+walkCommits = (branch, cmd) ->
     commits = []
-    for c in await lines "git log --pretty='%h,%ai' '#{branch}'"
+    for c in await lines cmd
         [sha, date] = c.split(',')
         contains = await commit(sha)
         commits.push { sha, date, in:contains, via:branch }
@@ -45,15 +42,18 @@ newBranch = (branch) ->
             break
         else
             break if contains.length > 1
+    return commits
+
+newBranch = (branch) ->
+    # for a new branch, we walk the commits and consider each one as a new one, until we find a commit that either:
+    #   * exists in a "release branch" if that env var is set
+    #   * exists in more than one branch otherwise
+    commits = await walkCommits branch, "git log --pretty='%h,%ai' '#{branch}'"
     return { commits, new:true }
 
 existingBranch = (branch, start, end) ->
     # existing branches are reported as a ref range, we want to ammend it slightly to get one earlier commit
-    commits = []
-    for c in await lines "git log --pretty='%h,%ai' '#{start}^..#{end}'"
-        [sha, date] = c.split(',')
-        contains = await commit(sha)
-        commits.push { sha, date, in:contains, via:branch }
+    commits = await walkCommits branch, "git log --pretty='%h,%ai' '#{start}^...#{end}'"
     return { commits, new:false }
 
 gitFetch = ->
