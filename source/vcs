@@ -131,8 +131,8 @@ gittail() {
   fi
 
   git for-each-ref --sort=committerdate refs/"$refs" \
-    --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) %(color:red)%(objectname:short)%(color:reset) %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))' \
-    | tail -n "$count" | perl -pe "s,\Q$2/,,"
+    --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) %(color:red)%(objectname:short)%(color:reset)%0a    %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))' --color=always \
+    | tail -n "$count" | if [[ "$refs" != "heads" ]]; then perl -pe "s,\Q$2\E/,,"; else cat; fi
   echo
 }
 
