@@ -38,10 +38,13 @@ walkCommits = (branch, cmd) ->
         [sha, date] = c.split(',')
         contains = await commit(sha)
         commits.push { sha, date, in:contains, via:branch }
-        if release_branches and contains.find (b) -> b.match release_branches
-            break
-        else
-            break if contains.length > 1
+        if commits.length > 1
+            if release_branches and contains.find (b) -> b.match release_branches
+                break
+            else
+                break if contains.length > 1
+    if commits.length < 2
+        console.warn "#{branch} did not return at least 2 commits"
     return commits
 
 newBranch = (branch) ->
