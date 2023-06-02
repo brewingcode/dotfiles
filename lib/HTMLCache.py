@@ -12,7 +12,7 @@ properties that control behavior:
     html = HTMLCache.fetch("http://www.google.com")
 
 * `data_root`: Directory path where all data is stored (default:
-  `~/.htmlcache`).
+  $DATA_ROOT)
 
 * `sleep`: Number of seconds to sleep after performing an http fetch. Note
   that cache hits do NOT incur this `sleep()` (default: 0).
@@ -43,7 +43,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning, Insecur
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 requests.packages.urllib3.disable_warnings(InsecurePlatformWarning)
 
-data_root = os.path.join(os.environ['HOME'], '.htmlcache')
+data_root = os.path.join(os.environ['DATA_ROOT'], '.htmlcache')
 sleep = 0
 bypass = False
 cookie_file = None
