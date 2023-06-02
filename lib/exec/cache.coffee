@@ -1,20 +1,11 @@
-sqlite = require 'sqlite3'
-pr = require 'bluebird'
-fs = require 'fs'
+require "#{process.env.DOTFILES}/lib/node-globals"
 
 db = null
 
 trace = -> 0 # console.warn
 
 init = ->
-    db = pr.promisifyAll new sqlite.Database "#{process.env.DATA_ROOT}/cache.sqlite"
-
-    # sqlite3 does run() in a very weird way
-    db.runAsync = (sql, params) ->
-        new pr (resolve, reject) ->
-            db.run sql, params, (err) ->
-                return reject(err) if err
-                resolve(this) # this is the weird thing: `this` is what should be returned
+    db = sqliteFile "#{process.env.DATA_ROOT}/cache.sqlite"
 
     await db.runAsync """create table if not exists cache(
         key text primary key not null,
