@@ -1,0 +1,48 @@
+#!/bin/bash
+set -e
+
+# attaches a 200G volume to an ssh server in DO, then moves a directory of
+# your choice from your $HOME onto that storage, leaving behind a symlink.
+# waits until that symlink disappears to move the folder back before detaching
+# and destroying the volume.
+
+ssh_host="$1"
+dir="$2"
+
+do_ssh() {
+    ssh -o ClearAllForwardings=yes "$ssh_host" "$1"
+}
+
+[ -n "$ssh_host" ] || { echo 'ssh host name required' >&2; exit 1; }
+[ -n "$dir" ] || { echo 'directory to move to extra space required' >&2; exit 2; }
+
+if ! do_ssh "sudo test -d '$dir'"; then
+    echo "ssh command failed: sudo test -d '$dir'" >&2
+    exit 3
+fi
+
+drop=$(do_ssh 'curl -qs http://169.254.169.254/metadata/v1/id')
+region=$(do_ssh 'curl -qs http://169.254.169.254/metadata/v1/region')
+
+# create and attach
+label=extra-space
+vol=$(doctl compute volume create "$label" --region "$region" --size 200GiB --fs-label "$label" --fs-type ext4 -o json | jq -r '.[0].id')
+echo "attaching volume to droplet: $vol $drop"
+doctl compute volume-action attach "$vol" "$drop" --wait
+do_ssh "sudo mv '$dir' /mnt/extra_space && ln -s '/mnt/extra_space/$dir' '$dir'"
+echo "$dir converted to symlink, remove it when done"
+
+# wait for the symlink to vanish
+while true; do
+    sleep 30
+    if do_ssh "test -e '$dir'"; then
+        echo "$(date): symlink still exists, waiting"
+    else
+        break
+    fi
+done
+
+# detach and delete
+do_ssh "sudo mv '/mnt/extra_space/$dir' ."
+doctl compute volume-action detach --wait "$vol" "$drop"
+doctl compute volume delete "$vol" -f
