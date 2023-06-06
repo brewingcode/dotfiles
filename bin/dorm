@@ -1,0 +1,10 @@
+#!/bin/bash
+#
+# remove volumn from droplet
+#
+
+[ -n "$1" ] || { echo 'volume id (guid) required' >&2; exit 1; }
+[ -n "$2" ] || { echo 'droplet id (int) required' >&2; exit 2; }
+
+doctl compute volume-action detach --wait "$1" "$2"
+doctl compute volume delete "$1" -f

@@ -44,5 +44,4 @@ done
 
 # detach and delete
 do_ssh "sudo mv '/mnt/extra_space/$dir' ."
-doctl compute volume-action detach --wait "$vol" "$drop"
-doctl compute volume delete "$vol" -f
+dorm "$vol" "$drop"
