@@ -11,12 +11,13 @@ commitCache = {}
 if process.env.RELEASE_BRANCHES
     release_branches = new RegExp process.env.RELEASE_BRANCHES, 'i'
 
-lines = (cmd) ->
-    # run a command and return its stdout as chomp'd non-empty lines, OR just slurp stdin
-    if cmd
-        out =  await execAsync cmd, maxBuffer:10_000_000
+lines = (thing) ->
+    # if `thing` has newlines, it's a string to split. otherwise, `thing` is
+    # a command to run, whose output we then split
+    if thing.match /\n/
+        out = thing
     else
-        out = fs.readFileSync(0).toString()
+        out =  await execAsync thing, maxBuffer:10_000_000
 
     return out
         .split('\n')
@@ -60,11 +61,13 @@ existingBranch = (branch, start, end) ->
     return { commits, new:false }
 
 gitFetch = ->
-    if process.stdin.isTTY
-        now = moment().toISOString()
-        await lines "git fetch -v --all --tags 2>&1 | tee '/tmp/git-nc-#{now}'"
-    else
-        await lines()
+    if not process.stdin.isTTY
+        input = fs.readFileSync(0).toString()
+        if input.match /\S/
+            return await lines(input)
+
+    now = moment().toISOString()
+    await lines "git fetch -v --all --tags 2>&1 | tee '/tmp/git-nc-#{now}'"
 
 pr.try ->
     for line in await gitFetch()
