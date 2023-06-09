@@ -50,10 +50,10 @@ set sidescrolloff=3 " Start scrolling three columns before vertical border of wi
 
 " Indentation
 set autoindent " Copy indent from last line when starting new line.
-set shiftwidth=2 " The # of spaces for indenting.
+set shiftwidth=4 " The # of spaces for indenting.
 set smarttab " At start of line, <Tab> inserts shiftwidth spaces, <Bs> deletes shiftwidth spaces.
-set softtabstop=2 " Tab key results in 2 spaces
-set tabstop=2 " Tabs indent only 2 spaces
+set softtabstop=4 " Tab key results in 2 spaces
+set tabstop=4 " Tabs indent only 2 spaces
 set expandtab " Expand tabs to spaces
 
 " Reformatting
