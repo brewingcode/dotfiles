@@ -29,7 +29,7 @@ label=extra-space
 vol=$(doctl compute volume create "$label" --region "$region" --size 200GiB --fs-label "$label" --fs-type ext4 -o json | jq -r '.[0].id')
 echo "attaching volume to droplet: $vol $drop"
 doctl compute volume-action attach "$vol" "$drop" --wait
-do_ssh "sudo mv '$dir' /mnt/extra_space && ln -s '/mnt/extra_space/$dir' '$dir'"
+do_ssh "sudo rsync -aP --remove-source-files '$dir' /mnt/extra_space && rm -r '$dir' && ln -s '/mnt/extra_space/$dir' '$dir'"
 echo "$dir converted to symlink, remove it when done"
 
 # wait for the symlink to vanish
@@ -43,5 +43,5 @@ while true; do
 done
 
 # detach and delete
-do_ssh "sudo mv '/mnt/extra_space/$dir' ."
+do_ssh "sudo rsync -aP --remove-source-files '/mnt/extra_space/$dir' ."
 dorm "$vol" "$drop"
