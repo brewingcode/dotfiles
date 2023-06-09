@@ -10,7 +10,7 @@ global.die = die
 
 for x in ['www', 'data']
     key = "#{x}_root".toUpperCase()
-    global[key.toLowerCase()] = val
+    global[key.toLowerCase()] = process.env[key]
 
 global.moment = require 'moment'
 global._ = require 'lodash'
