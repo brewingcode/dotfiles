@@ -20,6 +20,7 @@
 
   # "hash log", just hashes, commit subject, and author name (no dates, no branch or tag)
   hlog = log --pretty='%h %s --%an'
+	root = rev-parse --show-toplevel
 
 [color]
   ui = auto
