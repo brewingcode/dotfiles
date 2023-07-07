@@ -27,9 +27,11 @@ lines = (thing) ->
 commit = (sha) ->
     # get everything we need about a single sha
     if not commitCache[sha]
-        contains = await lines "git branch -a --contains #{sha}"
+        contains = (await lines "git branch -a --contains #{sha}")
+            .map (x) -> x.replace /^remotes\//, ''
+            .filter (x) -> not x.match /HEAD/
         commitCache[sha] =
-            contains: contains.map (x) -> x.replace /^remotes\//, ''
+            contains: contains
             display: await execAsync "git log --color=always --pretty=format:'%C(magenta)%h %Cred%ai%Creset %s --%C(cyan)%an %Creset' -1 #{sha}"
     return commitCache[sha].contains
 
