@@ -76,5 +76,8 @@ openssl req -new -key "$filename.key" -out tmp-local.csr -config tmp-ssl.cnf
 # generate the local domain cert and sign it with ca.cert
 openssl x509 -req -in tmp-local.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out "$filename.crt" -days 512 -sha256 -extensions v3_req -extfile tmp-ssl.cnf
 
+# spit out a copy of fullchain.pem
+openssl req -new -x509 -key ca.key > fullchain.pem
+
 # cleanup (note: ca.srl is left hanging around, maybe delete it too...?)
 rm -f tmp-{local.csr,ssl.cnf}
