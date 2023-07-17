@@ -11,7 +11,7 @@ chomp @out;
 
 my $url;
 if (@ARGV) {
-    my @hits = grep { /\q$ARGV[0]/i } @out;
+    my @hits = grep { /\Q$ARGV[0]/i } @out;
     $url = $hits[0] or die "could not find remote for $ARGV[0]\n";
 }
 else {
