@@ -28,8 +28,18 @@ $url =~ s/^\S+\s*(.*)\s+\S+$/$1/;
 if ($url =~ /^http/) {
     print $url;
 }
-elsif ($url =~ m,^(\S+):(/.*),) {
-    print qq/ssh $1 "cd '$2'"/;
+elsif ($url =~ m,(git(hub|lab)\.com):(.*),i) {
+    print qq,https://$1/$3,;
+}
+elsif ($url =~ m,^(\S+):(.*),) {
+    my ($x,$y) = ($1,$2);
+    my ($host) = `ssh -G '$x'` =~ /^hostname (.*)/m;
+    if ($host =~ m,git(hub|lab)\.com,) {
+        print qq,https://$host/$y,
+    }
+    else {
+        print qq/ssh $x "cd '$y'"/;
+    }
 }
 elsif ($url =~ m,(git(hub|lab)\.com):(.*),i) {
     print qq,https://$1/$3,;
