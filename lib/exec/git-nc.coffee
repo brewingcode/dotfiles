@@ -78,12 +78,15 @@ pr.try ->
         else if m = line.match /// (\S+) \s+ \S+ \s+ -> \s+ (\S+) ///
             [ range, branch ] = m.slice(1)
 
-            if range is 'branch]'
-                branches[branch] = await newBranch(branch)
-            else if m = range.match(/(\S+)\.\.(\S+)/)
-                branches[branch] = await existingBranch(branch, m[1], m[2])
-            else
-                # garbage
+            try
+                if range is 'branch]'
+                    branches[branch] = await newBranch(branch)
+                else if m = range.match(/(\S+)\.\.\.?(\S+)/)
+                    branches[branch] = await existingBranch(branch, m[1], m[2])
+                else
+                    # garbage
+            catch e
+                console.warn "error reading range and branch:", range, branch
 
     _(branches)
         .keys()
