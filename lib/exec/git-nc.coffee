@@ -35,17 +35,18 @@ commit = (sha) ->
             display: await execAsync "git log --color=always --pretty=format:'%C(magenta)%h %Cred%ai%Creset %s --%C(cyan)%an %Creset' -1 #{sha}"
     return commitCache[sha].contains
 
-walkCommits = (branch, cmd) ->
+walkCommits = (branch, cmd, break_early = true) ->
     commits = []
     for c in await lines cmd
         [sha, date] = c.split(',')
         contains = await commit(sha)
         commits.push { sha, date, in:contains, via:branch }
         if commits.length > 1
-            if release_branches and contains.find (b) -> b.match release_branches
-                break
-            else
-                break if contains.length > 1
+            if break_early
+                if release_branches and contains.find (b) -> b.match release_branches
+                    break
+                else
+                    break if contains.length > 1
     if commits.length < 2
         console.warn "#{branch} did not return at least 2 commits"
     return commits
@@ -59,7 +60,7 @@ newBranch = (branch) ->
 
 existingBranch = (branch, start, end) ->
     # existing branches are reported as a ref range, we want to ammend it slightly to get one earlier commit
-    commits = await walkCommits branch, "git log --pretty='%h,%ai' '#{start}^...#{end}'"
+    commits = await walkCommits branch, "git log --pretty='%h,%ai' '#{start}^...#{end}'", false
     return { commits, new:false }
 
 gitFetch = ->
