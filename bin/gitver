@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# echoes the current HEAD as: "A-B", where:
+#   A: the local branch name of HEAD, OR the sha if it's not a branch
+#   B: `dirty` if git files are modified, `clean` otherwise
+
+modified=$(git status --porcelain | grep -v ^?? | wc -l)
+name=$(git for-each-ref --format '%(refname)' --points-at HEAD | perl -lne 'print $1 if m,^refs/heads/(.*),')
+ver=''
+
+if [ -n "$name" ]; then
+    ver="$name"
+else
+    ver=$(git rev-parse --short HEAD)
+fi
+
+if [[ "$modified" -gt 0 ]]; then
+    ver="$ver-dirty"
+else
+    ver="$ver-clean"
+fi
+
+echo "$ver"
