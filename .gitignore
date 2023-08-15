@@ -28,6 +28,7 @@ link/.vim/.netrwhist
 /lib/node-globals.js
 /bin/cache
 /bin/git-nc
+/bin/csp
 
 package-lock.json
 yarn.lock

@@ -8,6 +8,7 @@
     "chalk": "^4.1.2",
     "cheerio": "^1.0.0-rc.9",
     "coffeescript": "^2.5.1",
+    "content-security-policy-parser": "^0.4.1",
     "csv-parse": "^5.1.0",
     "csv-stringify": "^6.2.0",
     "html-entities": "^2.3.2",
