@@ -37,8 +37,11 @@ commit = (sha) ->
 
 walkCommits = (branch, cmd, break_early = true) ->
     commits = []
-    for c in await lines cmd
+
+    allLines = await lines cmd
+    for c, i in allLines
         [sha, date] = c.split(',')
+        # console.log sha, i, allLines.length
         contains = await commit(sha)
         commits.push { sha, date, in:contains, via:branch }
         if commits.length > 1
@@ -70,7 +73,7 @@ gitFetch = ->
             return await lines(input)
 
     now = moment().toISOString()
-    await lines "git fetch -v --all --tags 2>&1 | tee '/tmp/git-nc-#{now}'"
+    await lines "git fetch -v --all --tags 2>&1 | grep -v 'up to date' | tee '/tmp/git-nc-#{now}'"
 
 pr.try ->
     for line in await gitFetch()
