@@ -260,3 +260,8 @@ gitfm() {
     | _gitffilter
 }
 
+# list files that are conflicted
+gitconflicted() {
+    git diff --name-only --diff-filter=U --relative
+}
+
