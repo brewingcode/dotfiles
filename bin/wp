@@ -1,0 +1,4 @@
+#!/bin/bash
+
+d="${1:-$(pwd)}"
+wslpath -w "$d"
