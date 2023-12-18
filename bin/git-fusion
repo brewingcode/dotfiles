@@ -21,7 +21,7 @@ temp=$(openssl rand -hex 6)
 git remote add $remote "$1"
 git fetch $remote
 git checkout -b $temp $remote/$branch || { echo "error: failed to checkout $remote/$branch" >&2; exit 5; }
-git filter-branch -f --tree-filter "mkdir '$2'; git ls-tree --name-only -z \$GIT_COMMIT | xargs -n 1 -0 -I : git mv : '$2'"
+git filter-branch -f --tree-filter "mkdir -p '$2'; git ls-tree --name-only -z \$GIT_COMMIT | xargs -n 1 -0 -I : git mv : '$2'"
 git checkout -
 git merge --allow-unrelated-histories -m "Fuse $1:$branch into ./$2" $temp
 git branch -D $temp
