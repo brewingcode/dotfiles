@@ -42,7 +42,7 @@ fi
 cd "$DOTFILES/source" || exit 2
 for f in *; do
   #[[ ! "$f" =~ ^(misc|prompt|history|games)$ ]] && echo "$f" && time source "$f"
-  [[ ! "$f" =~ ^(misc|prompt|history|games)$ ]] && source "$f"
+  [[ ! "$f" =~ ^(misc|prompt|history|games)$ ]] && source "./$f"
 done
 for f in misc prompt history games; do
   #echo "$f" && time source "$f"
