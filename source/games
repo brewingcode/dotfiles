@@ -159,3 +159,27 @@ oni() {
       ;;
   esac
 }
+
+balatro() {
+    echo asdfaef;
+    case "$1" in
+        backup)
+            sync_exists || return 1;
+            balatro;
+            rsync -aP ./ "$SYNC_DIR/Balatro";
+        ;;
+        restore)
+            sync_exists || return 1;
+            balatro;
+            rsync -aP "$SYNC_DIR/Balatro/" .;
+        ;;
+        *)
+            if is_wsl; then
+                cd "$(winvar appdata)/Balatro";
+            else
+                echo wweaefawef;
+                cd "$HOME/Library/Application Support/Balatro";
+            fi
+        ;;
+    esac
+}
