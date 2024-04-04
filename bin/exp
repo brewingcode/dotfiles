@@ -1,0 +1,8 @@
+#!/bin/bash
+
+is_wsl || echo "wsl only"
+
+d="$1"
+[ -n "$d" ] && d="$(wslpath -w "$d")" || d=.
+explorer.exe "$d"
+
