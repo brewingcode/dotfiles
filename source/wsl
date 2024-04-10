@@ -1,7 +1,7 @@
 is_wsl || return 1
 
 winvar() {
-  [ -z "$1" ] && { echo 'error: winvar: missing variable name' >&2; return 1; }
+  [ -z "$1" ] && { cmd.exe /c set 2>&1 | tail -n +4; return 0; }
   val=$(cmd.exe /c 'echo %'"$1"'%' 2>/dev/null | sed 's/\r//')
   [[ "$val" =~ ^%.*%$ ]] && { echo "error: winvar: $1 is not defined" >&2; return 2; }
   if [[ "$val" =~ ^[cC]:\\ ]]; then
