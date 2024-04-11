@@ -1,0 +1,35 @@
+#!/bin/bash
+
+api() {
+    curl -qsH "Private-Token:$GITLAB_PAT_TOKEN" "https://gitlab.com/api/v4/$1"
+}
+
+do_path() {
+    printf "#\n# %s\n#\n" "$1"
+    if [ -d "$1" ]; then
+        cd "$1" && git fetch --tags
+    else
+        mkdir -p "$1"
+        cd "$1" && git clone "$2" .
+    fi
+}
+
+main() {
+    [ -z "$1" ] && { echo "error: group/user name missing"; return 1; }
+
+    project_filter='.projects[]
+        | select(.archived | not)
+        | "\(.path_with_namespace) \(.ssh_url_to_repo)"'
+        
+    api "groups/$1" | jq -r "$project_filter" | while read -r path url; do
+        (do_path "${path/$1\//}" "$url")
+    done
+
+    api "groups/$1/subgroups" | jq -r '.[].id' | while read -r gid; do
+        api "groups/$gid" | jq -r "$project_filter" | while read -r path url; do
+            (do_path "${path/$1\//}" "$url")
+        done
+    done
+}
+
+main "$@"
