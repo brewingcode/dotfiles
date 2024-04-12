@@ -7,7 +7,7 @@ api() {
 do_path() {
     printf "#\n# %s\n#\n" "$1"
     if [ -d "$1" ]; then
-        cd "$1" && git fetch --tags
+        cd "$1" && gitsync
     else
         mkdir -p "$1"
         cd "$1" && git clone "$2" .
@@ -15,6 +15,7 @@ do_path() {
 }
 
 main() {
+    source "$DOTFILES/source/vcs"
     [ -z "$1" ] && { echo "error: group/user name missing"; return 1; }
 
     project_filter='.projects[]
@@ -32,4 +33,4 @@ main() {
     done
 }
 
-main "$@"
+time main "$@"
