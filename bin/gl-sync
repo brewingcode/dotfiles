@@ -8,6 +8,7 @@ do_path() {
     printf "#\n# %s\n#\n" "$1"
     if [ -d "$1" ]; then
         cd "$1" && gitsync
+        [ -z "$(git status --porcelain)" ] && git pull
     else
         mkdir -p "$1"
         cd "$1" && git clone "$2" .
