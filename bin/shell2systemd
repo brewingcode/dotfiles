@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# convert env var declarations for shell to systemd unit, ie
+#     export foo="bar"  -->  Environment="foo=bar"
+
+perl -lpe 's/\s*export (\w+)=("?)(.*)\2?/Environment="$1=$3/'
+
