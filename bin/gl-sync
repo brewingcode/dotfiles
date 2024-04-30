@@ -60,12 +60,12 @@ main() {
     echo 'path,name,commits,size,files,merges,authors,first,last,days,id' > "$group.csv"
 
     api "groups/$1" | jq -r "$project_filter" | while read -r path url id; do
-        do_path "${path/$1\//}" "$url" "$id"
+        do_path "${path/$1\//}" "$url" "$id" < /dev/null
     done
 
     api "groups/$1/subgroups" | jq -r '.[].id' | while read -r gid; do
         api "groups/$gid" | jq -r "$project_filter" | while read -r path url id; do
-            do_path "${path/$1\//}" "$url" "$id"
+            do_path "${path/$1\//}" "$url" "$id" < /dev/null
         done
     done
 }
