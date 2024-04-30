@@ -6,30 +6,66 @@ api() {
 
 do_path() {
     printf "#\n# %s\n#\n" "$1"
-    if [ -d "$1" ]; then
+    (if [ -d "$1" ]; then
         cd "$1" && gitsync
         [ -z "$(git status --porcelain)" ] && git pull
     else
         mkdir -p "$1"
         cd "$1" && git clone "$2" .
-    fi
+    fi)
+
+    # a bunch of one-command things
+    count=$(cd "$1" && git log --all --format="%h" --no-merges | wc -l)
+    merges=$(cd "$1" && git log --all --format="%h" --merges | wc -l)
+    authors=$(cd "$1" && git shortlog --all --summary | wc -l)
+    name=$(api "projects/$3" | jq -r .name)
+    file_size=$(cd "$1" && git ls-files -z | xargs -0 filesize | perl -lane '$sum += $F[0]; END {print $sum}')
+    file_count=$(cd "$1" && git ls-files | wc -l)
+
+    # getting the first commit takes a few commands
+    first=$(cd "$1" && git log --all --reverse --format="%H" | head -n 1)
+    first=$(cd "$1" && git log -1 --format="%ai" "$first")
+    first=$($date -ud "$first" -Id)
+
+    # as does the last (most recent) commit
+    last=$(cd "$1" && git log --all --format="%H" | head -n 1)
+    last=$(cd "$1" && git log -1 --format="%ai" "$last")
+    last=$($date -ud "$last" -Id)
+
+    # days between first and last commit
+    first_epoch=$($date -d "$first" +%s)
+    last_epoch=$($date -d "$last" +%s)
+    days=$(( $((last_epoch - first_epoch)) / 86400 ))
+
+    perl -MText::CSV -le '
+        s/^\s*|\s*$// foreach @ARGV;
+        $csv = Text::CSV->new;
+        $csv->print(STDOUT, \@ARGV)' \
+        "$1" "$name" "$count" "$file_size" "$file_count" "$merges" \
+        "$authors" "$first" "$last" "$days" "$3" | tee -a "$group.csv"
 }
 
 main() {
-    source "$DOTFILES/source/vcs"
     [ -z "$1" ] && { echo "error: group/user name missing"; return 1; }
+    group="$1"
+    date=date
+    command -v gdate > /dev/null 2>&1 && date=gdate
+
+    source "$DOTFILES/source/vcs"
 
     project_filter='.projects[]
         | select(.archived | not)
-        | "\(.path_with_namespace) \(.ssh_url_to_repo)"'
+        | "\(.path_with_namespace) \(.ssh_url_to_repo) \(.id)"'
         
-    api "groups/$1" | jq -r "$project_filter" | while read -r path url; do
-        (do_path "${path/$1\//}" "$url")
+    echo 'path,name,commits,size,files,merges,authors,first,last,days,id' > "$group.csv"
+
+    api "groups/$1" | jq -r "$project_filter" | while read -r path url id; do
+        do_path "${path/$1\//}" "$url" "$id"
     done
 
     api "groups/$1/subgroups" | jq -r '.[].id' | while read -r gid; do
-        api "groups/$gid" | jq -r "$project_filter" | while read -r path url; do
-            (do_path "${path/$1\//}" "$url")
+        api "groups/$gid" | jq -r "$project_filter" | while read -r path url id; do
+            do_path "${path/$1\//}" "$url" "$id"
         done
     done
 }
