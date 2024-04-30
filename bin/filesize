@@ -1,0 +1,4 @@
+#!/bin/bash
+
+[[ "$(uname)" == "Darwin" ]] && stat -f %z "$@" || stat -c %s "$@"
+
