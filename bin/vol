@@ -1,0 +1,10 @@
+#!/bin/bash
+
+[ -e "$1" ] || { echo "first arg must an existing file" >&2; exit 1; }
+[ -z "$2" ] && { echo "second arg must be a filepath" >&2; exit 2; }
+[ -z "$3" ] && { echo "third arg must be scaling factor" >&2; exit 3; }
+
+tmp="/tmp/$$.${1##*.}"
+ffmpeg -i "$1" -filter:a "volume=$3" "$tmp" < /dev/null && \
+    mv -v "$tmp" "$2"
+
