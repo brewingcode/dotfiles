@@ -1,13 +1,14 @@
 #!/bin/bash
 set -e
 
-# attaches a 200G volume to an ssh server in DO, then moves a directory of
+# attaches a 100G volume to an ssh server in DO, then moves a directory of
 # your choice from your $HOME onto that storage, leaving behind a symlink.
 # waits until that symlink disappears to move the folder back before detaching
 # and destroying the volume.
 
 ssh_host="$1"
 dir="$2"
+size="${3:-100}"
 
 do_ssh() {
     ssh -o ClearAllForwardings=yes "$ssh_host" "$1"
@@ -26,11 +27,11 @@ region=$(do_ssh 'curl -qs http://169.254.169.254/metadata/v1/region')
 
 # create and attach
 label=extra-space
-vol=$(doctl compute volume create "$label" --region "$region" --size 200GiB --fs-label "$label" --fs-type ext4 -o json | jq -r '.[0].id')
+vol=$(doctl compute volume create "$label" --region "$region" --size ${size}GiB --fs-label "$label" --fs-type ext4 -o json | jq -r '.[0].id')
 echo "attaching volume to droplet: $vol $drop"
 doctl compute volume-action attach "$vol" "$drop" --wait
 do_ssh "sudo rsync -aP --remove-source-files '$dir' /mnt/extra_space && rm -r '$dir' && ln -s '/mnt/extra_space/$dir' '$dir'"
-echo "$dir converted to symlink, remove it when done"
+echo "$dir converted to symlink, remove it when done: dorm $vol $drop"
 
 # wait for the symlink to vanish
 while true; do
