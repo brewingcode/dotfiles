@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # prints out the public key fingerprint of private keys:
 #    - created by openssl/ssh-keygen, print the MD5 fingerprint
@@ -10,7 +10,7 @@ use File::Slurp;
 GetOptions('a|aws' => \$aws) or die;
 
 sub out {
-    while ($_[0] =~ /^\(stdin\)= (\S+)/g) {
+    while ($_[0] =~ /\(stdin\)= (\S+)/g) {
         if ($1 eq 'da:39:a3:ee:5e:6b:4b:0d:32:55:bf:ef:95:60:18:90:af:d8:07:09') {
             die "no data for sha1 to hash";
         }
