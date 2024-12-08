@@ -26,13 +26,16 @@ tld() {
       savefile=$(cd Survival && most_recent ^sandbox)
       mkdir -p "$SYNC_DIR/tld-backups/$savefile"
       cp -v "Survival/$savefile" "$SYNC_DIR/tld-backups/$savefile/$(date '+%Y-%m-%d %H.%M.%S')"
+      profilefile=$(cd Survival && most_recent ^profile_)
+      cp -v "Survival/$profilefile" "$SYNC_DIR/tld-backups/$profilefile"
       ;;
     restore)
       sync_exists || return 1
       bd="$SYNC_DIR/tld-backups"
       cd "$bd"
       if [ -z "$2" ]; then
-        savefile="$(most_recent)"
+        savefile="$(most_recent ^sandbox)"
+        profilefile=$(most_recent ^profile_)
       else
         savefile="$2"
       fi
@@ -40,6 +43,7 @@ tld() {
       version=$(most_recent)
       tld
       cp -v "$bd/$savefile/$version" "Survival/$savefile"
+      [ -n "$profilefile" ] && cp -v "$bd/$profilefile" "Survival/$profile_file"
       ;;
   esac
 }
