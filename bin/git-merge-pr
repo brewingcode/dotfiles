@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# merges a PR on your local working copy
+
+set -e
+
+repo=""   # just the `<org|user>/<reponame>` part, will attempt to lookup via `origin` remote name if this is not given
+pr=""     # PR integer ID
+
+getpr() {
+    curl -qsSL \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: Bearer $GH_TOKEN" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        "https://api.github.com/repos/$1/pulls/$2" > /tmp/$$.json
+
+    [[ $(jq .id /tmp/$$.json) == "null" ]] && { echo "PR $2 not found at https://github.com/$1/pulls/$2" >&2; exit 5; }
+}
+
+while getopts 'r:p:' opt; do
+    case "$opt" in
+        r) repo="$OPTARG";;
+        p) pr="$OPTARG";;
+        *) echo 'invalid options' >&2; exit 1;;
+    esac
+done
+
+[ -z "$repo" ] && repo=$(git remote get-url origin | perl -lne 'print $1 if m,github.com[:/]([^/]+/[^/]+),i;')
+[ -z "$repo" ] && { echo 'user+repo not found or provided' >&2; exit 2; }
+[ -z "$pr" ] && { echo 'PR ID not given' >&2; exit 3; }
+
+getpr "$repo" "$pr"
+
+remote=$(jq -r .head.user.login < /tmp/$$.json)
+other_repo=$(jq -r .head.repo.name < /tmp/$$.json)
+branch=$(jq -r .head.ref < /tmp/$$.json)
+sha=$(jq -r .head.sha < /tmp/$$.json)
+
+[ -z "$(git remote get-url "$remote")" ] && git remote add "$remote" "https://github.com/$remote/$other_repo"
+git fetch "$remote"
+report="$remote/$other_repo:$branch at $sha"
+git merge "$sha" -m "Merge $report" -m "See PR #$pr at https://github.com/$repo/pulls/$pr" || true
+
+if git diff --name-status | grep ^U; then
+    echo "failed to merge $report" >&2
+    exit 4;
+else
+    echo "merged $report"
+fi
