@@ -7,17 +7,17 @@
 use Getopt::Long;
 use File::Slurp;
 
-GetOptions('a|aws' => \$aws) or die;
+GetOptions('a|aws' => \$aws, 'b|batch' => \$batch) or die;
 
 sub out {
     while ($_[0] =~ /\(stdin\)= (\S+)/g) {
         if ($1 eq 'da:39:a3:ee:5e:6b:4b:0d:32:55:bf:ef:95:60:18:90:af:d8:07:09') {
-            die "no data for sha1 to hash";
+            die "no data for sha1 to hash" unless $batch;
         }
         if ($1 eq 'd4:1d:8c:d9:8f:00:b2:04:e9:80:09:98:ec:f8:42:7e') {
-            die "no data for md5 to hash";
+            die "no data for md5 to hash" unless $batch;
         }
-        print "$1\n";
+        return $1;
     }
 }
 
@@ -25,10 +25,11 @@ while (@ARGV) {
     $_ = shift @ARGV;
     -e $_ or die "$_ does not exist";
     if ($aws) {
-        out(`openssl pkcs8 -in '$_' -inform PEM -outform DER -topk8 -nocrypt | openssl sha1 -c`);
+        $hash = out(`openssl pkcs8 -in '$_' -inform PEM -outform DER -topk8 -nocrypt | openssl sha1 -c`);
     }
     else {
-        out(`openssl rsa -in '$_' -pubout -outform DER 2>/dev/null | openssl md5 -c`);
+        $hash = out(`openssl rsa -in '$_' -pubout -outform DER 2>/dev/null | openssl md5 -c`);
     }
+    print $batch ? "$hash\t$_\n" : "$hash\n";
 }
 
